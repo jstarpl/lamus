@@ -37,6 +37,12 @@ body {
   background: transparent;
 }
 
+html {
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: overlay;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Abril Fatface', Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   font-weight: 400;
