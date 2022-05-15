@@ -3,6 +3,40 @@ body {
   color: #000;
 }
 
+::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+::-webkit-scrollbar-thumb {
+  background: #968c4e;
+  border: 0px none;
+  border-radius: 50px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #645b23;
+}
+::-webkit-scrollbar-thumb:active {
+  background: #181501;
+}
+::-webkit-scrollbar-track {
+  background: #FFF8CF;
+  border: 0px none;
+  border-radius: 50px;
+}
+::-webkit-scrollbar-track:hover {
+  background: #FFF8CF;
+}
+::-webkit-scrollbar-track:active {
+  background: #FFF8CF;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Abril Fatface', Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   font-weight: 400;
