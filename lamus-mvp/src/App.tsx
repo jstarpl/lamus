@@ -8,6 +8,7 @@ import List from '@editorjs/list';
 import Delimiter from '@editorjs/delimiter';
 import Checklist from '@editorjs/checklist';
 import { createReactEditorJS } from 'react-editor-js';
+import { KeyboardHandler } from './KeyboardHandler';
 
 const ReactEditorJS = createReactEditorJS()
 
@@ -19,9 +20,9 @@ function focusEditor() {
 }
 
 function App() {
-  const blocks: object[] = [];
+  const blocks: object[] = JSON.parse(localStorage.getItem('text') || JSON.stringify([]));
 
-  const editorCore = useRef(null)
+  const editorCore = useRef<any>(null)
 
   const handleInitialize = useCallback((instance: any) => {
     editorCore.current = instance
@@ -52,8 +53,18 @@ function App() {
     }
   })
 
+  const onSave = useCallback(() => {
+    if (editorCore.current === null) return
+    editorCore.current.save().then((data: object) => {
+      localStorage.setItem('text', JSON.stringify(data))
+    }).catch((err: any) => {
+      console.error(err);
+    });
+  }, [editorCore])
+
   return (
     <div className="App">
+      <KeyboardHandler onSave={onSave}/>
       <ReactEditorJS
         defaultValue={blocks}
         onInitialize={handleInitialize}
