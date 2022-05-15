@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react"
 import sorensen from '@sofie-automation/sorensen'
 
-interface IProps {
-	onSave: () => void
+function sorensenInitialized(): boolean {
+	return document.body.dataset['sorensen'] === 'initialized'
 }
 
-let sorensenInitialized = false
+const PREVENT_KEYS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'BrowserBack', 'BrowserHome', 'BrowserSearch', 'BrowserFavorites', 'BrowserRefresh', 'BrowserForward', 'LaunchApp1', 'LaunchMail']
 
-export const KeyboardHandler = ({onSave}: IProps) => {
+export const KeyboardHandler = () => {
 	const [initialized, setInitialized ] = useState(false)
 
 	useEffect(() => {
-		if (!sorensenInitialized) {
+		if (!sorensenInitialized()) {
 			sorensen.init().then(() => setInitialized(true))
 		} else {
+			document.body.dataset['sorensen'] = 'initialized'
 			setInitialized(true)
 		}
 
@@ -25,23 +26,20 @@ export const KeyboardHandler = ({onSave}: IProps) => {
 	useEffect(() => {
 		if (!initialized) return
 
-		sorensen.bind('BrowserHome', (e) => {
+		function preventDefault(e: KeyboardEvent) {
 			e.preventDefault()
-			onSave()
-		}, {
-			global: true,
-		})
+		}
 
-		sorensen.bind('F2', (e) => {
-			e.preventDefault()
-			onSave()
+		PREVENT_KEYS.forEach((key) => {
+			sorensen.bind(key, preventDefault)
 		})
 
 		return () => {
-			sorensen.unbind('BrowserHome')
-			sorensen.unbind('F2')
+			PREVENT_KEYS.forEach((key) => {
+				sorensen.unbind(key, preventDefault)
+			})
 		}
-	}, [initialized, onSave])
+	}, [initialized])
 
 	return null
 }

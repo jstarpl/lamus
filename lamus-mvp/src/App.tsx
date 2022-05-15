@@ -1,5 +1,6 @@
 import React, { useRef, useCallback, useEffect } from 'react';
 import './App.css';
+import _ from 'lodash'
 import Paragraph from '@editorjs/paragraph';
 import Header from '@editorjs/header';
 import Quote from '@editorjs/quote';
@@ -9,6 +10,8 @@ import Delimiter from '@editorjs/delimiter';
 import Checklist from '@editorjs/checklist';
 import { createReactEditorJS } from 'react-editor-js';
 import { KeyboardHandler } from './KeyboardHandler';
+import { MouseHandler } from './MouseHandler';
+import { EditorStore } from './stores/EditorStore';
 
 const ReactEditorJS = createReactEditorJS()
 
@@ -20,11 +23,13 @@ function focusEditor() {
 }
 
 function App() {
-  const blocks: object[] = JSON.parse(localStorage.getItem('text') || JSON.stringify([]));
+  // not reactive, because editor.js is not a controlled input
+  // we're treating the EditorStore as write-only
+  const defaultDocument: object = EditorStore.document;
 
   const editorCore = useRef<any>(null)
 
-  const handleInitialize = useCallback((instance: any) => {
+  const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance
     setTimeout(() => {
       focusEditor()
@@ -34,15 +39,15 @@ function App() {
   useEffect(() => {
     function clickHandler(e: MouseEvent) {
       const path = e.composedPath()
-      let foundEditorJs = false
+      let foundEditorJsInPath = false
       for (const el of path) {
         if (el instanceof HTMLElement && el.classList.contains('codex-editor')) {
-          foundEditorJs = true
+          foundEditorJsInPath = true
           break
         }
       }
 
-      if (foundEditorJs) return
+      if (foundEditorJsInPath) return
       focusEditor()
     }
 
@@ -53,21 +58,22 @@ function App() {
     }
   })
 
-  const onSave = useCallback(() => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onChange = useCallback(_.debounce(() => {
     if (editorCore.current === null) return
     editorCore.current.save().then((data: object) => {
-      localStorage.setItem('text', JSON.stringify(data))
-    }).catch((err: any) => {
-      console.error(err);
-    });
-  }, [editorCore])
+      EditorStore.setDocument(data)
+    }).catch((e: any) => console.error(e))
+  }, 250), [editorCore])
 
   return (
     <div className="App">
-      <KeyboardHandler onSave={onSave}/>
+      <KeyboardHandler />
+      <MouseHandler />
       <ReactEditorJS
-        defaultValue={blocks}
-        onInitialize={handleInitialize}
+        defaultValue={defaultDocument}
+        onInitialize={onInitialize}
+        onChange={onChange}
         tools={{
           paragraph: Paragraph,
           header: Header,
