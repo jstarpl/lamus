@@ -11,6 +11,7 @@ import Checklist from '@editorjs/checklist';
 import { createReactEditorJS } from 'react-editor-js';
 import { KeyboardHandler } from './KeyboardHandler';
 import { MouseHandler } from './MouseHandler';
+import { AppStore } from './stores/AppStore';
 import { EditorStore } from './stores/EditorStore';
 
 const ReactEditorJS = createReactEditorJS()
@@ -28,6 +29,10 @@ function App() {
   const defaultDocument: object = EditorStore.document;
 
   const editorCore = useRef<any>(null)
+
+  useEffect(() => {
+    console.log(AppStore.deviceId)
+  }, [])
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance
@@ -56,7 +61,7 @@ function App() {
     return () => {
       document.removeEventListener('click', clickHandler)
     }
-  })
+  }, [])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useCallback(_.debounce(() => {
