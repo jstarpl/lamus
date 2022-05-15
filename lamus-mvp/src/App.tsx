@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import './App.css';
 import Paragraph from '@editorjs/paragraph';
 import Header from '@editorjs/header';
@@ -11,19 +11,46 @@ import { createReactEditorJS } from 'react-editor-js';
 
 const ReactEditorJS = createReactEditorJS()
 
+function focusEditor() {
+  const mainEls = document.querySelectorAll('.ce-paragraph.cdx-block') as NodeListOf<HTMLDivElement>
+  if (mainEls.length === 0) console.error('Block element not found')
+  // select last block
+  mainEls.item(mainEls.length - 1).focus()
+}
+
 function App() {
   const blocks: object[] = [];
 
-  const editorCore = React.useRef(null)
+  const editorCore = useRef(null)
 
-  const handleInitialize = React.useCallback((instance: any) => {
+  const handleInitialize = useCallback((instance: any) => {
     editorCore.current = instance
     setTimeout(() => {
-      const mainEl = document.querySelector('.ce-paragraph.cdx-block') as HTMLDivElement
-      if (!mainEl) console.error('Main element not found')
-      mainEl.focus()
+      focusEditor()
     }, 1000)
   }, [])
+
+  useEffect(() => {
+    function clickHandler(e: MouseEvent) {
+      const path = e.composedPath()
+      let foundEditorJs = false
+      for (const el of path) {
+        if (el instanceof HTMLElement && el.classList.contains('codex-editor')) {
+          foundEditorJs = true
+          break
+        }
+      }
+
+      if (foundEditorJs) return
+      focusEditor()
+    }
+
+    document.addEventListener('click', clickHandler)
+
+    return () => {
+      document.removeEventListener('click', clickHandler)
+    }
+  })
 
   return (
     <div className="App">
