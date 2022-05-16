@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import sorensen from "@sofie-automation/sorensen";
+import { AppStore } from "./stores/AppStore";
 
 function sorensenInitialized(): boolean {
-  return document.body.dataset["sorensen"] === "initialized";
+  return document.body.dataset["sorensen"] !== undefined;
 }
 
 const PREVENT_KEYS = [
@@ -28,6 +29,9 @@ const PREVENT_KEYS = [
   "LaunchMail",
 ];
 
+const KONAMI_CODE =
+  "ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight KeyB KeyA";
+
 export const KeyboardHandler = () => {
   const [initialized, setInitialized] = useState(false);
 
@@ -35,7 +39,7 @@ export const KeyboardHandler = () => {
     if (!sorensenInitialized()) {
       sorensen.init().then(() => setInitialized(true));
     } else {
-      document.body.dataset["sorensen"] = "initialized";
+      document.body.dataset.sorensen = "initialized";
       setInitialized(true);
     }
 
@@ -49,14 +53,25 @@ export const KeyboardHandler = () => {
       e.preventDefault();
     }
 
+    function showAdminCode() {
+      AppStore.setShowAdminCode(true);
+    }
+
     PREVENT_KEYS.forEach((key) => {
       sorensen.bind(key, preventDefault);
+    });
+
+    sorensen.bind(KONAMI_CODE, showAdminCode, {
+      preventDefaultPartials: false,
+      global: true,
+      exclusive: true,
     });
 
     return () => {
       PREVENT_KEYS.forEach((key) => {
         sorensen.unbind(key, preventDefault);
       });
+      sorensen.unbind(KONAMI_CODE, showAdminCode);
     };
   }, [initialized]);
 
