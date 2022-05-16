@@ -35,10 +35,7 @@ export function HideMouseOnType({ defaultCursorVisible }: IProps) {
     };
   }, []);
 
-  console.log(defaultCursorVisible);
-
   useEffect(() => {
-    console.log(cursorVisible);
     document.body.style.cursor = !cursorVisible ? "none" : "";
   }, [cursorVisible]);
 
