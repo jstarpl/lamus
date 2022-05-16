@@ -13,6 +13,7 @@ import { KeyboardHandler } from "./KeyboardHandler";
 import { MouseHandler } from "./MouseHandler";
 import { AppStore } from "./stores/AppStore";
 import { EditorStore } from "./stores/EditorStore";
+import { HideMouseOnType } from "./helpers/HideMouseOnType";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -86,6 +87,7 @@ function App() {
     <div className="App">
       <KeyboardHandler />
       <MouseHandler />
+      <HideMouseOnType defaultCursorVisible={false} />
       <ReactEditorJS
         defaultValue={defaultDocument}
         onInitialize={onInitialize}
