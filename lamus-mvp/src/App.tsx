@@ -48,18 +48,13 @@ function App() {
   useEffect(() => {
     function clickHandler(e: MouseEvent) {
       const path = e.composedPath();
-      let foundEditorJsInPath = false;
-      for (const el of path) {
-        if (
+      let element = path.find(
+        (el) =>
           el instanceof HTMLElement &&
-          el.classList.contains("codex-editor")
-        ) {
-          foundEditorJsInPath = true;
-          break;
-        }
-      }
+          (el.classList.contains("codex-editor") || el.nodeName === "DIALOG")
+      );
 
-      if (foundEditorJsInPath) return;
+      if (element) return;
       focusEditor();
     }
 

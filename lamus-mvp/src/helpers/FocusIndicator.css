@@ -1,0 +1,22 @@
+.focus-indicator {
+	position: fixed;
+	z-index: 100000;
+	border: var(--focus-border);
+	border-radius: var(--focus-border-radius);
+	pointer-events: none;
+	margin-top: -5px;
+	margin-left: -5px;
+	padding-bottom: 5px;
+	padding-right: 5px;
+	--position-transition: top 100ms ease-in-out, left 100ms ease-in-out, width 100ms ease-in-out, height 100ms ease-in-out;
+	--opacity-transition: opacity 100ms linear;
+	visibility: hidden;
+	opacity: 0;
+	transition: visibility 100ms linear 0s, var(--opacity-transition), var(--position-transition);
+}
+
+.focus-indicator.visible {
+	visibility: visible;
+	opacity: 1;
+	transition: visibility 0s linear 0s, var(--position-transition);
+}
