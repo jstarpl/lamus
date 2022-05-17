@@ -45,10 +45,7 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   } else {
     let { error } = await supabase
       .from("deviceSettings")
-      .insert([
-        { device_id: deviceId },
-        { last_seen: new Date().toISOString() },
-      ]);
+      .insert({ device_id: deviceId, last_seen: new Date().toISOString() });
     if (error) {
       sendStatus(res, 500);
       console.error(`Could not insert new device. Key: "${deviceId}"`, error);
