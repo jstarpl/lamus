@@ -1,7 +1,7 @@
 dialog {
 	position: fixed;
 	border: none;
-	background: linear-gradient(to bottom, #E8E0AC, #FEF8CF);
+	background: linear-gradient(to bottom, #E8E0AC, #FEF8CF 50%);
 	border-radius: var(--border-radius) var(--border-radius) 0 0;
 	top: auto;
 	bottom: 0;
