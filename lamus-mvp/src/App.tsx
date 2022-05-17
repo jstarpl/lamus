@@ -38,6 +38,10 @@ function App() {
     console.log(AppStore.deviceId);
   }, []);
 
+  useEffect(() => {
+    AppStore.login();
+  }, []);
+
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
     setTimeout(() => {
