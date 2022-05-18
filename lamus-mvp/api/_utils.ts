@@ -1,14 +1,21 @@
+import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export function sendStatus(
   res: VercelResponse,
   status: number,
-  message?: object
+  message?: object,
+  headers?: [string, string][]
 ): void {
-  res
-    .status(status)
-    .setHeader("content-type", "application/json")
-    .end(JSON.stringify(message));
+  res.status(status).setHeader("content-type", "application/json");
+
+  if (headers) {
+    headers.forEach(([header, value]) => {
+      res.setHeader(header, value);
+    });
+  }
+
+  res.end(message ? JSON.stringify(message) : undefined);
 }
 
 export function acceptMethod(

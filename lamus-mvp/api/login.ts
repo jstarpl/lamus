@@ -1,21 +1,20 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "@supabase/supabase-js";
+import { createSupabaseClient } from "./_supabase";
 import { acceptMethod, sendStatus } from "./_utils";
-
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+import { getSigKeys, KEY_ALGORITHM } from "./_keys";
+import { EncryptJWT, importJWK, SignJWT } from "jose";
+import { loginDeviceId } from "./_auth";
 
 export default async function login(req: VercelRequest, res: VercelResponse) {
   acceptMethod(req, res, "GET", "POST");
 
-  const deviceId = req.query["deviceId"];
+  let deviceId = req.query["deviceId"];
+  if (Array.isArray(deviceId)) deviceId = deviceId[0];
 
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
-  let { data: deviceSettings, error } = await supabase
-    .from("deviceSettings")
-    .select(
-      "cloud_mode,dropbox_refresh_token,webdav_url,webdav_user,webdav_password"
-    )
+  const supabase = createSupabaseClient();
+  const { data: deviceSettings, error } = await supabase
+    .from("device_settings")
+    .select("device_id,cloud_mode,webdav_url,webdav_user,webdav_password")
     .eq("device_id", deviceId);
   if (error) {
     sendStatus(res, 500);
@@ -23,18 +22,14 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (deviceSettings.length > 1) {
-    sendStatus(res, 500);
-    console.error(
-      `Internal error: deviceId should be a unique key, multiple items found. Key: "${deviceId}"`
-    );
-    return;
-  } else if (deviceSettings.length === 1) {
+  const { cookie } = await loginDeviceId(deviceId);
+
+  if (deviceSettings.length === 1) {
     let { error } = await supabase
-      .from("deviceSettings")
-      .update([{ last_seen: new Date().toISOString() }])
+      .from("device_settings")
+      .update({ last_seen: new Date().toISOString() })
       .eq("device_id", deviceId);
-    sendStatus(res, 200, deviceSettings[0]);
+    sendStatus(res, 200, deviceSettings[0], [["set-cookie", cookie]]);
     if (error) {
       console.error(
         `Could not update last seen value. Key: "${deviceId}"`,
@@ -42,18 +37,30 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
       );
     }
     return;
-  } else {
+  } else if (deviceSettings.length === 0) {
     let { error } = await supabase
-      .from("deviceSettings")
+      .from("device_settings")
       .insert({ device_id: deviceId, last_seen: new Date().toISOString() });
     if (error) {
       sendStatus(res, 500);
       console.error(`Could not insert new device. Key: "${deviceId}"`, error);
       return;
     }
-    sendStatus(res, 200, {
-      deviceId,
-    });
+    sendStatus(
+      res,
+      200,
+      {
+        deviceId,
+      },
+      [["set-cookie", cookie]]
+    );
+    return;
+  } else {
+    // this scenario is very unlikely
+    sendStatus(res, 500);
+    console.error(
+      `Internal error: deviceId should be a unique key, multiple items found. Key: "${deviceId}"`
+    );
     return;
   }
 }
