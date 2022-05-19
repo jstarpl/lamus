@@ -3,7 +3,7 @@ import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
 import { DropboxAuth } from "dropbox";
 import { DROPBOX_CONFIG, REDIRECT_URI } from "./_dropbox";
 import { createSupabaseClient } from "../_supabase";
-import { authorize, Scopes } from "../_auth";
+import { authorize, Scope } from "../_auth";
 
 export default async function auth(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;
@@ -17,7 +17,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
     const { error, deviceId: localDeviceId } = await authorize(
       req,
       res,
-      Scopes.DropboxConnect
+      Scope.DropboxConnect
     );
     deviceId = localDeviceId;
     if (error) return;

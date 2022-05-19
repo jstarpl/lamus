@@ -3,7 +3,7 @@ import { acceptMethod, sendStatus } from "../_utils";
 import { DropboxAuth } from "dropbox";
 import { DROPBOX_CONFIG } from "./_dropbox";
 import { createSupabaseClient } from "../_supabase";
-import { authorize, Scopes } from "../_auth";
+import { authorize, Scope } from "../_auth";
 
 export default async function accessKey(
   req: VercelRequest,
@@ -16,7 +16,7 @@ export default async function accessKey(
     const { error, deviceId: localDeviceId } = await authorize(
       req,
       res,
-      Scopes.DropboxAccessToken
+      Scope.DropboxAccessToken
     );
     deviceId = localDeviceId;
     if (error) return;

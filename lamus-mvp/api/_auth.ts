@@ -7,15 +7,17 @@ import { sendStatus } from "./_utils";
 const ISSUER = API_URI;
 const CLIENT_AUDIENCE = "urn:lamus.jsbg.pl:lamus-mvp";
 const NAMESPACE = "https://lamus.jsbg.pl";
-export enum Scopes {
+export enum Scope {
   DropboxConnect = "dropbox.connect",
   DropboxAccessToken = "dropbox.access_token",
 }
 
-export async function loginDeviceId(deviceId: string, scopes?: Scopes[]) {
+export async function loginDeviceId(deviceId: string, scopes?: string[]) {
   const privateKey = await importJWK(getSigKeys().private, KEY_ALGORITHM);
   const jwt = await new SignJWT({
-    scopes: scopes ?? [],
+    scopes:
+      scopes.filter((scope) => Object.values(Scope).includes(scope as Scope)) ??
+      [],
   })
     .setProtectedHeader({ alg: KEY_ALGORITHM })
     .setIssuedAt()
@@ -49,7 +51,7 @@ function authFailed(res: VercelResponse, error: AuthorizationResponse) {
 export async function authorize(
   req: VercelRequest,
   res: VercelResponse,
-  scope?: Scopes
+  scope?: Scope
 ): Promise<AuthorizationResponse> {
   const authHeader = req.headers["authorization"];
   if (!authHeader) {

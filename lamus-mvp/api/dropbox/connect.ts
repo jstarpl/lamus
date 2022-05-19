@@ -2,14 +2,14 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
 import { DropboxAuth } from "dropbox";
 import { DROPBOX_CONFIG, REDIRECT_URI, SCOPES } from "./_dropbox";
-import { authorize, Scopes } from "../_auth";
+import { authorize, Scope } from "../_auth";
 
 export default async function connect(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;
   if (!acceptMethod(req, res, "GET")) return;
 
   {
-    const { error } = await authorize(req, res, Scopes.DropboxConnect);
+    const { error } = await authorize(req, res, Scope.DropboxConnect);
     if (error) {
       return;
     }

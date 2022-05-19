@@ -14,10 +14,12 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   if (!acceptMethod(req, res, "GET", "POST")) return;
   if (!acceptContentType(req, res, null, "application/json")) return;
 
-  let deviceId = deArray(req.query["device_id"]) ?? req.body["device_id"];
-  let scopes =
-    deArray(req.query["scopes"])?.split(",").filter(Boolean) ??
-    req.body["scopes"];
+  let deviceId: string | null =
+    deArray(req.query.device_id) ?? req.body?.device_id ?? null;
+  let scopes: string[] | null =
+    deArray(req.query.scopes)?.split(",").filter(Boolean) ??
+    req.body?.scopes ??
+    [];
 
   const supabase = createSupabaseClient();
   const { data: deviceSettings, error } = await supabase
