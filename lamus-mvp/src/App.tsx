@@ -28,6 +28,7 @@ function focusEditor() {
 }
 
 function hideSplashScreen() {
+  document.body.style.backgroundColor = "";
   const splashScreen = document.getElementById("splash");
   if (!splashScreen) return;
   splashScreen.style.animation =
