@@ -52,11 +52,16 @@ export function acceptContentType(
       });
       return false;
     }
+    return true;
   }
   for (const match of contentTypes) {
     if (typeof match === "string" && match === contentType) {
       return;
-    } else if (typeof match === "object" && match.test(contentType)) {
+    } else if (
+      match !== null &&
+      typeof match === "object" &&
+      match.test(contentType)
+    ) {
       return;
     }
   }
