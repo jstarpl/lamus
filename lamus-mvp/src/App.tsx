@@ -27,6 +27,16 @@ function focusEditor() {
   mainEls.item(mainEls.length - 1).focus();
 }
 
+function hideSplashScreen() {
+  const splashScreen = document.getElementById("splash");
+  if (!splashScreen) return;
+  splashScreen.style.animation =
+    "1s splash-bkg-animate-out 0s 1 ease-in normal both";
+  setTimeout(() => {
+    document.body.removeChild(splashScreen);
+  }, 1100);
+}
+
 function App() {
   // not reactive, because editor.js is not a controlled input
   // we're treating the EditorStore as write-only
@@ -44,8 +54,10 @@ function App() {
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
+
     setTimeout(() => {
       focusEditor();
+      hideSplashScreen();
     }, 1000);
   }, []);
 
