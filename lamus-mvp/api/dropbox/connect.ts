@@ -6,7 +6,7 @@ import { authorize, Scopes } from "../_auth";
 
 export default async function connect(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;
-  acceptMethod(req, res, "GET");
+  if (!acceptMethod(req, res, "GET")) return;
 
   {
     const { error } = await authorize(req, res, Scopes.DropboxConnect);

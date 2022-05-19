@@ -23,10 +23,10 @@ export function acceptMethod(
   req: VercelRequest,
   res: VercelResponse,
   ...methods: string[]
-): void {
-  if (methods.includes(req.method)) return;
+): boolean {
+  if (methods.includes(req.method)) return true;
   sendStatus(res, 400, { error: `Method not accepted: "${req.method}"` });
-  throw new Error(`Method not accepted: "${req.method}"`);
+  return false;
 }
 
 export function deArray(val: string | string[] | undefined): string | null {
@@ -42,15 +42,15 @@ export function deArray(val: string | string[] | undefined): string | null {
 export function acceptContentType(
   req: VercelRequest,
   res: VercelResponse,
-  ...contentTypes: (undefined | string | RegExp)[]
-): void {
+  ...contentTypes: (string | RegExp | null)[]
+): boolean {
   const contentType = req.headers["content-type"];
   if (contentType === undefined) {
-    if (contentTypes.indexOf(contentType) < 0) {
+    if (contentTypes.indexOf(null) < 0) {
       sendStatus(res, 400, {
         error: `Content-Type not accepted: "${contentType}"`,
       });
-      throw new Error(`Content-Type not accepted: "${contentType}"`);
+      return false;
     }
   }
   for (const match of contentTypes) {
@@ -63,7 +63,7 @@ export function acceptContentType(
   sendStatus(res, 400, {
     error: `Content-Type not accepted: "${contentType}"`,
   });
-  throw new Error(`Content-Type not accepted: "${contentType}"`);
+  return false;
 }
 
 export function handleCrossOrigin(

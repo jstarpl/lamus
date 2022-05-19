@@ -9,7 +9,7 @@ export default async function accessKey(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  acceptMethod(req, res, "GET");
+  if (!acceptMethod(req, res, "GET")) return;
 
   let deviceId;
   {
