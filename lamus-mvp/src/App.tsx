@@ -18,11 +18,18 @@ import { AdminCode } from "./AdminCode/AdminCode";
 
 const ReactEditorJS = createReactEditorJS();
 
-function focusEditor() {
+const INITIAL_FOCUS_RETRY_COUNT = 3;
+
+function focusEditor(retry?: number) {
   const mainEls = document.querySelectorAll(
     ".ce-paragraph.cdx-block"
   ) as NodeListOf<HTMLDivElement>;
-  if (mainEls.length === 0) console.error("Block element not found");
+  if (mainEls.length === 0) {
+    console.error("No block element found");
+    if ((retry ?? 0) > INITIAL_FOCUS_RETRY_COUNT) return;
+    setTimeout(() => focusEditor(retry ?? 0 + 1), 250);
+    return;
+  }
   // select last block
   mainEls.item(mainEls.length - 1).focus();
 }
