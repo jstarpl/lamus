@@ -1,15 +1,23 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createSupabaseClient } from "./_supabase";
-import { acceptMethod, sendStatus } from "./_utils";
-import { getSigKeys, KEY_ALGORITHM } from "./_keys";
-import { EncryptJWT, importJWK, SignJWT } from "jose";
+import {
+  acceptContentType,
+  acceptMethod,
+  deArray,
+  handleCrossOrigin,
+  sendStatus,
+} from "./_utils";
 import { loginDeviceId } from "./_auth";
 
 export default async function login(req: VercelRequest, res: VercelResponse) {
+  if (handleCrossOrigin(req, res, "GET", "POST")) return;
   acceptMethod(req, res, "GET", "POST");
+  acceptContentType(req, res, undefined, "application/json");
 
-  let deviceId = req.query["deviceId"];
-  if (Array.isArray(deviceId)) deviceId = deviceId[0];
+  let deviceId = deArray(req.query["device_id"]) ?? req.body["device_id"];
+  let scopes =
+    deArray(req.query["scopes"])?.split(",").filter(Boolean) ??
+    req.body["scopes"];
 
   const supabase = createSupabaseClient();
   const { data: deviceSettings, error } = await supabase
@@ -22,14 +30,14 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const { cookie } = await loginDeviceId(deviceId);
+  const { jwt } = await loginDeviceId(deviceId, scopes);
 
   if (deviceSettings.length === 1) {
     let { error } = await supabase
       .from("device_settings")
       .update({ last_seen: new Date().toISOString() })
       .eq("device_id", deviceId);
-    sendStatus(res, 200, deviceSettings[0], [["set-cookie", cookie]]);
+    sendStatus(res, 200, { ...deviceSettings[0], token: jwt });
     if (error) {
       console.error(
         `Could not update last seen value. Key: "${deviceId}"`,
@@ -46,14 +54,10 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
       console.error(`Could not insert new device. Key: "${deviceId}"`, error);
       return;
     }
-    sendStatus(
-      res,
-      200,
-      {
-        deviceId,
-      },
-      [["set-cookie", cookie]]
-    );
+    sendStatus(res, 200, {
+      deviceId,
+      token: jwt,
+    });
     return;
   } else {
     // this scenario is very unlikely

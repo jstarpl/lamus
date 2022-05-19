@@ -23,7 +23,7 @@ class AppStoreClass {
 
   async login(): Promise<void> {
     const url = new URL(LAMUS_API + "/login");
-    url.searchParams.set("deviceId", this.deviceId);
+    url.searchParams.set("device_id", this.deviceId);
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error(`Could not log in`);
     const settings = await response.json();

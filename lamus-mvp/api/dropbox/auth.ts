@@ -1,11 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, sendStatus } from "./../_utils";
+import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
 import { DropboxAuth } from "dropbox";
 import { DROPBOX_CONFIG, REDIRECT_URI } from "./_dropbox";
 import { createSupabaseClient } from "../_supabase";
-import { authorize } from "../_auth";
+import { authorize, Scopes } from "../_auth";
 
 export default async function auth(req: VercelRequest, res: VercelResponse) {
+  if (handleCrossOrigin(req, res, "GET")) return;
   acceptMethod(req, res, "GET");
 
   let { code } = req.query;
@@ -13,7 +14,11 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
 
   let deviceId;
   {
-    const { error, deviceId: localDeviceId } = await authorize(req, res);
+    const { error, deviceId: localDeviceId } = await authorize(
+      req,
+      res,
+      Scopes.DropboxConnect
+    );
     deviceId = localDeviceId;
     if (error) return;
   }
@@ -33,6 +38,11 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
         dropbox_refresh_token: (tokenResult.result as any).refresh_token,
       })
       .eq("device_id", deviceId);
+    if (error) {
+      console.error(error);
+      sendStatus(res, 500, { error: "Could not update dropbox_refresh_token" });
+      return;
+    }
     sendStatus(res, 200, { message: "Dropbox succesfully connected" });
   }
 }
