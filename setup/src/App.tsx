@@ -1,22 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Container, Nav, Navbar } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import logo from "./logo-name.svg";
+import { Container, Nav, Navbar } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Login } from "./components/Login";
 
 function App() {
   return (
     <div className="App">
       <Container fluid>
         <Navbar>
-          <Navbar.Brand><img src={logo} alt="Lamus Logo" width={30} height={30} className="d-inline-block align-top" /> Lamus</Navbar.Brand>
-          {/* <Navbar.Toggle aria-controls="basic-navbar-nav"></Navbar.Toggle>
-          <Navbar.Collapse>
-            <Nav className="me-auto">
-              <Nav.Link>Setup</Nav.Link>
-            </Nav>
-          </Navbar.Collapse> */}
+          <Navbar.Brand>
+            <img
+              src={logo}
+              alt="Lamus"
+              width={127}
+              height={30}
+              className="d-inline-block align-top"
+            />
+          </Navbar.Brand>
         </Navbar>
       </Container>
+      <Login />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { Dialog } from "../components/Dialog";
 import "./AdminCode.css";
 
-const ADMIN_URL_BASE = "https://setup.lamus.jsbg.pl/device";
+const ADMIN_URL_BASE = "https://setup.lamus.jsbg.pl/d";
 
 function generateAdminUrl(deviceId: string) {
   return `${ADMIN_URL_BASE}/${deviceId}`;
