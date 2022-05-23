@@ -56,13 +56,13 @@ export function acceptContentType(
   }
   for (const match of contentTypes) {
     if (typeof match === "string" && match === contentType) {
-      return;
+      return true;
     } else if (
       match !== null &&
       typeof match === "object" &&
       match.test(contentType)
     ) {
-      return;
+      return true;
     }
   }
   sendStatus(res, 400, {
@@ -80,7 +80,13 @@ export function handleCrossOrigin(
     "access-control-allow-methods",
     ["OPTIONS", ...methods].join(", ")
   );
-  res.setHeader("access-control-allow-origin", ALLOWED_ORIGINS.join(", "));
+  let responseOrigin = ALLOWED_ORIGINS[0];
+  if (req.headers.origin) {
+    if (ALLOWED_ORIGINS.includes(req.headers.origin)) {
+      responseOrigin = req.headers.origin;
+    }
+  }
+  res.setHeader("access-control-allow-origin", responseOrigin);
   res.setHeader("access-control-allow-headers", ALLOWED_HEADERS.join(", "));
   if (req.method !== "OPTIONS") return false;
   res.status(200);

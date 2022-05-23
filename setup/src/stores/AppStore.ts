@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 
-const LAMUS_API = process.env.API_URI;
+const LAMUS_API = process.env.REACT_APP_API_URI;
 
 class AppStoreClass {
   loggedIn: boolean = false;
@@ -13,6 +13,7 @@ class AppStoreClass {
 
   async login(deviceId: string): Promise<boolean> {
     this.deviceId = deviceId;
+
     const res = await fetch(`${LAMUS_API}/login`, {
       method: "POST",
       headers: {
@@ -22,8 +23,15 @@ class AppStoreClass {
         device_id: deviceId,
         scopes: ["dropbox.connect"],
       }),
+      mode: "cors",
+      cache: "no-cache",
     });
-    if (!res.ok) return false;
+
+    if (!res.ok) {
+      await res.text();
+      return false;
+    }
+
     const result = await res.json();
     console.log(result);
     if (result.token) {
