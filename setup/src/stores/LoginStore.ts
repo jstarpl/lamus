@@ -2,6 +2,7 @@ import React from "react";
 import { TypeCheckingRule, Rules } from "validatorjs";
 import { makeAutoObservable } from "mobx";
 import Validator from "validatorjs";
+import { NotificationStore } from "./NotificationStore";
 
 type LoginMode = "qrcode" | "text";
 
@@ -27,6 +28,8 @@ interface IForm {
 
 class LoginStoreClass {
   loginMode: LoginMode = "text";
+  pending: boolean = false;
+  notification: string | null = null;
 
   form: IForm = {
     fields: {
@@ -49,6 +52,16 @@ class LoginStoreClass {
 
   setLoginMode(mode: LoginMode) {
     this.loginMode = mode;
+  }
+
+  setPending(value: boolean = true) {
+    if (value) {
+      this.pending = true;
+      this.notification = NotificationStore.push({ message: "Logging in..." });
+    } else {
+      this.pending = false;
+      if (this.notification) NotificationStore.remove(this.notification);
+    }
   }
 
   onFieldChange(

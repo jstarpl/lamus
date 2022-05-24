@@ -14,12 +14,14 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   if (!acceptMethod(req, res, "GET", "POST")) return;
   if (!acceptContentType(req, res, null, "application/json")) return;
 
-  let deviceId: string | null =
+  const deviceId: string | null =
     deArray(req.query.device_id) ?? req.body?.device_id ?? null;
-  let scopes: string[] | null =
-    deArray(req.query.scopes)?.split(",").filter(Boolean) ??
+  const scopes: string[] | null =
+    deArray(req.query.scopes)?.split(/[\s,]/).filter(Boolean) ??
     req.body?.scopes ??
     [];
+
+  const noCreate = deArray(req.query.no_create) ?? req.body?.no_create ?? false;
 
   const supabase = createSupabaseClient();
   const { data: deviceSettings, error } = await supabase
@@ -48,6 +50,10 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
     }
     return;
   } else if (deviceSettings.length === 0) {
+    if (noCreate) {
+      sendStatus(res, 404);
+      return;
+    }
     let { error } = await supabase
       .from("device_settings")
       .insert({ device_id: deviceId, last_seen: new Date().toISOString() });

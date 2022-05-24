@@ -1,9 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
 import { DropboxAuth } from "dropbox";
-import { DROPBOX_CONFIG, REDIRECT_URI } from "./_dropbox";
+import {
+  DROPBOX_CONFIG,
+  DROPBOX_VERIFIER_COOKIE,
+  REDIRECT_URI,
+} from "./_dropbox";
 import { createSupabaseClient } from "../_supabase";
-import { authorize, Scope } from "../_auth";
+import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
 
 export default async function auth(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;
@@ -12,12 +16,24 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
   let { code } = req.query;
   if (Array.isArray(code)) code = code[0];
 
+  // TODO: Decrypt Code-Verifier
+  const cookie = req.cookies[TOKEN_COOKIE_NAME];
+  if (!cookie) {
+    sendStatus(res, 401, { error: "Unauthorized." });
+    return;
+  }
+
+  const cookieSplit = cookie.split(".");
+  const token = [cookieSplit[0], cookieSplit[1], cookieSplit[2]].join(".");
+  const codeVerifier = cookieSplit[3];
+
   let deviceId;
   {
     const { error, deviceId: localDeviceId } = await authorize(
       req,
       res,
-      Scope.DropboxConnect
+      Scope.DropboxConnect,
+      token
     );
     deviceId = localDeviceId;
     if (error) return;
@@ -26,7 +42,13 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
   {
     const supabase = createSupabaseClient();
 
+    if (!codeVerifier) {
+      sendStatus(res, 400, { error: "Could not authorize Dropbox response" });
+      return;
+    }
+
     const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
+    dbxAuth.setCodeVerifier(codeVerifier);
     const tokenResult = await dbxAuth.getAccessTokenFromCode(
       REDIRECT_URI,
       code

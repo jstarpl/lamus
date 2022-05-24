@@ -4,6 +4,8 @@ import { API_URI } from "./_env";
 import { getSigKeys, KEY_ALGORITHM } from "./_keys";
 import { sendStatus } from "./_utils";
 
+export const TOKEN_COOKIE_NAME = "token";
+
 const ISSUER = API_URI;
 const CLIENT_AUDIENCE = "urn:lamus.jsbg.pl:lamus-mvp";
 const NAMESPACE = "https://lamus.jsbg.pl";
@@ -38,10 +40,12 @@ type AuthorizationResponse =
   | {
       error?: void;
       deviceId: string;
+      token: string;
     }
   | {
       error: string;
       deviceId?: void;
+      token?: void;
     };
 
 function authFailed(res: VercelResponse, error: AuthorizationResponse) {
@@ -51,20 +55,28 @@ function authFailed(res: VercelResponse, error: AuthorizationResponse) {
 export async function authorize(
   req: VercelRequest,
   res: VercelResponse,
-  scope?: Scope
+  scope?: Scope,
+  customToken?: string
 ): Promise<AuthorizationResponse> {
   const authHeader = req.headers["authorization"];
-  if (!authHeader) {
+  if (!authHeader && !customToken) {
     const error = { error: "Unauthorized." };
     authFailed(res, error);
     return error;
   }
-  const [scheme, token] = authHeader.split(/\s+/, 2);
-  if (scheme !== "Bearer") {
-    const error = { error: "Invalid authorization scheme." };
-    authFailed(res, error);
-    return error;
+  let token = "";
+  if (customToken) {
+    token = customToken;
+  } else {
+    const [scheme, authToken] = authHeader.split(/\s+/, 2);
+    if (scheme.toLowerCase() !== "bearer") {
+      const error = { error: "Invalid authorization scheme." };
+      authFailed(res, error);
+      return error;
+    }
+    token = authToken;
   }
+
   if (!token) {
     const error = { error: "Invalid authorization parameters." };
     authFailed(res, error);
@@ -93,13 +105,13 @@ export async function authorize(
 
       const grantedScopes = payload.scopes as string[];
       if (grantedScopes.includes(scope)) {
-        return { deviceId };
+        return { deviceId, token };
       }
       const error = { error: "Forbiden" };
       sendStatus(res, 403, error);
       return error;
     }
-    return { deviceId };
+    return { deviceId, token };
   } catch (e) {
     const error = { error: "Could not authorize token" };
     authFailed(res, error);

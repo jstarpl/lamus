@@ -1,11 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { ALLOWED_HEADERS, ALLOWED_ORIGINS } from "./_security";
 
 export function sendStatus(
   res: VercelResponse,
   status: number,
-  message?: object,
+  message?: object | string,
   headers?: [string, string][]
 ): void {
   res.status(status).setHeader("content-type", "application/json");
@@ -88,6 +87,7 @@ export function handleCrossOrigin(
   }
   res.setHeader("access-control-allow-origin", responseOrigin);
   res.setHeader("access-control-allow-headers", ALLOWED_HEADERS.join(", "));
+  res.setHeader("access-control-allow-credentials", "true");
   if (req.method !== "OPTIONS") return false;
   res.status(200);
   res.end();
