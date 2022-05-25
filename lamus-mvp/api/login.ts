@@ -14,6 +14,8 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   if (!acceptMethod(req, res, "GET", "POST")) return;
   if (!acceptContentType(req, res, null, "application/json")) return;
 
+  res.setHeader("Cache-Control", "no-cache");
+
   const deviceId: string | null =
     deArray(req.query.device_id) ?? req.body?.device_id ?? null;
   const scopes: string[] | null =

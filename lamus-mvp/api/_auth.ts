@@ -59,6 +59,7 @@ export async function authorize(
   customToken?: string
 ): Promise<AuthorizationResponse> {
   const authHeader = req.headers["authorization"];
+  res.setHeader("Cache-Control", "no-cache");
   if (!authHeader && !customToken) {
     const error = { error: "Unauthorized." };
     authFailed(res, error);

@@ -28,6 +28,11 @@ export class DropboxProvider implements IFileSystemProvider {
     this.dropbox = new Dropbox({
       auth: this.auth,
     });
+    const reply = await this.dropbox.checkUser({
+      query: "hello",
+    });
+    if (reply.status >= 400 && reply.result !== "hello")
+      throw new Error("Unable to initialize Dropbox FileSystem provider");
   }
   private static referenceToFileEntry(
     reference: DropboxReference
