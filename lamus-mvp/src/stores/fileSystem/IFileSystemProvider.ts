@@ -18,6 +18,7 @@ export interface IReadResultFailure {
 export interface IReadResultSuccess {
   readonly ok: true;
   readonly data: Promise<Blob>;
+  readonly meta?: any;
 }
 
 export type IReadResult = IReadResultSuccess | IReadResultFailure;
@@ -29,11 +30,23 @@ export interface IWriteResultFailure {
 
 export interface IWriteResultSuccess {
   readonly ok: true;
+  readonly fileName?: FileName;
+  readonly meta?: any;
 }
 
 export type IWriteResult = IWriteResultSuccess | IWriteResultFailure;
-export type IDeleteResult = IWriteResult;
-export type IMkDirResult = IWriteResult;
+
+export interface IMkDirResultFailure {
+  readonly ok: false;
+  readonly error: string;
+}
+
+export interface IMkDirResultSuccess {
+  readonly ok: true;
+}
+
+export type IMkDirResult = IMkDirResultSuccess | IMkDirResultFailure;
+export type IDeleteResult = IMkDirResult;
 
 export interface IListResultFailure {
   readonly ok: false;
@@ -59,6 +72,7 @@ export interface IFileSystemProvider {
   write(
     path: Path,
     fileName: FileName,
-    data: Promise<Blob>
+    data: Promise<Blob>,
+    meta?: any
   ): Promise<IWriteResult>;
 }

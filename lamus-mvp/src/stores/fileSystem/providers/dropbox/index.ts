@@ -6,7 +6,7 @@ import {
   IWriteResult,
   Path,
 } from "../../IFileSystemProvider";
-import { Dropbox, DropboxAuth, files } from "dropbox";
+import { Dropbox, DropboxAuth, DropboxResponse, files } from "dropbox";
 import { CustomDropboxAuth } from "./CustomDropboxAuth";
 
 const DROPBOX_ROOT_FOLDER = "";
@@ -15,6 +15,13 @@ type DropboxReference =
   | files.FileMetadataReference
   | files.FolderMetadataReference
   | files.DeletedMetadataReference;
+
+function isError(res: DropboxResponse<any>): boolean {
+  if (res.status >= 400) {
+    return true;
+  }
+  return false;
+}
 
 export class DropboxProvider implements IFileSystemProvider {
   private dropbox: Dropbox | null = null;
@@ -31,7 +38,7 @@ export class DropboxProvider implements IFileSystemProvider {
     const reply = await this.dropbox.checkUser({
       query: "hello",
     });
-    if (reply.status >= 400 && reply.result !== "hello")
+    if (isError(reply) && reply.result !== "hello")
       throw new Error("Unable to initialize Dropbox FileSystem provider");
   }
   private static referenceToFileEntry(
@@ -57,30 +64,51 @@ export class DropboxProvider implements IFileSystemProvider {
   async list(path: Path): Promise<IListResult> {
     if (!this.dropbox) throw new Error("Not initialized");
 
-    const allFiles: DropboxReference[] = [];
-    let hasMore = false;
-    let fileResult = await this.dropbox.filesListFolder({
-      path: DROPBOX_ROOT_FOLDER + path.join("/"),
-      recursive: false,
-    });
-    do {
-      allFiles.push(...fileResult.result.entries);
-      hasMore = fileResult.result.has_more;
-      if (hasMore) {
-        fileResult = await this.dropbox.filesListFolderContinue({
-          cursor: fileResult.result.cursor,
-        });
-      }
-    } while (hasMore);
+    try {
+      const allFiles: DropboxReference[] = [];
+      let hasMore = false;
+      let fileResult = await this.dropbox.filesListFolder({
+        path: DROPBOX_ROOT_FOLDER + path.join("/"),
+        recursive: false,
+      });
 
-    return {
-      ok: true,
-      files: Promise.resolve(
-        allFiles
-          .map((reference) => DropboxProvider.referenceToFileEntry(reference))
-          .filter(Boolean) as IFileEntry[]
-      ),
-    };
+      if (isError(fileResult)) {
+        return {
+          ok: false,
+          error: String(fileResult.status),
+        };
+      }
+
+      do {
+        allFiles.push(...fileResult?.result?.entries);
+        hasMore = fileResult.result.has_more;
+        if (hasMore) {
+          fileResult = await this.dropbox.filesListFolderContinue({
+            cursor: fileResult.result.cursor,
+          });
+
+          if (isError(fileResult)) {
+            console.error(fileResult);
+            hasMore = false;
+          }
+        }
+      } while (hasMore);
+
+      return {
+        ok: true,
+        files: Promise.resolve(
+          allFiles
+            .map((reference) => DropboxProvider.referenceToFileEntry(reference))
+            .filter(Boolean) as IFileEntry[]
+        ),
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
   async mkdir(path: Path, name: string): Promise<IWriteResult> {
     throw new Error("Method not implemented.");
@@ -94,8 +122,42 @@ export class DropboxProvider implements IFileSystemProvider {
   async write(
     path: Path,
     fileName: string,
-    data: Promise<Blob>
+    data: Promise<Blob>,
+    meta: any
   ): Promise<IWriteResult> {
-    throw new Error("Method not implemented.");
+    if (!this.dropbox) throw new Error("Not initialized");
+
+    try {
+      const result = await this.dropbox.filesUpload({
+        path: DROPBOX_ROOT_FOLDER + [...path, fileName].join("/"),
+        mode: {
+          ".tag": "update",
+          update: String(meta),
+        },
+        autorename: true,
+        contents: await data,
+      });
+
+      if (isError(result)) {
+        console.error(result);
+        return {
+          ok: false,
+          error: String(result.status),
+        };
+      }
+
+      return {
+        ok: true,
+        fileName:
+          result.result.name !== fileName ? result.result.name : undefined,
+        meta: result.result.rev,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
 }
