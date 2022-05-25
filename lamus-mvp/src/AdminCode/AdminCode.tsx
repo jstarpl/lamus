@@ -38,3 +38,4 @@ export const AdminCode = observer(function AdminCode() {
     </Dialog>
   ) : null;
 });
+AdminCode.displayName = "AdminCode";

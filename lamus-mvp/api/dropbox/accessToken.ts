@@ -39,5 +39,9 @@ export default async function accessKey(
   dbxAuth.setRefreshToken(refreshToken);
   await (dbxAuth.checkAndRefreshAccessToken() as any as Promise<void>);
   const accessToken = dbxAuth.getAccessToken();
-  sendStatus(res, 200, { access_token: accessToken });
+  const accessTokenExpiresAt = dbxAuth.getAccessTokenExpiresAt();
+  sendStatus(res, 200, {
+    access_token: accessToken,
+    expires_at: accessTokenExpiresAt,
+  });
 }
