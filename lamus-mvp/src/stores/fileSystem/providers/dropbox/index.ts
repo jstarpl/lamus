@@ -5,11 +5,11 @@ import {
   IReadResult,
   IWriteResult,
   Path,
-} from "../IFileSystemProvider";
+} from "../../IFileSystemProvider";
 import { Dropbox, DropboxAuth, files } from "dropbox";
 import { CustomDropboxAuth } from "./CustomDropboxAuth";
 
-const DROPBOX_APP_FOLDER = "/Lamus";
+const DROPBOX_ROOT_FOLDER = "";
 
 type DropboxReference =
   | files.FileMetadataReference
@@ -55,7 +55,7 @@ export class DropboxProvider implements IFileSystemProvider {
     const allFiles: DropboxReference[] = [];
     let hasMore = false;
     let fileResult = await this.dropbox.filesListFolder({
-      path: DROPBOX_APP_FOLDER + path.join("/"),
+      path: DROPBOX_ROOT_FOLDER + path.join("/"),
       recursive: false,
     });
     do {

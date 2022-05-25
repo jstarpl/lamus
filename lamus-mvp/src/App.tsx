@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useLayoutEffect } from "react";
 import "./App.css";
 import { KeyboardHandler } from "./KeyboardHandler";
 import { MouseHandler } from "./MouseHandler";
@@ -25,13 +25,13 @@ export function App() {
     console.log(AppStore.deviceId);
   }, []);
 
-  const onUIReady = useCallback((instance: any) => {
+  const onUIReady = useCallback(() => {
     setTimeout(() => {
       hideSplashScreen();
     }, 1000);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.addEventListener(EVENT_UI_READY, onUIReady, { once: true });
     AppStore.login();
   }, [onUIReady]);

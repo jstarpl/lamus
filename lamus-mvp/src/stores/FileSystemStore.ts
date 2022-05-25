@@ -18,7 +18,7 @@ export interface FileHandle {
   fileName: FileName;
 }
 
-class FileSystemStoreClass {
+export class FileSystemStoreClass {
   readonly providers: ObservableMap<ProviderId, IFileSystemProvider> =
     new Map() as ObservableMap;
 
@@ -94,5 +94,3 @@ class FileSystemStoreClass {
     return provider.read(path, fileName);
   }
 }
-
-export const FileSystemStore = new FileSystemStoreClass();

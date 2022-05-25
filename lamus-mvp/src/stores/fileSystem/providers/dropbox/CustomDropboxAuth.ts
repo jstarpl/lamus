@@ -1,5 +1,5 @@
 import { DropboxAuth } from "dropbox";
-import { AppStore, LAMUS_API } from "../../AppStore";
+import { AppStore, LAMUS_API } from "../../../AppStore";
 
 const TokenExpirationBuffer = 300 * 1000;
 
@@ -19,7 +19,7 @@ export class CustomDropboxAuth extends DropboxAuth {
   async refreshAccessToken(): Promise<void> {
     const resp = await fetch(LAMUS_API + "/dropbox/accessToken", {
       credentials: "include",
-      headers: [["authorization", `Bearer ${AppStore.token}`]],
+      headers: [["Authorization", `Bearer ${AppStore.token}`]],
     });
     if (!resp.ok) throw new Error("Could not get new access token from API");
     const data = await resp.json();
