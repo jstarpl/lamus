@@ -3,32 +3,32 @@ export type FileName = string;
 export type FileSize = number;
 
 export interface IFileEntry {
-  fileName: FileName;
-  dir?: boolean;
-  size: FileSize;
-  created?: Date;
-  modified?: Date;
+  readonly fileName: FileName;
+  readonly dir?: boolean;
+  readonly size: FileSize;
+  readonly created?: Date;
+  readonly modified?: Date;
 }
 
 export interface IReadResultFailure {
-  ok: false;
-  error: string;
+  readonly ok: false;
+  readonly error: string;
 }
 
 export interface IReadResultSuccess {
-  ok: true;
-  data: Promise<Blob>;
+  readonly ok: true;
+  readonly data: Promise<Blob>;
 }
 
 export type IReadResult = IReadResultSuccess | IReadResultFailure;
 
 export interface IWriteResultFailure {
-  ok: false;
-  error: string;
+  readonly ok: false;
+  readonly error: string;
 }
 
 export interface IWriteResultSuccess {
-  ok: true;
+  readonly ok: true;
 }
 
 export type IWriteResult = IWriteResultSuccess | IWriteResultFailure;
@@ -36,20 +36,20 @@ export type IDeleteResult = IWriteResult;
 export type IMkDirResult = IWriteResult;
 
 export interface IListResultFailure {
-  ok: false;
-  error: string;
+  readonly ok: false;
+  readonly error: string;
 }
 
 export interface IListResultSuccess {
-  ok: true;
-  files: Promise<IFileEntry[]>;
+  readonly ok: true;
+  readonly files: Promise<IFileEntry[]>;
 }
 
 export type IListResult = IListResultSuccess | IListResultFailure;
 
 export interface IFileSystemProvider {
-  isCloud: boolean;
-  name: string;
+  readonly isCloud: boolean;
+  readonly name: string;
 
   init(): Promise<void>;
   list(path: Path): Promise<IListResult>;

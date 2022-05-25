@@ -20,8 +20,8 @@ export class DropboxProvider implements IFileSystemProvider {
   private dropbox: Dropbox | null = null;
   private auth: DropboxAuth | null = null;
 
-  isCloud: boolean = true;
-  name: string = "Dropbox";
+  isCloud = true;
+  name = "Dropbox";
 
   async init(): Promise<void> {
     this.auth = new CustomDropboxAuth();
