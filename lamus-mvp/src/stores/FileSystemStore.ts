@@ -10,7 +10,7 @@ import {
   Path,
 } from "./fileSystem/IFileSystemProvider";
 
-type ProviderId = string;
+export type ProviderId = string;
 
 export interface FileHandle {
   providerId: ProviderId;
@@ -25,6 +25,7 @@ export class FileSystemStoreClass {
   constructor() {
     makeObservable(this, {
       providers: observable.shallow,
+      init: action,
       addProvider: action,
       removeProvider: action,
     });

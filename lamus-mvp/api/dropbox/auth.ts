@@ -8,6 +8,7 @@ import {
 } from "./_dropbox";
 import { createSupabaseClient } from "../_supabase";
 import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
+import { ALLOWED_ORIGINS } from "../_security";
 
 export default async function auth(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;
@@ -26,6 +27,22 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
   const cookieSplit = cookie.split(".");
   const token = [cookieSplit[0], cookieSplit[1], cookieSplit[2]].join(".");
   const codeVerifier = cookieSplit[3];
+  const redirectUrlEncoded = cookieSplit[4];
+  let redirectUrl = undefined;
+
+  if (redirectUrlEncoded) {
+    try {
+      // check if the URL is directing to an allowed origin
+      const url = new URL(
+        Buffer.from(redirectUrlEncoded, "base64").toString("utf-8")
+      );
+      if (ALLOWED_ORIGINS.includes(url.origin)) {
+        redirectUrl = url.toString();
+      } else {
+        console.error(`Illegal redirection after auth: "${url.toString()}"`);
+      }
+    } catch {}
+  }
 
   let deviceId;
   {
@@ -43,7 +60,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
     const supabase = createSupabaseClient();
 
     if (!codeVerifier) {
-      sendStatus(res, 400, { error: "Could not authorize Dropbox response" });
+      sendStatus(res, 400, { error: "Could not authorize Dropbox response." });
       return;
     }
 
@@ -62,9 +79,17 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
       .eq("device_id", deviceId);
     if (error) {
       console.error(error);
-      sendStatus(res, 500, { error: "Could not update dropbox_refresh_token" });
+      sendStatus(res, 500, {
+        error: "Could not update dropbox_refresh_token.",
+      });
       return;
     }
-    sendStatus(res, 200, { message: "Dropbox succesfully connected" });
+    if (redirectUrl) {
+      sendStatus(res, 302, { message: "Dropbox succesfully connected." }, [
+        ["location", redirectUrl],
+      ]);
+    } else {
+      sendStatus(res, 200, { message: "Dropbox succesfully connected." });
+    }
   }
 }

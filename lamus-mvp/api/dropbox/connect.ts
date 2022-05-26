@@ -1,12 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
 import { DropboxAuth } from "dropbox";
-import {
-  DROPBOX_CONFIG,
-  DROPBOX_VERIFIER_COOKIE,
-  REDIRECT_URI,
-  SCOPES,
-} from "./_dropbox";
+import { DROPBOX_CONFIG, REDIRECT_URI, SCOPES } from "./_dropbox";
 import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
 
 export default async function connect(req: VercelRequest, res: VercelResponse) {
@@ -17,6 +12,8 @@ export default async function connect(req: VercelRequest, res: VercelResponse) {
   if (error || !token) {
     return;
   }
+
+  const redirectUrl = req.body?.redirect_url ?? "";
 
   const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
   const authUrl = await dbxAuth.getAuthenticationUrl(
@@ -33,7 +30,10 @@ export default async function connect(req: VercelRequest, res: VercelResponse) {
   sendStatus(res, 303, { url: authUrl.toString() }, [
     [
       "set-cookie",
-      `${TOKEN_COOKIE_NAME}=${token}.${codeVerifier}; Max-Age=900; Secure; HttpOnly; SameSite=Lax`,
+      `${TOKEN_COOKIE_NAME}=${token}.${codeVerifier}.${Buffer.from(
+        redirectUrl,
+        "utf-8"
+      ).toString("base64")}; Max-Age=900; Secure; HttpOnly; SameSite=Lax`,
     ],
   ]);
 }

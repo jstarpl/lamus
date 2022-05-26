@@ -3,7 +3,7 @@ import "./App.css";
 import { KeyboardHandler } from "./KeyboardHandler";
 import { MouseHandler } from "./MouseHandler";
 import { AppStore } from "./stores/AppStore";
-import { HideMouseOnType } from "./helpers/HideMouseOnType";
+import { useHideMouseOnType } from "./helpers/HideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
 import { TextEditor } from "./TextEditor/TextEditor";
 
@@ -21,6 +21,8 @@ function hideSplashScreen() {
 }
 
 export function App() {
+  useHideMouseOnType();
+
   useEffect(() => {
     console.log(AppStore.deviceId);
   }, []);
@@ -40,7 +42,6 @@ export function App() {
     <div className="App">
       <KeyboardHandler />
       <MouseHandler />
-      <HideMouseOnType defaultCursorVisible={false} />
       <AdminCode />
       <TextEditor />
     </div>

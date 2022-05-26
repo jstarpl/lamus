@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 
-interface IProps {
-  defaultCursorVisible?: boolean;
-}
-
 const KEY_THRESHOLD = 3;
 
-export function HideMouseOnType({ defaultCursorVisible }: IProps) {
+export function useHideMouseOnType(defaultCursorVisible: boolean = true) {
   const [keyCounter, setKeyCounter] = useState<number | null>(null);
   const [cursorVisible, setCursorVisible] = useState(
     defaultCursorVisible ?? true
@@ -45,6 +41,4 @@ export function HideMouseOnType({ defaultCursorVisible }: IProps) {
   useEffect(() => {
     setCursorVisible(shouldShowCursor);
   }, [shouldShowCursor]);
-
-  return null;
 }

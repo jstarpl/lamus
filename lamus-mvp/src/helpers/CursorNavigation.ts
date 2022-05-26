@@ -90,7 +90,7 @@ function findClosestElementInDirection(
   return null;
 }
 
-export function CursorNavigation() {
+export function useCursorNavigation() {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (
@@ -146,6 +146,4 @@ export function CursorNavigation() {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, []);
-
-  return null;
 }
