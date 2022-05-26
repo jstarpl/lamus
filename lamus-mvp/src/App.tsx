@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useLayoutEffect } from "react";
 import "./App.css";
-import { useKeyboardHandler } from "./helpers/useKeyboardHandler";
+import {
+  KeyboardHandler,
+  useKeyboardHandler,
+} from "./helpers/useKeyboardHandler";
 import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
 import { AppStore } from "./stores/AppStore";
 import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
@@ -24,7 +27,7 @@ function hideSplashScreen() {
 export function App() {
   useHideMouseOnType();
   useMouseWheelSink();
-  useKeyboardHandler();
+  const keyboardHandler = useKeyboardHandler();
 
   useEffect(() => {
     console.log(AppStore.deviceId);
@@ -43,9 +46,11 @@ export function App() {
 
   return (
     <div className="App">
-      <AdminCode />
-      <TextEditor />
-      <EmojiPicker />
+      <KeyboardHandler.Provider value={keyboardHandler}>
+        <AdminCode />
+        <TextEditor />
+        <EmojiPicker />
+      </KeyboardHandler.Provider>
     </div>
   );
 }

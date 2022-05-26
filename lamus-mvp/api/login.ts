@@ -28,7 +28,9 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   const supabase = createSupabaseClient();
   const { data: deviceSettings, error } = await supabase
     .from("device_settings")
-    .select("device_id,cloud_mode,webdav_url,webdav_user,webdav_password")
+    .select(
+      "device_id,cloud_mode,nextcloud_url,nextcloud_user,nextcloud_password"
+    )
     .eq("device_id", deviceId);
   if (error) {
     sendStatus(res, 500);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import sorensen from "@sofie-automation/sorensen";
 import { AppStore } from "../stores/AppStore";
+import React from "react";
 
 function sorensenInitialized(): boolean {
   return document.body.dataset["sorensen"] !== undefined;
@@ -29,10 +30,11 @@ const PREVENT_KEYS = [
   "LaunchMail",
 ];
 
-const KONAMI_CODE =
-  "ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight KeyB KeyA";
+export const KeyboardHandler = React.createContext<typeof sorensen | null>(
+  null
+);
 
-export function useKeyboardHandler() {
+export function useKeyboardHandler(): typeof sorensen | null {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -53,25 +55,16 @@ export function useKeyboardHandler() {
       e.preventDefault();
     }
 
-    function showAdminCode() {
-      AppStore.setShowAdminCode(true);
-    }
-
     PREVENT_KEYS.forEach((key) => {
       sorensen.bind(key, preventDefault);
-    });
-
-    sorensen.bind(KONAMI_CODE, showAdminCode, {
-      preventDefaultPartials: false,
-      global: true,
-      exclusive: true,
     });
 
     return () => {
       PREVENT_KEYS.forEach((key) => {
         sorensen.unbind(key, preventDefault);
       });
-      sorensen.unbind(KONAMI_CODE, showAdminCode);
     };
   }, [initialized]);
+
+  return initialized ? sorensen : null;
 }
