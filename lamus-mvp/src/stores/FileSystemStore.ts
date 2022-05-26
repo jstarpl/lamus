@@ -16,6 +16,7 @@ export interface FileHandle {
   providerId: ProviderId;
   path: Path;
   fileName: FileName;
+  meta?: any;
 }
 
 export class FileSystemStoreClass {
@@ -76,12 +77,13 @@ export class FileSystemStoreClass {
     providerId: ProviderId,
     path: Path,
     fileName: FileName,
-    data: Promise<Blob>
+    data: Promise<Blob>,
+    meta?: any
   ): Promise<IWriteResult> {
     const provider = this.providers.get(providerId);
     if (!provider) throw new Error(`Provider "${providerId}" not found!`);
 
-    return provider.write(path, fileName, data);
+    return provider.write(path, fileName, data, meta);
   }
 
   async read(

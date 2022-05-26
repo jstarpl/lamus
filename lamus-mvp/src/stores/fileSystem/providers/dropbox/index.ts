@@ -9,7 +9,7 @@ import {
 import { Dropbox, DropboxAuth, DropboxResponse, files } from "dropbox";
 import { CustomDropboxAuth } from "./CustomDropboxAuth";
 
-const DROPBOX_ROOT_FOLDER = "";
+const DROPBOX_ROOT_FOLDER = "/";
 
 type DropboxReference =
   | files.FileMetadataReference
@@ -68,7 +68,7 @@ export class DropboxProvider implements IFileSystemProvider {
       const allFiles: DropboxReference[] = [];
       let hasMore = false;
       let fileResult = await this.dropbox.filesListFolder({
-        path: DROPBOX_ROOT_FOLDER + path.join("/"),
+        path: path.length === 0 ? "" : DROPBOX_ROOT_FOLDER + path.join("/"),
         recursive: false,
       });
 
@@ -130,10 +130,14 @@ export class DropboxProvider implements IFileSystemProvider {
     try {
       const result = await this.dropbox.filesUpload({
         path: DROPBOX_ROOT_FOLDER + [...path, fileName].join("/"),
-        mode: {
-          ".tag": "update",
-          update: String(meta),
-        },
+        mode: meta
+          ? {
+              ".tag": "update",
+              update: String(meta),
+            }
+          : {
+              ".tag": "add",
+            },
         autorename: true,
         contents: await data,
       });

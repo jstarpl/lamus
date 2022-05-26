@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
-import { EditorStore } from "../stores/EditorStore";
+import { EditorStore } from "./stores/EditorStore";
 import { createReactEditorJS } from "react-editor-js";
+import { Document } from "@editorjs/editorjs";
 import Paragraph from "@editorjs/paragraph";
 import Header from "@editorjs/header";
 import Quote from "@editorjs/quote";
@@ -11,6 +12,7 @@ import Delimiter from "@editorjs/delimiter";
 import Checklist from "@editorjs/checklist";
 import { debounce } from "lodash";
 import { EVENT_UI_READY } from "../App";
+import "./TextEditor.css";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -33,7 +35,7 @@ function focusEditor(retry?: number) {
 export const TextEditor = observer(function TextEditor() {
   // not reactive, because editor.js is not a controlled input
   // we're treating the EditorStore as write-only
-  const defaultDocument: object = EditorStore.document;
+  const defaultDocument: Document | null = EditorStore.document;
 
   const editorCore = useRef<any>(null);
 
@@ -52,7 +54,9 @@ export const TextEditor = observer(function TextEditor() {
       let element = path.find(
         (el) =>
           el instanceof HTMLElement &&
-          (el.classList.contains("codex-editor") || el.nodeName === "DIALOG")
+          (el.classList.contains("codex-editor") ||
+            el.nodeName === "DIALOG" ||
+            el.nodeName === "EM-EMOJI-PICKER")
       );
 
       if (element) return;
@@ -70,9 +74,10 @@ export const TextEditor = observer(function TextEditor() {
   const onChange = useCallback(
     debounce(() => {
       if (editorCore.current === null) return;
+      console.log(editorCore.current);
       editorCore.current
         .save()
-        .then((data: object) => {
+        .then((data: Document) => {
           EditorStore.setDocument(data);
         })
         .catch((e: any) => console.error(e));
@@ -82,7 +87,7 @@ export const TextEditor = observer(function TextEditor() {
 
   return (
     <ReactEditorJS
-      defaultValue={defaultDocument}
+      defaultValue={defaultDocument ?? undefined}
       onInitialize={onInitialize}
       onChange={onChange}
       tools={{

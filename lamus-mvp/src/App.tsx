@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useLayoutEffect } from "react";
 import "./App.css";
-import { KeyboardHandler } from "./KeyboardHandler";
-import { MouseHandler } from "./MouseHandler";
+import { useKeyboardHandler } from "./helpers/useKeyboardHandler";
+import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
 import { AppStore } from "./stores/AppStore";
-import { useHideMouseOnType } from "./helpers/HideMouseOnType";
+import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
 import { TextEditor } from "./TextEditor/TextEditor";
+import { EmojiPicker } from "./components/EmojiPicker";
 
 export const EVENT_UI_READY = "lamus:uiReady";
 
@@ -22,6 +23,8 @@ function hideSplashScreen() {
 
 export function App() {
   useHideMouseOnType();
+  useMouseWheelSink();
+  useKeyboardHandler();
 
   useEffect(() => {
     console.log(AppStore.deviceId);
@@ -40,10 +43,9 @@ export function App() {
 
   return (
     <div className="App">
-      <KeyboardHandler />
-      <MouseHandler />
       <AdminCode />
       <TextEditor />
+      <EmojiPicker />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export function MouseHandler() {
+export function useMouseWheelSink() {
   useEffect(() => {
     function wheelZoomSink(e: WheelEvent) {
       // wheel + ctrlKey results in zoom in most browsers, preventDefault
@@ -17,6 +17,4 @@ export function MouseHandler() {
       document.removeEventListener("wheel", wheelZoomSink);
     };
   });
-
-  return null;
 }
