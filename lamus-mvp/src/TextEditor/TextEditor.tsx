@@ -13,6 +13,7 @@ import Checklist from "@editorjs/checklist";
 import { debounce } from "lodash";
 import { EVENT_UI_READY } from "../App";
 import "./TextEditor.css";
+import { EmojiPicker } from "../components/EmojiPicker";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -85,20 +86,23 @@ export const TextEditor = observer(function TextEditor() {
   );
 
   return (
-    <ReactEditorJS
-      defaultValue={defaultDocument ?? undefined}
-      onInitialize={onInitialize}
-      onChange={onChange}
-      tools={{
-        paragraph: Paragraph,
-        header: Header,
-        quote: Quote,
-        marker: Marker,
-        list: List,
-        delimiter: Delimiter,
-        checklist: Checklist,
-      }}
-    />
+    <>
+      <ReactEditorJS
+        defaultValue={defaultDocument ?? undefined}
+        onInitialize={onInitialize}
+        onChange={onChange}
+        tools={{
+          paragraph: Paragraph,
+          header: Header,
+          quote: Quote,
+          marker: Marker,
+          list: List,
+          delimiter: Delimiter,
+          checklist: Checklist,
+        }}
+      />
+      <EmojiPicker />
+    </>
   );
 });
 TextEditor.displayName = "TextEditor";

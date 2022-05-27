@@ -74,7 +74,7 @@ export class NextcloudProvider implements IFileSystemProvider {
 
     try {
       const contents = (await this.client.getDirectoryContents(
-        NEXTCLOUD_ROOT_FOLDER + path.join("/"),
+        NEXTCLOUD_ROOT_FOLDER + "/" + path.join("/"),
         {
           deep: false,
           details: false,
@@ -104,7 +104,7 @@ export class NextcloudProvider implements IFileSystemProvider {
 
     try {
       await this.client.createDirectory(
-        NEXTCLOUD_ROOT_FOLDER + [...path, name].filter(Boolean).join("/"),
+        NEXTCLOUD_ROOT_FOLDER + "/" + [...path, name].filter(Boolean).join("/"),
         {
           recursive: true,
         }
@@ -135,27 +135,13 @@ export class NextcloudProvider implements IFileSystemProvider {
     if (!this.client) throw new Error("Not initialized");
 
     try {
-      const writeStream = await this.client.createWriteStream(
-        NEXTCLOUD_ROOT_FOLDER + [...path, fileName].join("/"),
+      await this.client.putFileContents(
+        NEXTCLOUD_ROOT_FOLDER + "/" + [...path, fileName].join("/"),
+        await (await data).arrayBuffer(),
         {
           overwrite: true,
         }
       );
-      const readStream = (await data).stream() as unknown as ReadableStream;
-      const rd = readStream.getReader();
-      do {
-        const { done, value } = await rd.read();
-        if (done) {
-          writeStream.end();
-          break;
-        }
-
-        writeStream.write(value, (err) => {
-          if (err) throw err;
-        });
-      } while (true); // the reader will be done at some point, and then it will break
-      rd.releaseLock();
-      await readStream.cancel();
 
       return {
         ok: true,

@@ -9,7 +9,6 @@ import { AppStore } from "./stores/AppStore";
 import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
 import { TextEditor } from "./TextEditor/TextEditor";
-import { EmojiPicker } from "./components/EmojiPicker";
 
 export const EVENT_UI_READY = "lamus:uiReady";
 
@@ -49,7 +48,6 @@ export function App() {
       <KeyboardHandler.Provider value={keyboardHandler}>
         <AdminCode />
         <TextEditor />
-        <EmojiPicker />
       </KeyboardHandler.Provider>
     </div>
   );
