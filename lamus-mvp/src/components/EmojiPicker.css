@@ -12,6 +12,9 @@ em-emoji-picker {
   --rgb-input: 255, 235, 235; */
   --shadow: 0 3px 15px -3px rgb(13 20 33 / 13%);
 
+  width: 354px;
+  max-height: 60vh;
+
   /* height: 50vh;
   min-height: 400px;
   max-height: 800px; */

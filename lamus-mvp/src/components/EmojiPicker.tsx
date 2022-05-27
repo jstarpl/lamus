@@ -1,14 +1,7 @@
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import data from "@emoji-mart/data";
-import { Picker, PickerProps } from "emoji-mart";
 import "./EmojiPicker.css";
+import { EMOJI_PICKER_NODE_NAME, InnerEmojiPicker } from "./InnerEmojiPicker";
 
 function getLineHeight(element: HTMLElement): string {
   const style = window.getComputedStyle(element);
@@ -44,80 +37,113 @@ function getCaretPosition(): DOMPosition {
   };
 }
 
-export function EmojiPicker(props: PickerProps) {
-  const [mounted, setMounted] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+const EMOJI_PICKER_WIDTH = 354;
+const VIEWPORT_HORIZONTAL_MARGIN = 40;
+
+export function EmojiPicker() {
   const lastFocus = useRef<HTMLElement | null>(null);
+  const lastSelection = useRef<{ node: Node; focusOffset: number } | null>(
+    null
+  );
 
   const [isOpen, setOpen] = useState(false);
   const [position, setPosition] = useState<DOMPosition | null>(null);
 
-  const onEmojiSelect = useCallback((emoji: { native: string }) => {
-    console.log(emoji);
+  function restoreFocus() {
     if (!lastFocus.current) return;
     lastFocus.current.focus();
+  }
+
+  function restoreSelection() {
+    if (!lastSelection.current) return;
+    const { node, focusOffset } = lastSelection.current;
+
+    let refocusNode = node;
 
     const selection = window.getSelection();
-    const node = selection?.focusNode;
-    if (!node) return;
-    const textContent = node.textContent ?? "";
-    const offset = selection.focusOffset;
-    node.textContent =
-      textContent.substring(0, offset) +
-      emoji.native +
-      textContent.substring(offset);
-
+    if (!selection) return;
     selection.removeAllRanges();
     const restoredRange = new Range();
-    restoredRange.setStart(node, offset + emoji.native.length);
-    selection.addRange(restoredRange);
-  }, []);
+    try {
+      restoredRange.setStart(refocusNode, focusOffset);
+      selection.addRange(restoredRange);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
-  useEffect(() => {
-    if (mounted) return;
-    new Picker({
-      ...props,
-      data,
-      ref,
-      native: true,
-      showPreview: false,
-      previewPosition: "none",
-      onEmojiSelect,
-    } as any);
-    setMounted(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted]);
+  const onEmojiSelect = useCallback((emoji: { native: string }) => {
+    restoreFocus();
 
-  useEffect(() => {
-    const hostElement = ref.current;
-    const webComponent = hostElement?.querySelector("em-emoji-picker");
-    const shadowRoot = webComponent?.shadowRoot;
-    if (!shadowRoot) {
-      return;
+    if (!lastSelection.current) return;
+    const { node, focusOffset } = lastSelection.current;
+    const textContent = node.textContent ?? "";
+    node.textContent =
+      textContent.substring(0, focusOffset) +
+      emoji.native +
+      textContent.substring(focusOffset);
+
+    let refocusNode = node;
+    // If the lastSelection node wasn't a text node, then by assigning textContent, we've created a new text node
+    // and we should move the caret there
+    if (refocusNode.nodeName !== "#text") {
+      refocusNode = refocusNode.childNodes[0];
     }
 
-    const style = document.createElement("style");
-    style.textContent = `
-    :host {
-      border: 1px solid #e8e8eb;
-    }
-    .search input[type=search] {
-      border: 1px solid rgba(226,226,229,.2)
-    }
-    `;
+    setTimeout(() => {
+      const selection = window.getSelection();
+      if (!selection) return;
+      selection.removeAllRanges();
+      const restoredRange = new Range();
+      try {
+        restoredRange.setStart(
+          refocusNode,
+          Math.min(
+            refocusNode.textContent?.length ?? 0,
+            focusOffset + emoji.native.length
+          )
+        );
+        selection.addRange(restoredRange);
+      } catch (e) {}
+    });
 
-    shadowRoot.appendChild(style);
+    setOpen(false);
   }, []);
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "." && e.metaKey && !e.ctrlKey) {
         const position = getCaretPosition();
+
+        const targetY = position.y + window.scrollY;
+        let targetX = position.x + window.scrollX;
+
+        if (
+          targetX + EMOJI_PICKER_WIDTH >
+          window.innerWidth - VIEWPORT_HORIZONTAL_MARGIN
+        ) {
+          targetX =
+            window.innerWidth - VIEWPORT_HORIZONTAL_MARGIN - EMOJI_PICKER_WIDTH;
+        }
+
         setPosition({
-          x: position.x + window.scrollX,
-          y: position.y + window.scrollY,
+          x: targetX,
+          y: targetY,
           lineHeight: position.lineHeight,
         });
+        lastFocus.current = document.activeElement as HTMLElement;
+
+        const selection = window.getSelection();
+        const node = selection?.focusNode;
+        if (node) {
+          lastSelection.current = {
+            focusOffset: selection.focusOffset,
+            node: node,
+          };
+        } else {
+          lastSelection.current = null;
+        }
+
         setOpen(true);
         e.preventDefault();
       } else if (
@@ -130,49 +156,51 @@ export function EmojiPicker(props: PickerProps) {
       ) {
         setOpen(false);
         e.preventDefault();
+
+        if (!lastFocus.current) return;
+        lastFocus.current.focus();
+
+        if (lastSelection.current?.node.nodeName !== "#text") return;
+
+        restoreSelection();
+      } else if (
+        isOpen &&
+        document.activeElement?.nodeName !== EMOJI_PICKER_NODE_NAME
+      ) {
+        setOpen(false);
       }
     },
     [isOpen]
   );
 
   useEffect(() => {
-    window.addEventListener("input", console.log);
     window.addEventListener("keydown", onKeyDown, { capture: true });
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
     };
   }, [onKeyDown]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isOpen) return;
 
-    const timeout = setTimeout(() => {
-      lastFocus.current =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null;
-      const picker = document.querySelector("em-emoji-picker") as HTMLElement;
-      picker?.focus();
-    }, 40);
+    function onClick(e: MouseEvent) {
+      if (
+        e.target instanceof Element &&
+        e.target.nodeName !== EMOJI_PICKER_NODE_NAME
+      ) {
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener("click", onClick, { capture: true });
 
     return () => {
-      clearTimeout(timeout);
+      window.removeEventListener("click", onClick, { capture: true });
     };
   }, [isOpen]);
 
-  return (
-    <div
-      id="emoji-picker"
-      style={{
-        position: "absolute",
-        display: isOpen ? "block" : "none", // Temporary
-        top: `${position?.y}px`,
-        left: `${position?.x}px`,
-        marginTop: `${position?.lineHeight}`,
-        zIndex: 2,
-      }}
-      ref={ref}
-    />
-  );
+  return isOpen ? (
+    <InnerEmojiPicker onEmojiSelect={onEmojiSelect} position={position} />
+  ) : null;
 }

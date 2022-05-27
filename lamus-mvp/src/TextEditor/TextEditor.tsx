@@ -74,7 +74,6 @@ export const TextEditor = observer(function TextEditor() {
   const onChange = useCallback(
     debounce(() => {
       if (editorCore.current === null) return;
-      console.log(editorCore.current);
       editorCore.current
         .save()
         .then((data: Document) => {

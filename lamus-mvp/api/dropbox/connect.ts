@@ -15,6 +15,7 @@ export default async function connect(req: VercelRequest, res: VercelResponse) {
 
   const redirectUrl = req.body?.redirect_url ?? "";
 
+  // TODO: Generate a nonce, store in nonces table and pass as state (2nd paramterer)
   const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
   const authUrl = await dbxAuth.getAuthenticationUrl(
     REDIRECT_URI,

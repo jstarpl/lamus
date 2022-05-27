@@ -44,7 +44,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
     } catch {}
   }
 
-  let deviceId;
+  let deviceId: string;
   {
     const { error, deviceId: localDeviceId } = await authorize(
       req,
@@ -52,9 +52,11 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
       Scope.DropboxConnect,
       token
     );
+    if (error || !localDeviceId) return;
     deviceId = localDeviceId;
-    if (error) return;
   }
+
+  // TODO: verify req.query.state to contain a valid nonce, created for Scope.DropboxConnect and current deviceId
 
   {
     const supabase = createSupabaseClient();
@@ -74,6 +76,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
     const { error } = await supabase
       .from("device_settings")
       .update({
+        cloud_mode: "dropbox",
         dropbox_refresh_token: (tokenResult.result as any).refresh_token,
       })
       .eq("device_id", deviceId);

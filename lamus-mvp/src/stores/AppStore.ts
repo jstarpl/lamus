@@ -1,7 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from "uuid";
-import { dontWait, parseToken } from "../helpers/util";
+import { parseToken } from "../helpers/util";
 import { DropboxProvider } from "./fileSystem/providers/dropbox";
+import { NextcloudProvider } from "./fileSystem/providers/nextcloud";
 import { FileSystemStoreClass } from "./FileSystemStore";
 
 const DEVICE_ID_KEY = "deviceId";
@@ -11,12 +12,18 @@ const TOKEN_EXPIRES_AT_KEY = "expiresAt";
 const TOKEN_GRACE_PERIOD = 30000; // 30s
 
 export const LAMUS_API = window.location.origin + "/api";
+export const LAMUS_AGENT_API = "ws://localhost:8888";
+
+// retry with back-off
+let AGENT_RECONNECT_PERIOD = 1000; // 5s
+const AGENT_RECONNECT_PERIOD_MIN = 5000;
+const AGENT_RECONNECT_PERIOD_MAX = 60000;
 
 export interface ISettings {
-  cloud_mode: "dropbox" | "webdav" | null;
-  webdav_url: string | null;
-  webdav_user: string | null;
-  webdav_password: string | null;
+  cloud_mode: "dropbox" | "nextcloud" | "onedrive" | "gdrive" | null;
+  nextcloud_url: string | null;
+  nextcloud_user: string | null;
+  nextcloud_password: string | null;
 }
 
 const REQUIRED_SCOPES = ["dropbox.access_token"];
@@ -30,6 +37,9 @@ export class AppStoreClass {
   settings: ISettings | null = null;
   fileSystem: FileSystemStoreClass = new FileSystemStoreClass();
 
+  private agentSocket: WebSocket | undefined;
+  private agentReconnect: NodeJS.Timeout | undefined;
+
   constructor() {
     makeAutoObservable(this, {
       apiFetch: false,
@@ -39,6 +49,7 @@ export class AppStoreClass {
     localStorage.setItem(DEVICE_ID_KEY, this.deviceId);
     this.fileSystem.init();
     (window as any)["FileSystem"] = this.fileSystem;
+    this.agentSocket = this.createAgentConnection();
   }
 
   setShowAdminCode(value: boolean) {
@@ -47,13 +58,67 @@ export class AppStoreClass {
 
   async login(): Promise<void> {
     await this.refreshToken();
+    await this.createCloudFileSystem();
+  }
 
-    if (this.settings?.cloud_mode === "dropbox") {
-      dontWait(async () => {
+  private createAgentConnection = () => {
+    try {
+      const ws = new WebSocket(`${LAMUS_AGENT_API}/events`);
+      ws.addEventListener("close", this.reconnectAgent);
+      ws.addEventListener("error", this.reconnectAgent);
+      ws.addEventListener("message", this.onDataFromAgent);
+      ws.addEventListener("open", () => {
+        AGENT_RECONNECT_PERIOD = AGENT_RECONNECT_PERIOD_MIN;
+      });
+
+      return ws;
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
+  };
+
+  private onDataFromAgent = (e: MessageEvent) => {
+    const dataObj = JSON.parse(e.data);
+    if (!this.agentSocket) return;
+    this.agentSocket.send(JSON.stringify(dataObj));
+  };
+
+  private reconnectAgent = () => {
+    this.agentReconnect && clearInterval(this.agentReconnect);
+    this.agentReconnect = setTimeout(() => {
+      this.agentSocket = this.createAgentConnection();
+    }, AGENT_RECONNECT_PERIOD);
+    AGENT_RECONNECT_PERIOD = Math.min(
+      AGENT_RECONNECT_PERIOD_MAX,
+      AGENT_RECONNECT_PERIOD * 2
+    );
+  };
+
+  private async createCloudFileSystem(): Promise<void> {
+    if (!this.settings) return;
+    const cloudMode = this.settings.cloud_mode;
+
+    switch (cloudMode) {
+      case "dropbox":
         const dropboxProvider = new DropboxProvider();
         await dropboxProvider.init();
         this.fileSystem.addProvider("dropbox", dropboxProvider);
-      });
+        break;
+      case "nextcloud":
+        const { nextcloud_user, nextcloud_password, nextcloud_url } =
+          this.settings;
+        // not properly configured, break
+        if (!nextcloud_user || !nextcloud_password || !nextcloud_url) break;
+
+        const nextcloudProvider = new NextcloudProvider(
+          nextcloud_user,
+          nextcloud_password,
+          nextcloud_url
+        );
+        await nextcloudProvider.init();
+        this.fileSystem.addProvider("nextcloud", nextcloudProvider);
+        break;
     }
   }
 
