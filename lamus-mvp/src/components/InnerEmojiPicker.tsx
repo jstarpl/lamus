@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 
-import data from "@emoji-mart/data";
 import { Picker } from "emoji-mart";
 import "./EmojiPicker.css";
 
@@ -54,7 +53,7 @@ export function InnerEmojiPicker({
   useEffect(() => {
     if (mounted) return;
     new Picker({
-      data,
+      set: "google",
       ref,
       native: true,
       showPreview: false,
@@ -94,7 +93,7 @@ export function InnerEmojiPicker({
     return () => {
       clearTimeout(timeout);
     };
-  }, []);
+  }, [focusEmojiSearchInput]);
 
   return (
     <div
