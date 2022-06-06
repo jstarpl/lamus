@@ -5,6 +5,9 @@ import crypto from "crypto";
 
 const algorithm = "aes-256-cbc";
 
+// TODO: Generate an AES secret key, then generate two key pairs, save them in
+// api/keys.enc.json and then set up the KEY and IV using `vercel env add`.
+
 program
   .name("key-manager")
   .description("Generate, decrypt and encrypt JSON Web Keys");

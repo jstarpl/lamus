@@ -1,11 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
 import { DropboxAuth } from "dropbox";
-import {
-  DROPBOX_CONFIG,
-  DROPBOX_VERIFIER_COOKIE,
-  REDIRECT_URI,
-} from "./_dropbox";
+import { DROPBOX_CONFIG, REDIRECT_URI } from "./_dropbox";
 import { createSupabaseClient } from "../_supabase";
 import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
 import { ALLOWED_ORIGINS } from "../_security";
@@ -68,16 +64,13 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
 
     const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
     dbxAuth.setCodeVerifier(codeVerifier);
-    const tokenResult = await dbxAuth.getAccessTokenFromCode(
-      REDIRECT_URI,
-      code
-    );
+    const tokenRes = await dbxAuth.getAccessTokenFromCode(REDIRECT_URI, code);
 
     const { error } = await supabase
       .from("device_settings")
       .update({
         cloud_mode: "dropbox",
-        dropbox_refresh_token: (tokenResult.result as any).refresh_token,
+        dropbox_refresh_token: (tokenRes.result as any).refresh_token,
       })
       .eq("device_id", deviceId);
     if (error) {

@@ -2,8 +2,6 @@ import fetch from "node-fetch";
 const clientId = process.env.DROPBOX_CLIENT_ID;
 const apiUri = process.env.API_URI;
 
-export const DROPBOX_VERIFIER_COOKIE = "ver";
-
 export const DROPBOX_CONFIG = {
   fetch,
   clientId,

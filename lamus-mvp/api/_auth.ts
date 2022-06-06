@@ -12,6 +12,8 @@ const NAMESPACE = "https://lamus.jsbg.pl";
 export enum Scope {
   DropboxConnect = "dropbox.connect",
   DropboxAccessToken = "dropbox.access_token",
+  OneDriveConnect = "onedrive.connect",
+  OneDriveAccessToken = "onedrive.access_token",
 }
 
 export async function loginDeviceId(deviceId: string, scopes?: string[]) {

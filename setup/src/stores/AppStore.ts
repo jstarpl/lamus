@@ -27,7 +27,7 @@ class AppStoreClass {
       },
       body: JSON.stringify({
         device_id: deviceId,
-        scopes: ["dropbox.connect"],
+        scopes: ["dropbox.connect", "onedrive.connect"],
         no_create: true,
       }),
       mode: "cors",
@@ -64,15 +64,23 @@ class AppStoreClass {
     this.token = null;
   }
 
-  async connectToDropbox(): Promise<boolean> {
-    const res = await fetch(`${LAMUS_API}/dropbox/connect`, {
+  private apiFetch(
+    path: string,
+    init?: RequestInit | undefined
+  ): Promise<Response> {
+    return fetch(`${LAMUS_API}${path}`, {
       method: "POST",
       credentials: "include",
       headers: {
         authorization: `Bearer ${this.token}`,
       },
       redirect: "follow",
+      ...init,
     });
+  }
+
+  async connectToDropbox(): Promise<boolean> {
+    const res = await this.apiFetch(`/dropbox/connect`);
 
     if (!res.ok && res.status !== 303) {
       console.log(await res.text());
@@ -81,6 +89,27 @@ class AppStoreClass {
       runInAction(() => {
         NotificationStore.push({
           message: `Connection to Dropbox failed: ${res.status}`,
+          variant: "danger",
+        });
+      });
+      return false;
+    }
+
+    const result = await res.json();
+    window.open(result.url, "_blank");
+    return true;
+  }
+
+  async connectToOneDrive(): Promise<boolean> {
+    const res = await this.apiFetch(`/onedrive/connect`);
+
+    if (!res.ok && res.status !== 303) {
+      console.log(await res.text());
+      console.log(res.status, res.statusText);
+      console.log(res);
+      runInAction(() => {
+        NotificationStore.push({
+          message: `Connection to OneDrive failed: ${res.status}`,
           variant: "danger",
         });
       });

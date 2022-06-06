@@ -7,10 +7,15 @@ export function Dashboard() {
     AppStore.connectToDropbox().catch(console.error);
   }
 
+  function onConnectOneDrive() {
+    AppStore.connectToOneDrive().catch(console.error);
+  }
+
   return (
     <Container fluid="sm">
       <h1>Your Computer</h1>
       <Button onClick={onConnectDropbox}>Connect to Dropbox</Button>
+      <Button onClick={onConnectOneDrive}>Connect to OneDrive</Button>
     </Container>
   );
 }
