@@ -1,14 +1,23 @@
 import React, { useCallback, useEffect, useLayoutEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import "./App.css";
 import {
   KeyboardHandler,
   useKeyboardHandler,
 } from "./helpers/useKeyboardHandler";
-import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
 import { AppStore } from "./stores/AppStore";
+import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
 import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
-import { TextEditor } from "./TextEditor/TextEditor";
+import Home from "./Home";
+import TextEditor from "./TextEditor";
 
 export const EVENT_UI_READY = "lamus:uiReady";
 
@@ -43,11 +52,19 @@ export function App() {
     AppStore.login();
   }, [onUIReady]);
 
+  const location = useLocation();
+
   return (
     <div className="App">
       <KeyboardHandler.Provider value={keyboardHandler}>
+        <AnimatePresence>
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<Home />} />
+            <Route path="/text" element={<TextEditor />} />
+            <Route path="*" element={<Navigate to={"/"} />} />
+          </Routes>
+        </AnimatePresence>
         <AdminCode />
-        <TextEditor />
       </KeyboardHandler.Provider>
     </div>
   );

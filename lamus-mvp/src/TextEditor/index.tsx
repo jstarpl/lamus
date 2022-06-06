@@ -33,7 +33,7 @@ function focusEditor(retry?: number) {
   mainEls.item(mainEls.length - 1).focus();
 }
 
-export const TextEditor = observer(function TextEditor() {
+const TextEditor = observer(function TextEditor() {
   // not reactive, because editor.js is not a controlled input
   // we're treating the EditorStore as write-only
   const defaultDocument: Document | null = EditorStore.document;
@@ -106,3 +106,5 @@ export const TextEditor = observer(function TextEditor() {
   );
 });
 TextEditor.displayName = "TextEditor";
+
+export default TextEditor;

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const CURSOR_KEYS = ["ArrowUp", "ArrowRight", "ArrowBottom", "ArrowLeft"];
+const CURSOR_KEYS = ["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"];
 
 enum Direction {
   Up = "up",
@@ -51,9 +51,10 @@ function findClosestElementInDirection(
   direction: Direction,
   list: ElementAndRect[]
 ): HTMLElement | null {
+  let sortedOptions;
   switch (direction) {
     case Direction.Up:
-      list
+      sortedOptions = list
         .filter((item) => item.rect.top < rect.top)
         .map((item) => ({
           element: item.element,
@@ -67,11 +68,12 @@ function findClosestElementInDirection(
                 2
               )
           ),
-        }));
+        }))
+        .sort((a, b) => a.distance - b.distance);
       break;
     case Direction.Down:
-      list
-        .filter((item) => item.rect.top > rect.bottom)
+      sortedOptions = list
+        .filter((item) => item.rect.top >= rect.bottom)
         .map((item) => ({
           element: item.element,
           distance: Math.sqrt(
@@ -84,10 +86,47 @@ function findClosestElementInDirection(
                 2
               )
           ),
-        }));
+        }))
+        .sort((a, b) => a.distance - b.distance);
+      break;
+    case Direction.Left:
+      sortedOptions = list
+        .filter((item) => item.rect.right < rect.left)
+        .map((item) => ({
+          element: item.element,
+          distance: Math.sqrt(
+            Math.pow(Math.abs(rect.left - item.rect.right), 2) +
+              Math.pow(
+                Math.min(
+                  Math.abs(rect.top - item.rect.top),
+                  Math.abs(rect.bottom - item.rect.bottom)
+                ),
+                2
+              )
+          ),
+        }))
+        .sort((a, b) => a.distance - b.distance);
+      break;
+    case Direction.Right:
+      sortedOptions = list
+        .filter((item) => item.rect.left >= rect.right)
+        .map((item) => ({
+          element: item.element,
+          distance: Math.sqrt(
+            Math.pow(Math.abs(rect.right - item.rect.left), 2) +
+              Math.pow(
+                Math.min(
+                  Math.abs(rect.top - item.rect.top),
+                  Math.abs(rect.bottom - item.rect.bottom)
+                ),
+                2
+              )
+          ),
+        }))
+        .sort((a, b) => a.distance - b.distance);
       break;
   }
-  return null;
+  return sortedOptions?.[0]?.element ?? null;
 }
 
 export function useCursorNavigation() {
@@ -143,7 +182,9 @@ export function useCursorNavigation() {
     });
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", onKeyDown, {
+        capture: true,
+      });
     };
   }, []);
 }
