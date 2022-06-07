@@ -20,8 +20,9 @@ export async function loginDeviceId(deviceId: string, scopes?: string[]) {
   const privateKey = await importJWK(getSigKeys().private, KEY_ALGORITHM);
   const jwt = await new SignJWT({
     scopes:
-      scopes.filter((scope) => Object.values(Scope).includes(scope as Scope)) ??
-      [],
+      scopes?.filter((scope) =>
+        Object.values(Scope).includes(scope as Scope)
+      ) ?? [],
   })
     .setProtectedHeader({ alg: KEY_ALGORITHM })
     .setIssuedAt()
@@ -70,7 +71,7 @@ export async function authorize(
   let token = "";
   if (customToken) {
     token = customToken;
-  } else {
+  } else if (authHeader) {
     const [scheme, authToken] = authHeader.split(/\s+/, 2);
     if (scheme.toLowerCase() !== "bearer") {
       const error = { error: "Invalid authorization scheme." };
@@ -83,7 +84,7 @@ export async function authorize(
   if (!token) {
     const error = { error: "Invalid authorization parameters." };
     authFailed(res, error);
-    return;
+    return error;
   }
 
   const publicKey = await importJWK(getSigKeys().public, KEY_ALGORITHM);

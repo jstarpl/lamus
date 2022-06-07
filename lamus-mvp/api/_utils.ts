@@ -23,7 +23,7 @@ export function acceptMethod(
   res: VercelResponse,
   ...methods: string[]
 ): boolean {
-  if (methods.includes(req.method)) return true;
+  if (req.method && methods.includes(req.method)) return true;
   sendStatus(res, 400, { error: `Method not accepted: "${req.method}"` });
   return false;
 }

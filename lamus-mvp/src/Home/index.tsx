@@ -1,15 +1,24 @@
-import React, { useLayoutEffect } from "react";
-import { useDefaultInitialization } from "../helpers/useDefaultInitialization";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useCursorNavigation } from "../helpers/useCursorNavigation";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import "./Home.css";
-import bkg_webp from "./bkg.webp";
+import bkg_480_webp from "./bkg_480.webp";
+import bkg_720_webp from "./bkg_720.webp";
+import bkg_1440_webp from "./bkg_1440.webp";
 import bkg_png from "./bkg.png";
+import logo from "./logo.svg";
 import { FocusIndicator } from "../helpers/FocusIndicator";
+import { EVENT_UI_READY } from "../App";
+import classNames from "classnames";
+import { useHideMouseOnType } from "../helpers/useHideMouseOnType";
+
+// is this the first time we show the home screen. If so, fade in the logo nicely. Otherwise, just show it.
+let FIRST_SHOW = true;
 
 const Home = function Home() {
-  useDefaultInitialization();
+  const [firstShow] = useState(FIRST_SHOW);
+  const bkgEl = useRef<HTMLImageElement>(null);
   useCursorNavigation();
 
   function onAnimationComplete() {
@@ -17,11 +26,42 @@ const Home = function Home() {
       const el = document.querySelector(
         ".btn[data-focus], button[data-focus]"
       ) as HTMLElement;
-      console.log(el);
       if (!el) return;
       el.focus();
     });
   }
+
+  useEffect(() => {
+    FIRST_SHOW = false;
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!bkgEl.current) return;
+    function onLoaded() {
+      window.dispatchEvent(new CustomEvent(EVENT_UI_READY));
+    }
+
+    if (bkgEl.current.complete) {
+      onLoaded();
+      return;
+    }
+
+    const bkgImage = bkgEl.current;
+    bkgImage.addEventListener("load", onLoaded);
+
+    return () => {
+      bkgImage.removeEventListener("load", onLoaded);
+    };
+  }, []);
+
+  useEffect(() => {
+    const overflowBuf = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.documentElement.style.overflow = overflowBuf;
+    };
+  }, []);
 
   return (
     <motion.div
@@ -33,9 +73,12 @@ const Home = function Home() {
       onAnimationComplete={onAnimationComplete}
     >
       <picture>
-        <source srcSet={bkg_webp} type="image/webp" />
-        <source srcSet={bkg_png} type="image/png" />
-        <img className="bkg" src={bkg_png} alt="" />
+        <source
+          srcSet={`${bkg_480_webp} 853w, ${bkg_720_webp} 1280w, ${bkg_1440_webp} 2560w`}
+          type="image/webp"
+        />
+        <source srcSet={`${bkg_png}`} type="image/png" />
+        <img className="bkg" src={bkg_png} alt="" ref={bkgEl} />
       </picture>
       <nav>
         <ul>
@@ -56,6 +99,13 @@ const Home = function Home() {
           </li>
         </ul>
       </nav>
+      <img
+        src={logo}
+        className={classNames("logo", {
+          "first-show": firstShow,
+        })}
+        alt="Lamus Logo"
+      />
       <FocusIndicator />
     </motion.div>
   );

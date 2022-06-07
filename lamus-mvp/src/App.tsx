@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useLayoutEffect } from "react";
 import {
-  BrowserRouter as Router,
   Navigate,
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import "./App.css";
 import {
   KeyboardHandler,
-  useKeyboardHandler,
+  useGlobalKeyboardHandler,
 } from "./helpers/useKeyboardHandler";
 import { AppStore } from "./stores/AppStore";
 import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
@@ -33,9 +33,10 @@ function hideSplashScreen() {
 }
 
 export function App() {
-  useHideMouseOnType();
+  useHideMouseOnType(true);
   useMouseWheelSink();
-  const keyboardHandler = useKeyboardHandler();
+  const keyboardHandler = useGlobalKeyboardHandler();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log(AppStore.deviceId);
@@ -51,6 +52,25 @@ export function App() {
     window.addEventListener(EVENT_UI_READY, onUIReady, { once: true });
     AppStore.login();
   }, [onUIReady]);
+
+  useEffect(() => {
+    if (!keyboardHandler) return;
+    function goHome(e: KeyboardEvent) {
+      navigate("/");
+      e.preventDefault();
+    }
+    keyboardHandler.bind("Accel+F10", goHome, {
+      preventDefaultPartials: true,
+      global: true,
+      exclusive: true,
+      modifiersPoisonChord: true,
+      preventDefaultDown: true,
+    });
+
+    return () => {
+      keyboardHandler.unbind("Accel+F10", goHome);
+    };
+  }, [keyboardHandler, navigate]);
 
   const location = useLocation();
 

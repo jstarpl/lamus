@@ -32,7 +32,7 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
       "device_id,cloud_mode,nextcloud_url,nextcloud_user,nextcloud_password"
     )
     .eq("device_id", deviceId);
-  if (error) {
+  if (error || !deviceSettings) {
     sendStatus(res, 500);
     console.error(error);
     return;

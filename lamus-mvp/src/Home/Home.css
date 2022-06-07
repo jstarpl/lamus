@@ -62,6 +62,33 @@
   color: #fff;
 }
 
+#home-screen>.logo {
+  position: absolute;
+  top: auto;
+  left: 50%;
+  bottom: 5vh;
+  width: 15vmin;
+  transform: translate(-50%, 0);
+  filter: drop-shadow(1px 1px 5px #00000077);
+  opacity: 1;
+}
+
+@keyframes logo-fade-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+#home-screen>.logo.first-show {
+  animation: 1s logo-fade-in 3s 1 cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media screen and (orientation: landscape) {
   #home-screen>nav>ul {
     flex-direction: row;

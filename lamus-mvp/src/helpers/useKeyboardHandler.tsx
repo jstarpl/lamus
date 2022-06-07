@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import sorensen from "@sofie-automation/sorensen";
-import { AppStore } from "../stores/AppStore";
 import React from "react";
 
 function sorensenInitialized(): boolean {
@@ -34,7 +33,7 @@ export const KeyboardHandler = React.createContext<typeof sorensen | null>(
   null
 );
 
-export function useKeyboardHandler(): typeof sorensen | null {
+export function useGlobalKeyboardHandler(): typeof sorensen | null {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -67,4 +66,8 @@ export function useKeyboardHandler(): typeof sorensen | null {
   }, [initialized]);
 
   return initialized ? sorensen : null;
+}
+
+export function useKeyboardHandler() {
+  return useContext(KeyboardHandler);
 }

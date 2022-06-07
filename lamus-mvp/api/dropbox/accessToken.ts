@@ -25,16 +25,17 @@ export default async function accessKey(
   const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
 
   const supabase = createSupabaseClient();
-  const { data: deviceSettings, error } = await supabase
+  const { data: deviceSettingsAll, error } = await supabase
     .from("device_settings")
     .select("dropbox_refresh_token")
     .eq("device_id", deviceId);
-  if (error) {
+  const deviceSettings = deviceSettingsAll[0];
+  if (error || !deviceSettings) {
     console.error(error);
     sendStatus(res, 500, { error: "Internal Server Error" });
   }
 
-  const { dropbox_refresh_token: refreshToken } = deviceSettings[0];
+  const { dropbox_refresh_token: refreshToken } = deviceSettings;
 
   dbxAuth.setRefreshToken(refreshToken);
   await (dbxAuth.checkAndRefreshAccessToken() as any as Promise<void>);
