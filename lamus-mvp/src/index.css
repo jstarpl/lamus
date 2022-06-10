@@ -6,6 +6,7 @@
   --system-font-family: 'Fira Sans', var(--emoji-font), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+  --system-header-font-family: 'Abril Fatface', Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   --border-radius: 14px;
   --focus-border-radius: 7px;
   --focus-border: 3px solid #308AFF;
@@ -25,4 +26,50 @@ option {
 
 *:focus-visible {
   outline: none;
+}
+
+input.form-control:not([type]),
+input.form-control[type="text"],
+input.form-control[type="password"],
+input.form-control[type="url"],
+input.form-control[type="email"],
+input.form-control[type="tel"],
+input.form-control[type="time"],
+input.form-control[type="week"],
+input.form-control[type="search"],
+input.form-control[type="password"],
+input.form-control[type="month"],
+input.form-control[type="date"],
+input.form-control[type="datetime-local"] {
+  background: transparent;
+  border: none;
+  display: block;
+  width: 100%;
+  font-size: 2.25rem;
+  border: 1px solid transparent;
+  border-bottom: 2px solid #00000066;
+}
+
+input.form-control::placeholder {
+  color: #00000022;
+}
+
+input.form-control:not([type]):not(:read-only):focus,
+input.form-control[type="text"]:not(:read-only):focus,
+input.form-control[type="password"]:not(:read-only):focus,
+input.form-control[type="url"]:not(:read-only):focus,
+input.form-control[type="email"]:not(:read-only):focus,
+input.form-control[type="tel"]:not(:read-only):focus,
+input.form-control[type="time"]:not(:read-only):focus,
+input.form-control[type="week"]:not(:read-only):focus,
+input.form-control[type="search"]:not(:read-only):focus,
+input.form-control[type="password"]:not(:read-only):focus,
+input.form-control[type="month"]:not(:read-only):focus,
+input.form-control[type="date"]:not(:read-only):focus,
+input.form-control[type="datetime-local"]:not(:read-only):focus {
+  background: #fff;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 5px;
+  box-shadow: 0 0 15px #00000022;
 }

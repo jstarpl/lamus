@@ -29,10 +29,16 @@ export default async function accessKey(
     .from("device_settings")
     .select("dropbox_refresh_token")
     .eq("device_id", deviceId);
-  const deviceSettings = deviceSettingsAll[0];
-  if (error || !deviceSettings) {
+  if (!deviceSettingsAll || deviceSettingsAll.length === 0) {
     console.error(error);
     sendStatus(res, 500, { error: "Internal Server Error" });
+    return;
+  }
+  const deviceSettings = deviceSettingsAll[0];
+  if (error) {
+    console.error(error);
+    sendStatus(res, 500, { error: "Internal Server Error" });
+    return;
   }
 
   const { dropbox_refresh_token: refreshToken } = deviceSettings;

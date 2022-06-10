@@ -49,4 +49,6 @@ html {
   overflow: scroll;
   overflow-x: hidden;
   overflow-y: overlay;
+  scroll-behavior: smooth;
+  scroll-padding-block: 2rem;
 }

@@ -1,0 +1,14 @@
+.list-view-item {
+  margin: 0 0 1em 0;
+  border: 5px solid red;
+  box-sizing: border-box;
+  ;
+}
+
+.list-view-item:focus {
+  border: 5px solid blue;
+}
+
+.list-view-item.selected {
+  background: magenta;
+}

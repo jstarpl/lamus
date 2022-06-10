@@ -10,10 +10,24 @@ dialog {
 	box-shadow: 0 2px 20px 2px rgba(0, 0, 0, 1);
 	padding: 0;
 	z-index: 100;
+	font-size: 2.25rem;
+}
+
+dialog h1,
+dialog h2,
+dialog h3,
+dialog h4,
+dialog h5,
+dialog h6 {
+	font-family: var(--system-header-font-family);
+	font-weight: 400;
+	margin: 1.25rem 2rem;
 }
 
 dialog p {
-	margin: 2rem;
+	font-size: 1.75rem;
+	font-weight: 400;
+	margin: 1.25rem 2rem 2rem;
 }
 
 dialog::backdrop,
@@ -39,25 +53,4 @@ dialog .buttons>button {
 	font-size: 2.25rem;
 	padding: 1rem 2rem;
 	text-align: left;
-}
-
-dialog input:not([type]),
-dialog input[type="text"],
-dialog input[type="password"],
-dialog input[type="url"],
-dialog input[type="email"],
-dialog input[type="tel"],
-dialog input[type="time"],
-dialog input[type="week"],
-dialog input[type="search"],
-dialog input[type="password"],
-dialog input[type="month"],
-dialog input[type="date"],
-dialog input[type="datetime-local"] {
-	background: transparent;
-	border: none;
-	display: block;
-	width: 100%;
-	font-size: 2.25rem;
-	border-bottom: 2px solid #00000066;
 }

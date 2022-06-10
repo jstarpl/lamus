@@ -133,7 +133,7 @@ export function useCursorNavigation() {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (
-        !CURSOR_KEYS.includes(e.code) ||
+        !CURSOR_KEYS.includes(e.key) ||
         e.ctrlKey ||
         e.shiftKey ||
         e.metaKey ||
@@ -161,7 +161,7 @@ export function useCursorNavigation() {
         return;
       }
 
-      const direction = getDirectionFromCode(e.code);
+      const direction = getDirectionFromCode(e.key);
 
       const focusedElementRect = focusedElement.getBoundingClientRect();
       const focusableElementsRects =
@@ -178,12 +178,12 @@ export function useCursorNavigation() {
 
     window.addEventListener("keydown", onKeyDown, {
       passive: false,
-      capture: true,
+      capture: false,
     });
 
     return () => {
       window.removeEventListener("keydown", onKeyDown, {
-        capture: true,
+        capture: false,
       });
     };
   }, []);

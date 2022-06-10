@@ -52,7 +52,12 @@ export const AdminCode = observer(function AdminCode() {
         />
       </p>
       <p>
-        <input tabIndex={-1} value={deviceId} readOnly />
+        <input
+          className="form-control"
+          tabIndex={-1}
+          value={deviceId}
+          readOnly
+        />
       </p>
       <div className="buttons">
         <button tabIndex={1} data-accept type="submit" onClick={onClose}>
