@@ -17,13 +17,15 @@ export const FocusIndicator: React.FC = function FocusIndicator() {
     function onFocusIn(ev: FocusEvent) {
       if (!(ev.target instanceof HTMLElement)) return;
       const boundingRect = ev.target.getBoundingClientRect();
+      let visible = true;
+      if (ev.target.dataset["ownFocus"]) visible = false;
       setRect({
         top: boundingRect.top,
         left: boundingRect.left,
         height: boundingRect.height,
         width: boundingRect.width,
       });
-      setVisible(true);
+      setVisible(visible);
     }
     function onFocusOut(ev: FocusEvent) {
       setVisible(false);

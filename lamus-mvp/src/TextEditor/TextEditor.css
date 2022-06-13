@@ -1,43 +1,29 @@
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--system-header-font-family);
-  font-weight: 400;
+.TextEditor {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1.5em;
 }
 
-h1 {
-  font-size: 4em;
+.TextEditor .Document {
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: overlay;
+  scroll-padding-block: 300px;
+
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  box-shadow: 0 5px 12px #000000ff;
 }
 
-h2 {
-  font-size: 3em;
-}
-
-h3 {
-  font-size: 2em;
-}
-
-h4 {
-  font-size: 1.5em;
-}
-
-h5 {
-  font-size: 1em;
-}
-
-h6 {
-  font-size: 1em;
-}
+.TextEditor .CommandPanel {}
 
 @media screen and (min-width: 650px) {
-  .ce-toolbar__content {
+  .text-editor .ce-toolbar__content {
     max-width: min(650px, 80vw);
   }
 
-  .ce-block__content {
+  .text-editor .ce-block__content {
     max-width: min(650px, 80vw);
   }
 }

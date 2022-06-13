@@ -1,3 +1,4 @@
+import { uniq } from "lodash";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./ListView.css";
 
@@ -33,7 +34,7 @@ export const ListView = function ListView({
   const [isControlled] = useState(value !== undefined);
   const [localValue, setLocalValue] = useState(initialValue ?? []);
   const listEl = useRef<HTMLUListElement>(null);
-  const lastBlurItem = useRef<HTMLElement | undefined>(undefined);
+  const startIndex = useRef<number | undefined>(undefined);
   const ctrlState = useRef(false);
   const shiftState = useRef(false);
   const inKeyboardEvent = useRef<false | number>(false);
@@ -102,6 +103,8 @@ export const ListView = function ListView({
     const el = listEl.current;
 
     function onKeyDown(e: KeyboardEvent) {
+      ctrlState.current = e.ctrlKey;
+      shiftState.current = e.shiftKey;
       const allItems = el.querySelectorAll(
         ":scope > .list-view-item"
       ) as NodeListOf<HTMLElement>;
@@ -123,20 +126,24 @@ export const ListView = function ListView({
       }
       if (direction === 0) return;
 
-      const newFocusIndex = Math.min(
-        Math.max(0, currentFocusIndex + direction),
-        allItems.length - 1
-      );
+      let newFocusIndex = 0;
+
+      if (currentFocusIndex >= 0) {
+        newFocusIndex = Math.min(
+          Math.max(0, currentFocusIndex + direction),
+          allItems.length - 1
+        );
+      } else if (startIndex.current !== undefined) {
+        newFocusIndex = Math.min(startIndex.current, allItems.length - 1);
+      }
 
       const newFocus = allItems.item(newFocusIndex);
       if (!newFocus) return;
-      console.log("before focus fire");
       inKeyboardEvent.current = direction;
       newFocus.focus({
         preventScroll: true,
       });
       inKeyboardEvent.current = false;
-      console.log("after focus fire");
       newFocus.dispatchEvent(
         new FocusEvent("focusin", {
           bubbles: true,
@@ -148,12 +155,16 @@ export const ListView = function ListView({
       e.preventDefault();
     }
 
-    function onPointerDown() {
+    function onPointerDown(e: PointerEvent) {
       inPointerEvent.current = true;
+      ctrlState.current = e.ctrlKey;
+      shiftState.current = e.shiftKey;
     }
 
-    function onPointerUp() {
+    function onPointerUp(e: PointerEvent) {
       inPointerEvent.current = false;
+      ctrlState.current = e.ctrlKey;
+      shiftState.current = e.shiftKey;
     }
 
     el.addEventListener("keydown", onKeyDown);
@@ -174,9 +185,13 @@ export const ListView = function ListView({
     function onFocusIn(e: FocusEvent) {
       if (!(e.target instanceof HTMLElement)) return;
       if (!e.target.dataset["value"]) return;
-      console.log("focusin");
 
       const itemValue = e.target.dataset["value"];
+
+      const allItems = el.querySelectorAll(
+        ":scope > .list-view-item"
+      ) as NodeListOf<HTMLElement>;
+      const thisIndex = Array.from(allItems).indexOf(e.target);
 
       let newValue = testedValue;
       if (ctrlState.current) {
@@ -186,12 +201,28 @@ export const ListView = function ListView({
         } else {
           newValue = [...testedValue, itemValue];
         }
+        startIndex.current = thisIndex;
       } else if (shiftState.current) {
         // TODO: Select all between lastIndex and thisIndex
-        newValue = [...testedValue, itemValue];
+        if (startIndex.current !== undefined) {
+          let newSelected: string[] = [];
+          const start = Math.min(startIndex.current, thisIndex);
+          const end = Math.max(startIndex.current, thisIndex);
+          for (let i = start; i <= end; i++) {
+            const midItemValue = allItems.item(i).dataset["value"];
+            if (!midItemValue) continue;
+            newSelected.push(midItemValue);
+          }
+          newValue = [...newSelected];
+        } else {
+          newValue = [...testedValue, itemValue];
+        }
       } else {
         newValue = [itemValue];
+        startIndex.current = thisIndex;
       }
+
+      newValue = uniq(newValue);
 
       if (onChange) {
         onChange(
@@ -202,25 +233,16 @@ export const ListView = function ListView({
           })
         );
       }
+
       if (!isControlled) {
         setLocalValue(newValue.slice());
       }
     }
 
-    function onFocusOut(e: FocusEvent) {
-      if (!(e.target instanceof HTMLElement)) return;
-      if (!e.target.dataset["value"]) return;
-      console.log("focusout");
-
-      lastBlurItem.current = e.target;
-    }
-
     el.addEventListener("focusin", onFocusIn);
-    el.addEventListener("focusout", onFocusOut);
 
     return () => {
       el.removeEventListener("focusin", onFocusIn);
-      el.removeEventListener("focusout", onFocusOut);
     };
   }, [isControlled, testedValue, onChange]);
 
@@ -241,6 +263,8 @@ export const ListView = function ListView({
       } else {
         newValue = [...newValue, itemValue];
       }
+
+      newValue = uniq(newValue);
 
       if (onChange) {
         onChange(

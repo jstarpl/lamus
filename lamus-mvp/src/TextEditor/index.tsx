@@ -86,23 +86,25 @@ const TextEditor = observer(function TextEditor() {
   );
 
   return (
-    <>
-      <ReactEditorJS
-        defaultValue={defaultDocument ?? undefined}
-        onInitialize={onInitialize}
-        onChange={onChange}
-        tools={{
-          paragraph: Paragraph,
-          header: Header,
-          quote: Quote,
-          marker: Marker,
-          list: List,
-          delimiter: Delimiter,
-          checklist: Checklist,
-        }}
-      />
-      <EmojiPicker />
-    </>
+    <div className="TextEditor">
+      <div className="Document bg-general">
+        <ReactEditorJS
+          defaultValue={defaultDocument ?? undefined}
+          onInitialize={onInitialize}
+          onChange={onChange}
+          tools={{
+            paragraph: Paragraph,
+            header: Header,
+            quote: Quote,
+            marker: Marker,
+            list: List,
+            delimiter: Delimiter,
+            checklist: Checklist,
+          }}
+        />
+        <EmojiPicker />
+      </div>
+    </div>
   );
 });
 TextEditor.displayName = "TextEditor";

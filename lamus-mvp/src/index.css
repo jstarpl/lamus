@@ -6,15 +6,175 @@
   --system-font-family: 'Fira Sans', var(--emoji-font), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  --system-header-font-family: 'Abril Fatface', Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  --border-radius: 14px;
+  --system-header-font-family: 'Abril Fatface', var(--emoji-font), Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  --border-radius: 8px;
   --focus-border-radius: 7px;
-  --focus-border: 3px solid #308AFF;
+  --focus-border: 3px solid var(--color-focus);
+
+
+  /*
+    Palette
+    ===
+  */
+
+  /*
+    General
+    ---
+    Use: Editors, Workspaces, Canvases
+  */
+  --color-general-1: #605611;
+  --color-general-2: #D1C570;
+  --color-general-3: #EDE3A9;
+  --color-general-4: #FFF8CF;
+  --color-general: var(--color-general-2);
+
+  /*
+    Success
+    ---
+    Use: Yes, Accept, Succcess, Settings
+  */
+  --color-success-1: #295F11;
+  --color-success-2: #97B888;
+  --color-success-3: #D6E3D0;
+  --color-success-4: #EFF4ED;
+  --color-success: var(--color-success-2);
+
+  /*
+    Files
+    ---
+    Use: File management, File Select/Store dialogs
+  */
+  --color-files-1: #11335F;
+  --color-files-2: #9EC0EC;
+  --color-files-3: #D0DDEE;
+  --color-files-4: #EBF2FB;
+  --color-files: var(--color-files-2);
+
+  /*
+    Danger
+    ---
+    Use: No, Reject, Remove, Destructive operations
+  */
+  --color-danger-1: #5F1E11;
+  --color-danger-2: #CC887A;
+  --color-danger-3: #F0D2CC;
+  --color-danger-4: #FBEDEA;
+  --color-danger: var(--color-danger-2);
+
+  /*
+    Brand
+    ---
+    Use: Only for brand-related use, no meaning
+  */
+  --color-brand-1: #502B00;
+  --color-brand-2: #CD6F00;
+  --color-brand-3: #F4D4AE;
+  --color-brand-4: #FFEDD7;
+  --color-brand: var(--color-brand-2);
+
+  --color-dark-1: #000000;
+  --color-dark-2: #0F0F0F;
+  --color-dark-3: #2F2F2F;
+  --color-dark-4: #414141;
+  --color-dark: var(--color-dark-3);
+  --color-black: var(--color-dark-1);
+
+  --color-white: #FFFFFF;
+  --color-light: var(--color-white);
+
+  /*
+    Special UI colors
+  */
+  --color-focus: #308AFF;
+  --color-hightlight: #FF96A0;
+}
+
+.bg-general {
+  --color-tone: var(--color-general);
+  --color-shade: var(--color-general-1);
+  --color-tint-1: var(--color-general-3);
+  --color-tint-2: var(--color-general-4);
+  color: var(--color-black);
+  background: var(--color-tint-2);
+}
+
+.bg-success {
+  --color-tone: var(--color-success);
+  --color-shade: var(--color-success-1);
+  --color-tint-1: var(--color-success-3);
+  --color-tint-2: var(--color-success-4);
+  color: var(--color-black);
+  background: var(--color-tint-2);
+}
+
+.bg-files {
+  --color-tone: var(--color-files);
+  --color-shade: var(--color-files-1);
+  --color-tint-1: var(--color-files-3);
+  --color-tint-2: var(--color-files-4);
+  color: var(--color-black);
+  background: var(--color-tint-2);
+}
+
+.bg-danger {
+  --color-tone: var(--color-danger);
+  --color-shade: var(--color-danger-1);
+  --color-tint-1: var(--color-danger-3);
+  --color-tint-2: var(--color-danger-4);
+  color: var(--color-black);
+  background: var(--color-tint-2);
+}
+
+.bg-brand {
+  --color-tone: var(--color-brand);
+  --color-shade: var(--color-brand-1);
+  --color-tint-1: var(--color-brand-3);
+  --color-tint-2: var(--color-brand-4);
+  color: var(--color-black);
+  background: var(--color-tint-2);
+}
+
+:is(.bg-general, .bg-success, .bg-files, .bg-danger, .bg-brand) .text-muted {
+  color: var(--color-shade);
 }
 
 body {
   margin: 0;
   font-family: var(--system-font-family);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--system-header-font-family);
+  font-weight: 400;
+}
+
+h1 {
+  font-size: 4em;
+}
+
+h2 {
+  font-size: 3em;
+}
+
+h3 {
+  font-size: 2em;
+}
+
+h4 {
+  font-size: 1.5em;
+}
+
+h5 {
+  font-size: 1em;
+}
+
+h6 {
+  font-size: 1em;
 }
 
 button,

@@ -14,16 +14,22 @@ export default {
 } as ComponentMeta<typeof ListView>;
 
 export const Basic: ComponentStory<typeof ListView> = () => (
-  <ListView>
-    <ListViewItem key={"raz"} value={"raz"}>
-      Raz
+  <ListView multiple>
+    <ListViewItem key={"one"} value={"one"}>
+      One
     </ListViewItem>
-    <ListViewItem key={"dwa"} value={"dwa"}>
-      Dwa
+    <ListViewItem key={"two"} value={"two"}>
+      Two
     </ListViewItem>
-    <ListViewItem key={"trzy"} value={"trzy"}>
-      Trzy
+    <ListViewItem key={"three"} value={"three"}>
+      Three
+    </ListViewItem>
+    <ListViewItem key={"four"} value={"four"}>
+      Four
+    </ListViewItem>
+    <ListViewItem key={"five"} value={"five"}>
+      Five
     </ListViewItem>
   </ListView>
 );
-Basic.storyName = "Basic ListView, uncontrolled, single-select, with 3 items";
+Basic.storyName = "List View, uncontrolled, multi-select, with 5 items";

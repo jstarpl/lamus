@@ -1,11 +1,11 @@
 body {
-  background: #FFF8CF;
+  background: var(--color-dark);
   color: #000;
 }
 
 ::-webkit-scrollbar {
-  width: 15px;
-  height: 15px;
+  width: calc(var(--border-radius) * 2);
+  height: calc(var(--border-radius) * 2);
 }
 
 ::-webkit-scrollbar-button {
@@ -14,31 +14,31 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #968c4e;
-  border: 0px none;
-  border-radius: 50px;
+  background: var(--color-tone, var(--color-general-2));
+  border: 0.15rem solid var(--color-tint-1, var(--color-general-3));
+  border-radius: var(--border-radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #645b23;
+  background: var(--color-shade, var(--color-general-1));
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: #181501;
+  background: var(--color-white);
 }
 
 ::-webkit-scrollbar-track {
-  background: #FFF8CF;
+  background: var(--color-tint-1, var(--color-general-3));
   border: 0px none;
   border-radius: 50px;
 }
 
 ::-webkit-scrollbar-track:hover {
-  background: #FFF8CF;
+  background: var(--color-tint-1, var(--color-general-3));
 }
 
 ::-webkit-scrollbar-track:active {
-  background: #FFF8CF;
+  background: var(--color-tint-1, var(--color-general-3));
 }
 
 ::-webkit-scrollbar-corner {
@@ -46,9 +46,5 @@ body {
 }
 
 html {
-  overflow: scroll;
-  overflow-x: hidden;
-  overflow-y: overlay;
-  scroll-behavior: smooth;
-  scroll-padding-block: 2rem;
+  overflow: hidden;
 }
