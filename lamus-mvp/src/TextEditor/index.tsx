@@ -86,8 +86,8 @@ const TextEditor = observer(function TextEditor() {
   );
 
   return (
-    <div className="TextEditor">
-      <div className="Document bg-general">
+    <div className="TextEditor sdi-app">
+      <div className="Document sdi-app-workspace bg-general">
         <ReactEditorJS
           defaultValue={defaultDocument ?? undefined}
           onInitialize={onInitialize}
@@ -104,6 +104,7 @@ const TextEditor = observer(function TextEditor() {
         />
         <EmojiPicker />
       </div>
+      <div className="CommandBar sdi-app-cmd-bar"></div>
     </div>
   );
 });

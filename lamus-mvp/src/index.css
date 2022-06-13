@@ -233,3 +233,23 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   border-radius: 5px;
   box-shadow: 0 0 15px #00000022;
 }
+
+.sdi-app {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1.5em;
+}
+
+.sdi-app>.sdi-app-workspace {
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: overlay;
+  scroll-padding-block: 300px;
+
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  box-shadow: 0 5px 12px #000000ff;
+}
+
+.sdi-app>.sdi-app-cmd-bar {}
