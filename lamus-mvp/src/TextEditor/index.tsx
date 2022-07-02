@@ -21,6 +21,8 @@ const ReactEditorJS = createReactEditorJS();
 const INITIAL_FOCUS_RETRY_COUNT = 3;
 
 const SAVE_COMBO = ["F2"];
+const SAVE_AS_COMBO = ["Shift", "F2"];
+const OPEN_COMBO = ["F3"];
 
 function focusEditor(retry?: number) {
   const mainEls = document.querySelectorAll(
@@ -108,8 +110,28 @@ const TextEditor = observer(function TextEditor() {
         <EmojiPicker />
       </div>
       <CommandBar.Nav>
-        <CommandBar.Button combo={SAVE_COMBO} position={2} highlight>
+        <CommandBar.Button
+          combo={SAVE_COMBO}
+          position={2}
+          highlight
+          showOnlyWhenModifiersActive
+        >
           Save
+        </CommandBar.Button>
+        <CommandBar.Button
+          combo={SAVE_AS_COMBO}
+          position={2}
+          highlight
+          showOnlyWhenModifiersActive
+        >
+          Save As
+        </CommandBar.Button>
+        <CommandBar.Button
+          combo={OPEN_COMBO}
+          position={3}
+          onClick={console.log}
+        >
+          Open
         </CommandBar.Button>
       </CommandBar.Nav>
     </div>

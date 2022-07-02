@@ -14,6 +14,7 @@
   --command-bar-height: 2.5em;
   --command-bar-font-size: 1.1em;
   --command-bar-radius: 4px;
+  --command-bar-gap: 4px;
 
   /*
     Palette
@@ -97,6 +98,7 @@
     --command-bar-height: 1.75em;
     --command-bar-font-size: 0.8em;
     --command-bar-radius: 2px;
+    --command-bar-gap: 2px;
   }
 }
 
@@ -246,8 +248,10 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
 }
 
 .sdi-app {
+  position: fixed;
   display: grid;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
   grid-template-columns: 1fr;
   grid-template-rows: auto var(--command-bar-height);
 }
