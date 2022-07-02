@@ -14,10 +14,13 @@ import { debounce } from "lodash";
 import { EVENT_UI_READY } from "../App";
 import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
+import { CommandBar } from "../components/CommandBar";
 
 const ReactEditorJS = createReactEditorJS();
 
 const INITIAL_FOCUS_RETRY_COUNT = 3;
+
+const SAVE_COMBO = ["F2"];
 
 function focusEditor(retry?: number) {
   const mainEls = document.querySelectorAll(
@@ -104,7 +107,11 @@ const TextEditor = observer(function TextEditor() {
         />
         <EmojiPicker />
       </div>
-      <div className="CommandBar sdi-app-cmd-bar"></div>
+      <CommandBar.Nav>
+        <CommandBar.Button combo={SAVE_COMBO} position={2} highlight>
+          Save
+        </CommandBar.Button>
+      </CommandBar.Nav>
     </div>
   );
 });

@@ -1,8 +1,7 @@
 import React from "react";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { ListView } from "./../components/ListView";
-import { ListViewItem } from "../components/ListViewItem";
+import { ListView } from "../components/ListView";
 
 export default {
   /* 👇 The title prop is optional.
@@ -10,26 +9,26 @@ export default {
    * to learn how to generate automatic titles
    */
   title: "ListView",
-  component: ListView,
-} as ComponentMeta<typeof ListView>;
+  component: ListView.List,
+} as ComponentMeta<typeof ListView.List>;
 
-export const Basic: ComponentStory<typeof ListView> = () => (
-  <ListView multiple>
-    <ListViewItem key={"one"} value={"one"}>
+export const Basic: ComponentStory<typeof ListView.List> = () => (
+  <ListView.List multiple>
+    <ListView.Item key={"one"} value={"one"}>
       One
-    </ListViewItem>
-    <ListViewItem key={"two"} value={"two"}>
+    </ListView.Item>
+    <ListView.Item key={"two"} value={"two"}>
       Two
-    </ListViewItem>
-    <ListViewItem key={"three"} value={"three"}>
+    </ListView.Item>
+    <ListView.Item key={"three"} value={"three"}>
       Three
-    </ListViewItem>
-    <ListViewItem key={"four"} value={"four"}>
+    </ListView.Item>
+    <ListView.Item key={"four"} value={"four"}>
       Four
-    </ListViewItem>
-    <ListViewItem key={"five"} value={"five"}>
+    </ListView.Item>
+    <ListView.Item key={"five"} value={"five"}>
       Five
-    </ListViewItem>
-  </ListView>
+    </ListView.Item>
+  </ListView.List>
 );
 Basic.storyName = "List View, uncontrolled, multi-select, with 5 items";

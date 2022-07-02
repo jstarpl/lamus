@@ -24,7 +24,7 @@ export const SelectedContext = React.createContext<false | SelectedState>(
   false
 );
 
-export const ListView = function ListView({
+export const ListViewList = function ListViewList({
   children,
   multiple,
   value,

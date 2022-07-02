@@ -1,0 +1,75 @@
+.CommandBar {
+  user-select: none;
+}
+
+.CommandBar>ul {
+  display: grid;
+  margin: 0;
+  padding: 0 var(--border-radius);
+  grid-template: 1fr / repeat(10, 10fr);
+}
+
+.CommandBar>ul>li.CommandButton {
+  display: contents;
+  margin: 0;
+  padding: 0;
+}
+
+.CommandBar>ul>li.CommandButton>button {
+  display: block;
+  position: relative;
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  grid-column: var(--command-button-position, auto);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.CommandBar>ul>li.CommandButton>button>.CommandButtonHotkey {
+  display: inline-block;
+  text-transform: uppercase;
+  background: linear-gradient(to bottom, var(--color-dark-3), var(--color-dark-2));
+  border: 1px solid var(--color-dark-4);
+  border-radius: var(--command-bar-radius);
+  font-weight: 600;
+  margin-right: 0.25em;
+  width: 1.5em;
+  text-align: center;
+}
+
+@media screen and (max-width: 560px) {
+  .CommandBar>ul>li.CommandButton>button>.CommandButtonHotkey {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .CommandBar>ul {
+    grid-template: 1fr / repeat(7, 7fr);
+  }
+}
+
+.CommandBar>ul>li.CommandButton.highlight>button::after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--command-bar-radius);
+  background: var(--color-hightlight);
+  border-radius: var(--command-bar-radius) var(--command-bar-radius) 0 0;
+}
+
+.CommandBar>ul>li.CommandButton.highlight>button:is(:active, .active)>.CommandButtonHotkey {
+  color: var(--color-black);
+  border: 1px solid var(--color-white);
+  background: var(--color-white);
+}

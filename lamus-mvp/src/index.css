@@ -11,6 +11,9 @@
   --focus-border-radius: 7px;
   --focus-border: 3px solid var(--color-focus);
 
+  --command-bar-height: 2.5em;
+  --command-bar-font-size: 1.1em;
+  --command-bar-radius: 4px;
 
   /*
     Palette
@@ -87,6 +90,14 @@
   */
   --color-focus: #308AFF;
   --color-hightlight: #FF96A0;
+}
+
+@media screen and ((max-width: 750px) or (max-height: 640px)) {
+  :root {
+    --command-bar-height: 1.75em;
+    --command-bar-font-size: 0.8em;
+    --command-bar-radius: 2px;
+  }
 }
 
 .bg-general {
@@ -238,7 +249,7 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   display: grid;
   height: 100vh;
   grid-template-columns: 1fr;
-  grid-template-rows: auto 1.5em;
+  grid-template-rows: auto var(--command-bar-height);
 }
 
 .sdi-app>.sdi-app-workspace {
@@ -252,4 +263,8 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   box-shadow: 0 5px 12px #000000ff;
 }
 
-.sdi-app>.sdi-app-cmd-bar {}
+.sdi-app>.sdi-app-cmdbar {
+  display: contents;
+  font-size: var(--command-bar-font-size, 1em);
+  color: var(--color-white);
+}
