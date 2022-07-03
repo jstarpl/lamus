@@ -15,6 +15,7 @@ import { EVENT_UI_READY } from "../App";
 import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { CommandBar } from "../components/CommandBar";
+import { useNavigate } from "react-router-dom";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -23,6 +24,7 @@ const INITIAL_FOCUS_RETRY_COUNT = 3;
 const SAVE_COMBO = ["F2"];
 const SAVE_AS_COMBO = ["Shift", "F2"];
 const OPEN_COMBO = ["F3"];
+const QUIT_COMBO = ["F10"];
 
 function focusEditor(retry?: number) {
   const mainEls = document.querySelectorAll(
@@ -44,6 +46,7 @@ const TextEditor = observer(function TextEditor() {
   const defaultDocument: Document | null = EditorStore.document;
 
   const editorCore = useRef<any>(null);
+  const navigate = useNavigate();
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
@@ -52,6 +55,10 @@ const TextEditor = observer(function TextEditor() {
     setTimeout(() => {
       focusEditor();
     }, 1000);
+  }, []);
+
+  const onQuit = useCallback(() => {
+    navigate("/");
   }, []);
 
   useEffect(() => {
@@ -132,6 +139,9 @@ const TextEditor = observer(function TextEditor() {
           onClick={console.log}
         >
           Open
+        </CommandBar.Button>
+        <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
+          Quit
         </CommandBar.Button>
       </CommandBar.Nav>
     </div>

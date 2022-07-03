@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import "./CommandBar.css";
@@ -43,7 +44,15 @@ export const CommandBar: React.FC<React.PropsWithChildren<{}>> =
           <CtrlDown.Provider value={isCtrlDown}>
             <ShiftDown.Provider value={isShiftDown}>
               <MetaDown.Provider value={isMetaDown}>
-                <ul>{children}</ul>
+                <motion.ul
+                  layout
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%", opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {children}
+                </motion.ul>
               </MetaDown.Provider>
             </ShiftDown.Provider>
           </CtrlDown.Provider>
