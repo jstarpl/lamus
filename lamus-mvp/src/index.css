@@ -93,7 +93,8 @@
   --color-hightlight: #FF96A0;
 }
 
-@media screen and ((max-width: 750px) or (max-height: 640px)) {
+@media screen and (max-width: 750px),
+screen and (max-height: 640px) {
   :root {
     --command-bar-height: 1.75em;
     --command-bar-font-size: 0.8em;

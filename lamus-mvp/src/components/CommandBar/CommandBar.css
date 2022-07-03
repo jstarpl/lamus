@@ -31,6 +31,7 @@
   overflow: hidden;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 .CommandBar>ul>li.CommandButton>button>.CommandButtonHotkey {
@@ -46,7 +47,24 @@
 }
 
 @media screen and (max-width: 560px) {
+  .CommandBar>ul>li.CommandButton>button {
+    padding: 0 var(--command-bar-gap);
+    text-align: center;
+  }
+
   .CommandBar>ul>li.CommandButton>button>.CommandButtonHotkey {
+    display: none;
+  }
+
+  .CommandBar>ul>li.CommandButton>button:active,
+  .CommandBar>ul>li.CommandButton.active>button {
+    color: var(--color-black);
+    border-color: var(--color-white);
+    background: var(--color-white);
+  }
+
+  .CommandBar>ul>li.CommandButton.highlight>button:active::after,
+  .CommandBar>ul>li.CommandButton.active.highlight>button::after {
     display: none;
   }
 }
@@ -72,6 +90,6 @@
 .CommandBar>ul>li.CommandButton>button:active>.CommandButtonHotkey,
 .CommandBar>ul>li.CommandButton.active>button>.CommandButtonHotkey {
   color: var(--color-black);
-  border: 1px solid var(--color-white);
+  border-color: var(--color-white);
   background: var(--color-white);
 }
