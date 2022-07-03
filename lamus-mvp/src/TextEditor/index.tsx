@@ -131,7 +131,7 @@ const TextEditor = observer(function TextEditor() {
           highlight
           showOnlyWhenModifiersActive
         >
-          Save As
+          SaveAs
         </CommandBar.Button>
         <CommandBar.Button
           combo={OPEN_COMBO}
