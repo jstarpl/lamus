@@ -11,7 +11,6 @@ import logo from "./logo.svg";
 import { FocusIndicator } from "../helpers/FocusIndicator";
 import { EVENT_UI_READY } from "../App";
 import classNames from "classnames";
-import { useHideMouseOnType } from "../helpers/useHideMouseOnType";
 
 // is this the first time we show the home screen. If so, fade in the logo nicely. Otherwise, just show it.
 let FIRST_SHOW = true;

@@ -60,7 +60,13 @@ export const AdminCode = observer(function AdminCode() {
         />
       </p>
       <div className="buttons">
-        <button tabIndex={1} data-accept type="submit" onClick={onClose}>
+        <button
+          tabIndex={1}
+          data-accept
+          data-focus
+          type="submit"
+          onClick={onClose}
+        >
           OK
         </button>
       </div>

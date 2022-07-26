@@ -101,6 +101,10 @@ screen and (max-height: 640px) {
     --command-bar-radius: 2px;
     --command-bar-gap: 2px;
   }
+
+  dialog {
+    font-size: 1.5rem !important;
+  }
 }
 
 .bg-general {

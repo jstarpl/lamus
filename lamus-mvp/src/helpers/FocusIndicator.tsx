@@ -14,11 +14,10 @@ export const FocusIndicator: React.FC = function FocusIndicator() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    function onFocusIn(ev: FocusEvent) {
-      if (!(ev.target instanceof HTMLElement)) return;
-      const boundingRect = ev.target.getBoundingClientRect();
+    function highlightTarget(target: HTMLElement) {
+      const boundingRect = target.getBoundingClientRect();
       let visible = true;
-      if (ev.target.dataset["ownFocus"]) visible = false;
+      if (target.dataset["ownFocus"]) visible = false;
       setRect({
         top: boundingRect.top,
         left: boundingRect.left,
@@ -27,16 +26,26 @@ export const FocusIndicator: React.FC = function FocusIndicator() {
       });
       setVisible(visible);
     }
+    function onResize() {
+      if (!(document.activeElement instanceof HTMLElement)) return;
+      highlightTarget(document.activeElement);
+    }
+    function onFocusIn(ev: FocusEvent) {
+      if (!(ev.target instanceof HTMLElement)) return;
+      highlightTarget(ev.target);
+    }
     function onFocusOut(ev: FocusEvent) {
       setVisible(false);
     }
 
     window.addEventListener("focusin", onFocusIn);
     window.addEventListener("focusout", onFocusOut);
+    window.addEventListener("resize", onResize);
 
     return () => {
       window.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("focusout", onFocusOut);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 

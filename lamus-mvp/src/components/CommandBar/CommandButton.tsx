@@ -106,7 +106,7 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
             //@ts-ignore Setting CSS Variable
             position ? { "--command-button-position": position } : undefined
           }
-          tabindex={-1}
+          tabIndex={-1}
         >
           {lastKey && <span className="CommandButtonHotkey">{lastKey}</span>}
           {children}
