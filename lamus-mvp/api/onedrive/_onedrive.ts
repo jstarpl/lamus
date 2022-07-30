@@ -2,8 +2,8 @@ import crypto from "crypto";
 import fetch from "node-fetch";
 import { ALLOWED_ORIGINS } from "../_security";
 
-export const AZURE_CLIENT_ID = process.env.AZURE_CLIENT_ID;
-const apiUri = process.env.API_URI;
+export const AZURE_CLIENT_ID = process.env.AZURE_CLIENT_ID as string;
+const apiUri = process.env.API_URI as string;
 
 const AZURE_TOKEN_URI =
   "https://login.microsoftonline.com/common/oauth2/v2.0/token";

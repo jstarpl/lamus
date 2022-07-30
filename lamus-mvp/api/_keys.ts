@@ -8,8 +8,8 @@ export type KeyPair = {
 };
 
 const MASTER_ALGORITHM = "aes-256-cbc";
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
-const ENCRYPTION_IV = process.env.ENCRYPTION_IV;
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY as string;
+const ENCRYPTION_IV = process.env.ENCRYPTION_IV as string;
 
 export const KEY_ALGORITHM = "PS256";
 

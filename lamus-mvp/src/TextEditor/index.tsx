@@ -15,7 +15,7 @@ import { EVENT_UI_READY } from "../App";
 import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { CommandBar } from "../components/CommandBar";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -47,6 +47,7 @@ const TextEditor = observer(function TextEditor() {
 
   const editorCore = useRef<any>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
@@ -59,7 +60,11 @@ const TextEditor = observer(function TextEditor() {
 
   const onQuit = useCallback(() => {
     navigate("/");
-  }, []);
+  }, [navigate]);
+
+  const onSave = useCallback(() => {
+    navigate(`/files/filePicker?clb=${location.pathname}`);
+  }, [navigate, location]);
 
   useEffect(() => {
     function clickHandler(e: MouseEvent) {
@@ -122,6 +127,7 @@ const TextEditor = observer(function TextEditor() {
           position={2}
           highlight
           showOnlyWhenModifiersActive
+          onClick={onSave}
         >
           Save
         </CommandBar.Button>

@@ -3,6 +3,10 @@ import { useEffect, useState, useContext } from "react";
 import * as React from "react";
 import { AltDown, CtrlDown, MetaDown, ShiftDown } from "./CommandBar";
 
+const COMBO_SHORTHAND: Record<string, string> = {
+  Escape: "Esc",
+};
+
 interface IProps {
   combo?: string[];
   highlight?: boolean;
@@ -37,6 +41,8 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
     const isCtrlDown = useContext(CtrlDown);
     const isAltDown = useContext(AltDown);
     const isMetaDown = useContext(MetaDown);
+
+    const displayLastKey = (lastKey && COMBO_SHORTHAND[lastKey]) ?? lastKey;
 
     let display = true;
 
@@ -108,7 +114,9 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
           }
           tabIndex={-1}
         >
-          {lastKey && <span className="CommandButtonHotkey">{lastKey}</span>}
+          {lastKey && (
+            <span className="CommandButtonHotkey">{displayLastKey}</span>
+          )}
           {children}
         </button>
       </li>

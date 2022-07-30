@@ -28,7 +28,7 @@ export interface ISettings {
 
 const REQUIRED_SCOPES = ["dropbox.access_token"];
 
-export class AppStoreClass {
+class AppStoreClass {
   deviceId = "";
   token: string | null = null;
   tokenExpiresAt: Date | null = null;

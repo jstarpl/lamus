@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
-const clientId = process.env.DROPBOX_CLIENT_ID;
-const apiUri = process.env.API_URI;
+const clientId = process.env.DROPBOX_CLIENT_ID as string;
+const apiUri = process.env.API_URI as string;
 
 export const DROPBOX_CONFIG = {
   fetch,

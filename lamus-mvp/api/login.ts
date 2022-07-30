@@ -23,6 +23,11 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
     req.body?.scopes ??
     [];
 
+  if (!deviceId || !scopes) {
+    sendStatus(res, 401);
+    return;
+  }
+
   const noCreate = deArray(req.query.no_create) ?? req.body?.no_create ?? false;
 
   const supabase = createSupabaseClient();

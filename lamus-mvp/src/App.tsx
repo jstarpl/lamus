@@ -18,6 +18,7 @@ import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
 import Home from "./Home";
 import TextEditor from "./TextEditor";
+import { FileDialog } from "./FileManager/FileDialog";
 
 export const EVENT_UI_READY = "lamus:uiReady";
 
@@ -81,6 +82,7 @@ export function App() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Home />} />
             <Route path="/text" element={<TextEditor />} />
+            <Route path="/files/filePicker" element={<FileDialog />} />
             <Route path="*" element={<Navigate to={"/"} />} />
           </Routes>
         </AnimatePresence>
