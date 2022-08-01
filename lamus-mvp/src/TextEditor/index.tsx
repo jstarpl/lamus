@@ -15,7 +15,9 @@ import { EVENT_UI_READY } from "../App";
 import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { CommandBar } from "../components/CommandBar";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { FileDialog } from "../FileManager/FileDialog";
+import { AnimatePresence } from "framer-motion";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -47,7 +49,8 @@ const TextEditor = observer(function TextEditor() {
 
   const editorCore = useRef<any>(null);
   const navigate = useNavigate();
-  const location = useLocation();
+
+  const hasDialogOpen = EditorStore.isSaveFileDialogOpen;
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
@@ -63,8 +66,8 @@ const TextEditor = observer(function TextEditor() {
   }, [navigate]);
 
   const onSave = useCallback(() => {
-    navigate(`/files/filePicker?clb=${location.pathname}`);
-  }, [navigate, location]);
+    EditorStore.setOpenSaveFileDialog(true);
+  }, []);
 
   useEffect(() => {
     function clickHandler(e: MouseEvent) {
@@ -87,6 +90,10 @@ const TextEditor = observer(function TextEditor() {
       document.removeEventListener("click", clickHandler);
     };
   }, []);
+
+  function onDialogCancel() {
+    EditorStore.setOpenSaveFileDialog(false);
+  }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useCallback(
@@ -121,35 +128,42 @@ const TextEditor = observer(function TextEditor() {
         />
         <EmojiPicker />
       </div>
-      <CommandBar.Nav>
-        <CommandBar.Button
-          combo={SAVE_COMBO}
-          position={2}
-          highlight
-          showOnlyWhenModifiersActive
-          onClick={onSave}
-        >
-          Save
-        </CommandBar.Button>
-        <CommandBar.Button
-          combo={SAVE_AS_COMBO}
-          position={2}
-          highlight
-          showOnlyWhenModifiersActive
-        >
-          SaveAs
-        </CommandBar.Button>
-        <CommandBar.Button
-          combo={OPEN_COMBO}
-          position={3}
-          onClick={console.log}
-        >
-          Open
-        </CommandBar.Button>
-        <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
-          Quit
-        </CommandBar.Button>
-      </CommandBar.Nav>
+      {!hasDialogOpen && (
+        <CommandBar.Nav key="command-bar">
+          <CommandBar.Button
+            combo={SAVE_COMBO}
+            position={2}
+            highlight
+            showOnlyWhenModifiersActive
+            onClick={onSave}
+          >
+            Save
+          </CommandBar.Button>
+          <CommandBar.Button
+            combo={SAVE_AS_COMBO}
+            position={2}
+            highlight
+            showOnlyWhenModifiersActive
+          >
+            SaveAs
+          </CommandBar.Button>
+          <CommandBar.Button
+            combo={OPEN_COMBO}
+            position={3}
+            onClick={console.log}
+          >
+            Open
+          </CommandBar.Button>
+          <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
+            Quit
+          </CommandBar.Button>
+        </CommandBar.Nav>
+      )}
+      <AnimatePresence>
+        {EditorStore.isSaveFileDialogOpen && (
+          <FileDialog key="save-file-dialog" onCancel={onDialogCancel} />
+        )}
+      </AnimatePresence>
     </div>
   );
 });

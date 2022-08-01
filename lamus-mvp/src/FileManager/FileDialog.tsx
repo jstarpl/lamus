@@ -1,18 +1,19 @@
 import { motion } from "framer-motion";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { EVENT_UI_READY } from "../App";
 import { CommandBar } from "../components/CommandBar";
 import { EmojiPicker } from "../components/EmojiPicker";
 
+interface IProps {
+  onCancel?: () => void;
+  onAccept?: () => void;
+}
+
 const CANCEL_COMBO = ["Escape"];
 const RENAME_COMBO = ["F2"];
 
-export const FileDialog = observer(function FileDialog(props: {}) {
-  const location = useLocation();
-  const navigate = useNavigate();
-
+export const FileDialog = observer(function FileDialog({ onCancel }: IProps) {
   useEffect(() => {
     window.dispatchEvent(new CustomEvent(EVENT_UI_READY));
   }, []);
@@ -27,33 +28,19 @@ export const FileDialog = observer(function FileDialog(props: {}) {
     });
   }
 
-  function onCancel() {
-    const params = new URLSearchParams(location.search);
-    if (!params.has("clb")) {
-      navigate("/");
-    }
-
-    const clb = params.get("clb") ?? "/";
-    let clbSearchParams = "";
-    let clbSearchStringStarts = clb.indexOf("?");
-    if (clbSearchStringStarts >= 0) {
-      clbSearchParams = clb.substring(clbSearchStringStarts);
-    } else {
-      clbSearchStringStarts = clb.length;
-    }
-    const navigateTo = clb.substring(0, clbSearchStringStarts);
-    const searchParams = new URLSearchParams(clbSearchParams);
-    searchParams.set("error", "cancelled");
-    const searchParamsStr = searchParams.toString();
-    navigate(navigateTo + (searchParamsStr ? "?" + searchParamsStr : ""));
-  }
-
   return (
     <motion.div
       className="FileManager FileDialog sdi-app"
       exit={{ zIndex: 99 }}
       transition={{ duration: 0.5 }}
     >
+      <motion.div
+        className="dialog__backdrop dialog__backdrop--full-screen-dialog"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, zIndex: 98 }}
+        transition={{ duration: 0.5 }}
+      ></motion.div>
       <motion.div
         className="Document sdi-app-workspace bg-files"
         initial={{ y: "-100%", opacity: 1 }}

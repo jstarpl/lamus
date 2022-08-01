@@ -17,6 +17,7 @@ class EditorStoreClass {
     providerId: "dropbox",
   };
   meta: any = null;
+  isSaveFileDialogOpen: boolean = false;
 
   private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
@@ -66,6 +67,10 @@ class EditorStoreClass {
 
     this.file.fileName = result.fileName || this.file.fileName;
     this.file.meta = result.meta || null;
+  }
+
+  setOpenSaveFileDialog(open: boolean) {
+    this.isSaveFileDialogOpen = open;
   }
 }
 

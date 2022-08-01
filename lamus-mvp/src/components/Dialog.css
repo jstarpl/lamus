@@ -1,16 +1,16 @@
 dialog {
-	position: fixed;
-	border: none;
-	background: linear-gradient(to bottom, #E8E0AC, #FEF8CF 50%);
-	border-radius: var(--border-radius) var(--border-radius) 0 0;
-	top: auto;
-	bottom: 0;
-	width: 75vw;
-	max-width: 750px;
-	box-shadow: 0 2px 20px 2px rgba(0, 0, 0, 1);
-	padding: 0;
-	z-index: 100;
-	font-size: 2.25rem;
+  position: fixed;
+  border: none;
+  background: linear-gradient(to bottom, #e8e0ac, #fef8cf 50%);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  top: auto;
+  bottom: 0;
+  width: 75vw;
+  max-width: 750px;
+  box-shadow: 0 2px 20px 2px rgba(0, 0, 0, 1);
+  padding: 0;
+  z-index: 100;
+  font-size: 2.25rem;
 }
 
 dialog h1,
@@ -19,38 +19,45 @@ dialog h3,
 dialog h4,
 dialog h5,
 dialog h6 {
-	font-family: var(--system-header-font-family);
-	font-weight: 400;
-	margin: 0.55em 0.88em;
+  font-family: var(--system-header-font-family);
+  font-weight: 400;
+  margin: 0.55em 0.88em;
 }
 
 dialog p {
-	font-size: 0.77em;
-	font-weight: 400;
-	margin: 0.55em 0.882em 0.88em;
+  font-size: 0.77em;
+  font-weight: 400;
+  margin: 0.55em 0.882em 0.88em;
 }
 
 dialog::backdrop,
 .dialog__backdrop {
-	position: fixed;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	background: rgba(0, 0, 0, 0.75);
-	z-index: 99;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 99;
+}
+
+.dialog__backdrop--full-screen-dialog {
+  z-index: auto;
+  bottom: var(--command-bar-height);
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
 }
 
 dialog .buttons {
-	display: flex;
+  display: flex;
 }
 
-dialog .buttons>button {
-	flex: 1 1;
-	background: linear-gradient(to bottom, #9AAB94, #BCD1B4 50%);
-	border: none;
-	border-radius: 0;
-	font-size: 1em;
-	padding: 0.44em 0.88em;
-	text-align: left;
+dialog .buttons > button {
+  flex: 1 1;
+  background: linear-gradient(to bottom, #9aab94, #bcd1b4 50%);
+  border: none;
+  border-radius: 0;
+  font-size: 1em;
+  padding: 0.44em 0.88em;
+  text-align: left;
 }
