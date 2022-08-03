@@ -39,24 +39,25 @@ export const CommandBar: React.FC<React.PropsWithChildren<{}>> =
     }, []);
 
     return (
-      <nav className="CommandBar sdi-app-cmdbar">
+      <div className="CommandBar sdi-app-cmdbar">
         <AltDown.Provider value={isAltDown}>
           <CtrlDown.Provider value={isCtrlDown}>
             <ShiftDown.Provider value={isShiftDown}>
               <MetaDown.Provider value={isMetaDown}>
-                <motion.ul
+                <motion.menu
                   layout
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%", opacity: 0 }}
                   transition={{ duration: 0.5 }}
+                  role="menubar"
                 >
                   {children}
-                </motion.ul>
+                </motion.menu>
               </MetaDown.Provider>
             </ShiftDown.Provider>
           </CtrlDown.Provider>
         </AltDown.Provider>
-      </nav>
+      </div>
     );
   };

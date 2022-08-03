@@ -2,7 +2,7 @@
   user-select: none;
 }
 
-.CommandBar > ul {
+.CommandBar > menu {
   display: grid;
   margin: 0;
   padding: 0 var(--border-radius);
@@ -10,13 +10,13 @@
   gap: var(--command-bar-gap);
 }
 
-.CommandBar > ul > li.CommandButton {
+.CommandBar > menu > li.CommandButton {
   display: contents;
   margin: 0;
   padding: 0;
 }
 
-.CommandBar > ul > li.CommandButton > button {
+.CommandBar > menu > li.CommandButton > button {
   display: block;
   position: relative;
   appearance: none;
@@ -34,7 +34,7 @@
   box-sizing: border-box;
 }
 
-.CommandBar > ul > li.CommandButton > button > .CommandButtonHotkey {
+.CommandBar > menu > li.CommandButton > button > .CommandButtonHotkey {
   display: inline-block;
   background: linear-gradient(
     to bottom,
@@ -50,35 +50,35 @@
 }
 
 @media screen and (max-width: 560px) {
-  .CommandBar > ul > li.CommandButton > button {
+  .CommandBar > menu > li.CommandButton > button {
     padding: 0 var(--command-bar-gap);
     text-align: center;
   }
 
-  .CommandBar > ul > li.CommandButton > button > .CommandButtonHotkey {
+  .CommandBar > menu > li.CommandButton > button > .CommandButtonHotkey {
     display: none;
   }
 
-  .CommandBar > ul > li.CommandButton > button:active,
-  .CommandBar > ul > li.CommandButton.active > button {
+  .CommandBar > menu > li.CommandButton > button:active,
+  .CommandBar > menu > li.CommandButton.active > button {
     color: var(--color-black);
     border-color: var(--color-white);
     background: var(--color-white);
   }
 
-  .CommandBar > ul > li.CommandButton.highlight > button:active::after,
-  .CommandBar > ul > li.CommandButton.active.highlight > button::after {
+  .CommandBar > menu > li.CommandButton.highlight > button:active::after,
+  .CommandBar > menu > li.CommandButton.active.highlight > button::after {
     display: none;
   }
 }
 
 @media screen and (max-width: 420px) {
-  .CommandBar > ul {
+  .CommandBar > menu {
     grid-template: 1fr / repeat(7, 7fr);
   }
 }
 
-.CommandBar > ul > li.CommandButton.highlight > button::after {
+.CommandBar > menu > li.CommandButton.highlight > button::after {
   content: " ";
   display: block;
   position: absolute;
@@ -90,8 +90,8 @@
   border-radius: var(--command-bar-radius) var(--command-bar-radius) 0 0;
 }
 
-.CommandBar > ul > li.CommandButton > button:active > .CommandButtonHotkey,
-.CommandBar > ul > li.CommandButton.active > button > .CommandButtonHotkey {
+.CommandBar > menu > li.CommandButton > button:active > .CommandButtonHotkey,
+.CommandBar > menu > li.CommandButton.active > button > .CommandButtonHotkey {
   color: var(--color-black);
   border-color: var(--color-white);
   background: var(--color-white);

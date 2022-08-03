@@ -18,12 +18,16 @@ export const FocusIndicator: React.FC = function FocusIndicator() {
       const boundingRect = target.getBoundingClientRect();
       let visible = true;
       if (target.dataset["ownFocus"]) visible = false;
-      setRect({
-        top: boundingRect.top,
-        left: boundingRect.left,
-        height: boundingRect.height,
-        width: boundingRect.width,
-      });
+      if (boundingRect.bottom > 0 && boundingRect.top < window.innerHeight) {
+        setRect({
+          top: boundingRect.top,
+          left: boundingRect.left,
+          height: boundingRect.height,
+          width: boundingRect.width,
+        });
+      } else {
+        setRect(null);
+      }
       setVisible(visible);
     }
     function onResize() {

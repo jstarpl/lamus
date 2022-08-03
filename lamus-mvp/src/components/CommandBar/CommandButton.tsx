@@ -113,6 +113,7 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
             position ? { "--command-button-position": position } : undefined
           }
           tabIndex={-1}
+          role="menuitem"
         >
           {lastKey && (
             <span className="CommandButtonHotkey">{displayLastKey}</span>
