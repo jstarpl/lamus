@@ -18,7 +18,6 @@ import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
 import Home from "./Home";
 import TextEditor from "./TextEditor";
-import { FileDialog } from "./FileManager/FileDialog";
 
 export const EVENT_UI_READY = "lamus:uiReady";
 

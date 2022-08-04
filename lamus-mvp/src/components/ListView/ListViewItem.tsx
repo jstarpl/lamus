@@ -25,6 +25,8 @@ export const ListViewItem = function ListViewItem({
         "selected--middle": selected === SelectedState.Middle,
       })}
       role="option"
+      data-own-cursor-navigation
+      data-own-focus
       aria-selected={!!selected}
       data-value={itemValue}
       tabIndex={-1}

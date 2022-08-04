@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { FocusIndicator } from "../helpers/FocusIndicator";
+import { useFocusTrap } from "../helpers/useFocusTrap";
 import "./Dialog.css";
 
 function isElementChildOf(element: HTMLElement, parent: HTMLElement) {
@@ -67,24 +68,7 @@ export const Dialog: React.FC<React.PropsWithChildren<{}>> = function Dialog({
     };
   }, [focusButton]);
 
-  function onFocusStart() {
-    if (!dialogRef.current) return;
-    const focusableElements =
-      dialogRef.current.querySelectorAll<HTMLElement>("button, input");
-    console.log(focusableElements);
-    if (focusableElements.length === 0) return;
-    setTimeout(() => {
-      focusableElements[focusableElements.length - 1].focus();
-    }, 1);
-  }
-
-  function onFocusEnd() {
-    if (!dialogRef.current) return;
-    const focusableElements =
-      dialogRef.current.querySelectorAll<HTMLElement>("button, input");
-    if (focusableElements.length === 0) return;
-    focusableElements[0].focus();
-  }
+  const [focusTrapStart, focusTrapEnd] = useFocusTrap(dialogRef);
 
   return (
     <>
@@ -92,10 +76,10 @@ export const Dialog: React.FC<React.PropsWithChildren<{}>> = function Dialog({
       <div className="dialog__backdrop"></div>
       <dialog open ref={dialogRef}>
         {/* Focus trap */}
-        <div tabIndex={0} onFocusCapture={onFocusStart}></div>
+        {focusTrapStart}
         {children}
         {/* Focus trap */}
-        <div tabIndex={0} onFocusCapture={onFocusEnd}></div>
+        {focusTrapEnd}
       </dialog>
     </>
   );

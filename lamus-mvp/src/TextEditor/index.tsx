@@ -76,6 +76,7 @@ const TextEditor = observer(function TextEditor() {
         (el) =>
           el instanceof HTMLElement &&
           (el.classList.contains("codex-editor") ||
+            el.classList.contains("Dialog") ||
             el.nodeName === "DIALOG" ||
             el.nodeName === "EM-EMOJI-PICKER")
       );

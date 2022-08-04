@@ -6,7 +6,7 @@ type TargetValue = { value: string[] };
 export type ListViewChangeEvent = CustomEvent<TargetValue>;
 
 interface IProps {
-  children?: JSX.Element[];
+  children?: JSX.Element[] | JSX.Element;
   multiple?: boolean;
   value?: string[];
   initialValue?: string[];
@@ -66,6 +66,11 @@ export const ListViewList = function ListViewList({
   const testedValue = value ?? localValue;
 
   let inSequence = false;
+  children = Array.isArray(children)
+    ? children
+    : children !== undefined
+    ? [children]
+    : [];
   const childrenNodes =
     children?.map((node, index, array) => {
       const key = `${node.key}`;
@@ -194,7 +199,7 @@ export const ListViewList = function ListViewList({
       const thisIndex = Array.from(allItems).indexOf(e.target);
 
       let newValue = testedValue;
-      if (ctrlState.current) {
+      if (multiple && ctrlState.current) {
         if (!inPointerEvent.current && !shiftState.current) return;
         if (testedValue.includes(itemValue)) {
           newValue = testedValue.filter((value) => value !== itemValue);
@@ -202,7 +207,7 @@ export const ListViewList = function ListViewList({
           newValue = [...testedValue, itemValue];
         }
         startIndex.current = thisIndex;
-      } else if (shiftState.current) {
+      } else if (multiple && shiftState.current) {
         // TODO: Select all between lastIndex and thisIndex
         if (startIndex.current !== undefined) {
           let newSelected: string[] = [];
@@ -244,7 +249,7 @@ export const ListViewList = function ListViewList({
     return () => {
       el.removeEventListener("focusin", onFocusIn);
     };
-  }, [isControlled, testedValue, onChange]);
+  }, [isControlled, testedValue, multiple, onChange]);
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
@@ -295,6 +300,8 @@ export const ListViewList = function ListViewList({
       ref={listEl}
       className="list-view"
       aria-multiselectable={multiple}
+      data-own-cursor-navigation
+      data-own-focus
       role="listbox"
       tabIndex={0}
     >

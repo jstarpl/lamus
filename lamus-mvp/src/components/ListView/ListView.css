@@ -1,14 +1,55 @@
+.list-view {
+  display: block;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  scroll-behavior: smooth;
+}
+
 .list-view-item {
-  margin: 0 0 1em 0;
-  border: 5px solid red;
-  box-sizing: border-box;
-  ;
+  display: block;
+  padding: 0.5em;
+  margin: 0;
+  border: 5px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
 }
 
 .list-view-item:focus {
-  border: 5px solid blue;
+  border-color: var(--color-tone);
 }
 
 .list-view-item.selected {
-  background: magenta;
+  background: linear-gradient(
+    to bottom,
+    var(--color-list-selection) 0%,
+    var(--color-white) 1em
+  );
+  background-clip: padding-box;
+}
+
+.list-view-item.selected.selected--first:not(:focus) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+  padding-bottom: calc(0.5em + 5px);
+}
+
+.list-view-item.selected.selected--last:not(:focus) {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: none;
+  padding-top: calc(0.5em + 5px);
+  background: var(--color-white);
+  background-clip: padding-box;
+}
+
+.list-view-item.selected.selected--middle:not(:focus) {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  padding-top: calc(0.5em + 5px);
+  padding-bottom: calc(0.5em + 5px);
+  background: var(--color-white);
+  background-clip: padding-box;
 }

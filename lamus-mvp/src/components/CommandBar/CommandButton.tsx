@@ -2,9 +2,11 @@ import classNames from "classnames";
 import { useEffect, useState, useContext } from "react";
 import * as React from "react";
 import { AltDown, CtrlDown, MetaDown, ShiftDown } from "./CommandBar";
+import { EnterIcon } from "./EnterIcon";
 
-const COMBO_SHORTHAND: Record<string, string> = {
+const COMBO_SHORTHAND: Record<string, string | JSX.Element> = {
   Escape: "Esc",
+  Enter: <EnterIcon />,
 };
 
 interface IProps {

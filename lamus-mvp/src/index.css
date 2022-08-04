@@ -91,6 +91,7 @@
   */
   --color-focus: #308AFF;
   --color-hightlight: #FF96A0;
+  --color-list-selection: #FCF9E9;
 }
 
 @media screen and (max-width: 750px),

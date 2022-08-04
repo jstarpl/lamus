@@ -132,6 +132,8 @@ function findClosestElementInDirection(
 export function useCursorNavigation() {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      const focusedElement = document.querySelector(":focus") as HTMLElement;
+
       if (
         !CURSOR_KEYS.includes(e.key) ||
         e.ctrlKey ||
@@ -140,10 +142,30 @@ export function useCursorNavigation() {
         e.altKey
       )
         return;
+
+      if (focusedElement?.dataset["ownCursorNavigation"]) return;
+      if (
+        (e.key === "ArrowLeft" || e.key === "ArrowRight") &&
+        focusedElement.nodeName === "INPUT" &&
+        [
+          "text",
+          "password",
+          "url",
+          "email",
+          "date",
+          "datetime-local",
+          "month",
+          "week",
+          "number",
+          "tel",
+          "time",
+        ].includes(focusedElement.getAttribute("type") ?? "")
+      )
+        return;
+
       e.preventDefault();
       e.stopPropagation();
 
-      const focusedElement = document.querySelector(":focus") as HTMLElement;
       const isDialogOpen = !!document.querySelector("dialog[open]");
       const focusableSelector = isDialogOpen
         ? // if a Dialog is open, limit the focusable elements to only the ones in the open dialog
