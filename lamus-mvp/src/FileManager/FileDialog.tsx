@@ -2,7 +2,6 @@ import { motion, TargetAndTransition } from "framer-motion";
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
-import { EVENT_UI_READY } from "../App";
 import { CommandBar } from "../components/CommandBar";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { ListView } from "../components/ListView";
@@ -36,10 +35,6 @@ export const FileDialog = observer(function FileDialog({ onCancel }: IProps) {
     undefined
   );
   const [status, setStatus] = useState<LoadStatus>(LoadStatus.LOADING);
-
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent(EVENT_UI_READY));
-  }, []);
 
   useCursorNavigation();
 
@@ -118,24 +113,30 @@ export const FileDialog = observer(function FileDialog({ onCancel }: IProps) {
         onAnimationComplete={onAnimationComplete}
       >
         {focusTrapStart}
+        <div className="FileDialog__layout">
+          <div className="FileDialog__pane">
+            {status === LoadStatus.LOADING && (
+              <PulseLoader size="1em" color="currentcolor" />
+            )}
+            {status === LoadStatus.OK && (
+              <ListView.List
+                multiple
+                value={selectedFiles}
+                onChange={(e) => setSelectedFiles(e.detail.value)}
+              >
+                {fileList.map((file) => (
+                  <ListView.Item key={file.fileName} value={file.fileName}>
+                    {file.fileName}
+                  </ListView.Item>
+                ))}
+              </ListView.List>
+            )}
+          </div>
+          <div className="FileDialog__fileNameInput">
+            <input type="text" data-focus />
+          </div>
+        </div>
         <EmojiPicker />
-        {status === LoadStatus.LOADING && (
-          <PulseLoader size="1em" color="currentcolor" />
-        )}
-        {status === LoadStatus.OK && (
-          <ListView.List
-            multiple
-            value={selectedFiles}
-            onChange={(e) => setSelectedFiles(e.detail.value)}
-          >
-            {fileList.map((file) => (
-              <ListView.Item key={file.fileName} value={file.fileName}>
-                {file.fileName}
-              </ListView.Item>
-            ))}
-          </ListView.List>
-        )}
-        <input type="text" data-focus />
         {focusTrapEnd}
       </motion.div>
       <CommandBar.Nav>

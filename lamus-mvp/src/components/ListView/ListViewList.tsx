@@ -145,18 +145,13 @@ export const ListViewList = function ListViewList({
       const newFocus = allItems.item(newFocusIndex);
       if (!newFocus) return;
       inKeyboardEvent.current = direction;
-      newFocus.focus({
-        preventScroll: true,
-      });
+      newFocus.focus();
       inKeyboardEvent.current = false;
       newFocus.dispatchEvent(
         new FocusEvent("focusin", {
           bubbles: true,
         })
       );
-      newFocus.scrollIntoView({
-        behavior: "smooth",
-      });
       e.preventDefault();
     }
 
