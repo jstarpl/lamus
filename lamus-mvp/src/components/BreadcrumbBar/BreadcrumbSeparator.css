@@ -1,0 +1,7 @@
+.BreadcrumbBar__Separator {
+  display: inline-block;
+  background: none;
+  padding: 0.5em 0.25em;
+  border: none;
+  font-size: 1em;
+}

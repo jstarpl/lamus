@@ -9,8 +9,9 @@
   --system-header-font-family: "Abril Fatface", var(--emoji-font), Cambria,
     Cochin, Georgia, Times, "Times New Roman", serif;
   --border-radius: 8px;
+  --focus-border-width: 3px;
   --focus-border-radius: 7px;
-  --focus-border: 3px solid var(--color-focus);
+  --focus-border: var(--focus-border-width) solid var(--color-focus);
 
   --command-bar-height: 2.5em;
   --command-bar-font-size: 1.1em;

@@ -5,7 +5,7 @@
 .FileDialog__layout {
   display: grid;
   grid-template-columns: auto;
-  grid-template-rows: minmax(0, 100%) min-content;
+  grid-template-rows: min-content minmax(0, 100%) min-content;
   height: 100%;
   max-width: 50em;
   margin: 0 auto;
@@ -30,4 +30,8 @@
 
 .FileDialog__layout > .FileDialog__fileNameInput {
   padding-top: 1em;
+}
+
+.FileDialog__layout > .FileDialog__path {
+  padding-bottom: 1em;
 }

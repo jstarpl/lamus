@@ -146,7 +146,7 @@ export function useCursorNavigation() {
       if (focusedElement?.dataset["ownCursorNavigation"]) return;
       if (
         (e.key === "ArrowLeft" || e.key === "ArrowRight") &&
-        focusedElement.nodeName === "INPUT" &&
+        focusedElement?.nodeName === "INPUT" &&
         [
           "text",
           "password",

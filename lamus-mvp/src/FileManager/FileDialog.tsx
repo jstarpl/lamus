@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
 import { Path } from "../stores/fileSystem/IFileSystemProvider";
 import { ProviderId } from "../stores/FileSystemStore";
+import { BreadcrumbBar } from "../components/BreadcrumbBar";
 
 interface IProps {
   defaultFileName?: string;
@@ -177,6 +178,19 @@ export const FileDialog = observer(function FileDialog({
       >
         {focusTrapStart}
         <div className="FileDialog__layout">
+          <div className="FileDialog__path">
+            {currentStorage && (
+              <BreadcrumbBar.Bar>
+                <BreadcrumbBar.Crumb>
+                  {AppStore.fileSystem.providers.get(currentStorage)?.name}
+                </BreadcrumbBar.Crumb>
+                <BreadcrumbBar.Separator />
+                {currentPath.map((pathSegment) => (
+                  <BreadcrumbBar.Crumb>{pathSegment}</BreadcrumbBar.Crumb>
+                ))}
+              </BreadcrumbBar.Bar>
+            )}
+          </div>
           <div className="FileDialog__pane">
             {status === LoadStatus.LOADING && (
               <div className="Spinner">
