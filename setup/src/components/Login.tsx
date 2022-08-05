@@ -50,10 +50,10 @@ export const Login = observer(function Login(props) {
 
   const onQrCodeResult = useCallback(
     (result: QrScanner.ScanResult) => {
-      if (result.data.startsWith("https://setup.lamus.jsbg.pl/d/")) {
+      if (result.data.startsWith("https://setup.lamus.cloud/d/")) {
         console.log(result.data);
         const deviceId = result.data.replace(
-          /^https:\/\/setup.lamus.jsbg.pl\/d\//,
+          /^https:\/\/setup.lamus.cloud\/d\//,
           ""
         );
         onLogin(deviceId)
