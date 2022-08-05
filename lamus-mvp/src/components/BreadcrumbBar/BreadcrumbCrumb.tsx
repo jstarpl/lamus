@@ -1,7 +1,16 @@
 import "./BreadcrumbCrumb.css";
 
-interface IProps {}
+interface IProps {
+  onClick?: React.MouseEventHandler;
+}
 
-export function BreadcrumbCrumb({ children }: React.PropsWithChildren<IProps>) {
-  return <button className="BreadcrumbBar__Crumb">{children}</button>;
+export function BreadcrumbCrumb({
+  children,
+  onClick,
+}: React.PropsWithChildren<IProps>) {
+  return (
+    <button className="BreadcrumbBar__Crumb" onClick={onClick}>
+      {children}
+    </button>
+  );
 }

@@ -9,7 +9,7 @@ import { KeyboardHandler } from "../helpers/useKeyboardHandler";
 const KONAMI_CODE =
   "ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight KeyB KeyA";
 
-const ADMIN_URL_BASE = "https://setup.lamus.jsbg.pl/d";
+const ADMIN_URL_BASE = "https://setup.lamus.cloud/d";
 
 function generateAdminUrl(deviceId: string) {
   return `${ADMIN_URL_BASE}/${deviceId}`;

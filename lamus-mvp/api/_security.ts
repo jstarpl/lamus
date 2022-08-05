@@ -1,6 +1,6 @@
 export const ALLOWED_ORIGINS = [
-  "https://lamus.jsbg.pl",
-  "https://setup.lamus.jsbg.pl",
+  "https://lamus.cloud",
+  "https://setup.lamus.cloud",
   "http://localhost:3000",
   "http://localhost:3001",
 ];
