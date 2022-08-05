@@ -6,7 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, MotionConfig } from "framer-motion";
 import "./App.css";
 import {
   KeyboardHandler,
@@ -76,16 +76,18 @@ export function App() {
 
   return (
     <div className="App">
-      <KeyboardHandler.Provider value={keyboardHandler}>
-        <AnimatePresence>
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Home />} />
-            <Route path="/text" element={<TextEditor />} />
-            <Route path="*" element={<Navigate to={"/"} />} />
-          </Routes>
-        </AnimatePresence>
-        <AdminCode />
-      </KeyboardHandler.Provider>
+      <MotionConfig reducedMotion="user">
+        <KeyboardHandler.Provider value={keyboardHandler}>
+          <AnimatePresence>
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<Home />} />
+              <Route path="/text" element={<TextEditor />} />
+              <Route path="*" element={<Navigate to={"/"} />} />
+            </Routes>
+          </AnimatePresence>
+          <AdminCode />
+        </KeyboardHandler.Provider>
+      </MotionConfig>
     </div>
   );
 }

@@ -28,6 +28,8 @@ const SAVE_AS_COMBO = ["Shift", "F2"];
 const OPEN_COMBO = ["F3"];
 const QUIT_COMBO = ["F10"];
 
+const DEFAULT_NEW_FILE_NAME = "New_Text_File.md";
+
 function focusEditor(retry?: number) {
   const mainEls = document.querySelectorAll(
     ".ce-paragraph.cdx-block"
@@ -162,7 +164,11 @@ const TextEditor = observer(function TextEditor() {
       )}
       <AnimatePresence>
         {EditorStore.isSaveFileDialogOpen && (
-          <FileDialog key="save-file-dialog" onCancel={onDialogCancel} />
+          <FileDialog
+            key="save-file-dialog"
+            onCancel={onDialogCancel}
+            defaultFileName={DEFAULT_NEW_FILE_NAME}
+          />
         )}
       </AnimatePresence>
     </div>

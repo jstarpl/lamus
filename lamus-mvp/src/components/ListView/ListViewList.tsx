@@ -1,4 +1,4 @@
-import { uniq } from "lodash";
+import { uniq, isEqual } from "lodash";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./ListView.css";
 
@@ -11,6 +11,8 @@ interface IProps {
   value?: string[];
   initialValue?: string[];
   onChange?: (e: ListViewChangeEvent) => void;
+  onFocus?: (e: FocusEvent) => void;
+  onBlur?: (e: FocusEvent) => void;
 }
 
 export enum SelectedState {
@@ -30,6 +32,8 @@ export const ListViewList = function ListViewList({
   value,
   initialValue,
   onChange,
+  onFocus,
+  onBlur,
 }: IProps) {
   const [isControlled] = useState(value !== undefined);
   const [localValue, setLocalValue] = useState(initialValue ?? []);
@@ -224,7 +228,7 @@ export const ListViewList = function ListViewList({
 
       newValue = uniq(newValue);
 
-      if (onChange) {
+      if (onChange && !isEqual(value, newValue)) {
         onChange(
           new CustomEvent<TargetValue>("change", {
             detail: {
@@ -244,7 +248,7 @@ export const ListViewList = function ListViewList({
     return () => {
       el.removeEventListener("focusin", onFocusIn);
     };
-  }, [isControlled, testedValue, multiple, onChange]);
+  }, [isControlled, testedValue, value, multiple, onChange]);
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
@@ -289,6 +293,27 @@ export const ListViewList = function ListViewList({
       el.removeEventListener("keydown", onKeyDown);
     };
   }, [testedValue, isControlled, onChange]);
+
+  useLayoutEffect(() => {
+    if (!listEl.current) return;
+    const el = listEl.current;
+
+    function onLocalFocus(e: FocusEvent) {
+      onFocus && onFocus(e);
+    }
+
+    function onLocalBlur(e: FocusEvent) {
+      onBlur && onBlur(e);
+    }
+
+    el.addEventListener("focusin", onLocalFocus);
+    el.addEventListener("focusout", onLocalBlur);
+
+    return () => {
+      el.removeEventListener("focusin", onLocalFocus);
+      el.removeEventListener("focusout", onLocalBlur);
+    };
+  }, [onFocus, onBlur]);
 
   return (
     <ul

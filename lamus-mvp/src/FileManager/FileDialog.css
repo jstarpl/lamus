@@ -5,12 +5,29 @@
 .FileDialog__layout {
   display: grid;
   grid-template-columns: auto;
-  grid-template-rows: minmax(0, 100%) 2em;
-  max-height: 100%;
+  grid-template-rows: minmax(0, 100%) min-content;
+  height: 100%;
+  max-width: 50em;
+  margin: 0 auto;
+  padding: 2em 1em 1em;
+  box-sizing: border-box;
 }
 
 .FileDialog__layout > .FileDialog__pane {
   overflow: auto;
   scroll-behavior: auto;
-  scroll-padding: 35%;
+  scroll-padding: 2.5em;
+  padding: 0 0.5em 0 0;
+}
+
+.FileDialog__layout > .FileDialog__pane > .Spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--color-tone);
+}
+
+.FileDialog__layout > .FileDialog__fileNameInput {
+  padding-top: 1em;
 }

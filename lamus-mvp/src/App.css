@@ -3,48 +3,6 @@ body {
   color: #000;
 }
 
-::-webkit-scrollbar {
-  width: calc(var(--border-radius) * 2);
-  height: calc(var(--border-radius) * 2);
-}
-
-::-webkit-scrollbar-button {
-  width: 0px;
-  height: 0px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-tone, var(--color-general-2));
-  border: 0.15rem solid var(--color-tint-1, var(--color-general-3));
-  border-radius: var(--border-radius);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-shade, var(--color-general-1));
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: var(--color-white);
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-tint-1, var(--color-general-3));
-  border: 0px none;
-  border-radius: 50px;
-}
-
-::-webkit-scrollbar-track:hover {
-  background: var(--color-tint-1, var(--color-general-3));
-}
-
-::-webkit-scrollbar-track:active {
-  background: var(--color-tint-1, var(--color-general-3));
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
 html {
   overflow: hidden;
 }

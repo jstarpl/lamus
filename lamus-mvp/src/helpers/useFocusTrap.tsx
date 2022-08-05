@@ -7,7 +7,6 @@ export function useFocusTrap(ref?: React.RefObject<HTMLElement>) {
     const focusableElements = root.querySelectorAll<HTMLElement>(
       'button, input, [tabindex]:not([tabindex="-1"]):not([data-focus-trap])'
     );
-    console.log(focusableElements);
     if (focusableElements.length === 0) return;
     setTimeout(() => {
       focusableElements[focusableElements.length - 1].focus();

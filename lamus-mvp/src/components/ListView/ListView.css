@@ -19,12 +19,19 @@
   border-color: var(--color-tone);
 }
 
-.list-view-item.selected {
+.list-view .list-view-item.selected {
+  --base-background-color: var(--color-light-50);
+  background: var(--color-light-50);
+  background-clip: padding-box;
+}
+
+.list-view:focus-within .list-view-item.selected {
   background: linear-gradient(
     to bottom,
     var(--color-list-selection) 0%,
-    var(--color-white) 1em
+    var(--color-light) 1em
   );
+  --base-background-color: var(--color-light);
   background-clip: padding-box;
 }
 
@@ -40,7 +47,7 @@
   border-top-right-radius: 0;
   border-top: none;
   padding-top: calc(0.5em + 5px);
-  background: var(--color-white);
+  background: var(--base-background-color, var(--color-light-50));
   background-clip: padding-box;
 }
 
@@ -50,6 +57,6 @@
   border-bottom: none;
   padding-top: calc(0.5em + 5px);
   padding-bottom: calc(0.5em + 5px);
-  background: var(--color-white);
+  background: var(--base-background-color, var(--color-light-50));
   background-clip: padding-box;
 }

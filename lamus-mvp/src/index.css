@@ -1,12 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Fira+Sans:ital,wght@0,100;0,400;0,700;0,900;1,100;1,400;1,700;1,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Colr+Emoji+Glyf&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Fira+Sans:ital,wght@0,100;0,400;0,700;0,900;1,100;1,400;1,700;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Colr+Emoji+Glyf&display=swap");
 
 :root {
-  --emoji-font: 'Noto Colr Emoji Glyf';
-  --system-font-family: 'Fira Sans', var(--emoji-font), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  --system-header-font-family: 'Abril Fatface', var(--emoji-font), Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  --emoji-font: "Noto Colr Emoji Glyf";
+  --system-font-family: "Fira Sans", var(--emoji-font), -apple-system,
+    BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+  --system-header-font-family: "Abril Fatface", var(--emoji-font), Cambria,
+    Cochin, Georgia, Times, "Times New Roman", serif;
   --border-radius: 8px;
   --focus-border-radius: 7px;
   --focus-border: 3px solid var(--color-focus);
@@ -15,6 +16,8 @@
   --command-bar-font-size: 1.1em;
   --command-bar-radius: 4px;
   --command-bar-gap: 4px;
+
+  --scroll-bar-radius: 5px;
 
   /*
     Palette
@@ -27,9 +30,9 @@
     Use: Editors, Workspaces, Canvases
   */
   --color-general-1: #605611;
-  --color-general-2: #D1C570;
-  --color-general-3: #EDE3A9;
-  --color-general-4: #FFF8CF;
+  --color-general-2: #d1c570;
+  --color-general-3: #ede3a9;
+  --color-general-4: #fff8cf;
   --color-general: var(--color-general-2);
 
   /*
@@ -37,10 +40,10 @@
     ---
     Use: Yes, Accept, Succcess, Settings
   */
-  --color-success-1: #295F11;
-  --color-success-2: #97B888;
-  --color-success-3: #D6E3D0;
-  --color-success-4: #EFF4ED;
+  --color-success-1: #295f11;
+  --color-success-2: #97b888;
+  --color-success-3: #d6e3d0;
+  --color-success-4: #eff4ed;
   --color-success: var(--color-success-2);
 
   /*
@@ -48,10 +51,10 @@
     ---
     Use: File management, File Select/Store dialogs
   */
-  --color-files-1: #11335F;
-  --color-files-2: #9EC0EC;
-  --color-files-3: #D0DDEE;
-  --color-files-4: #EBF2FB;
+  --color-files-1: #11335f;
+  --color-files-2: #9ec0ec;
+  --color-files-3: #d0ddee;
+  --color-files-4: #ebf2fb;
   --color-files: var(--color-files-2);
 
   /*
@@ -59,10 +62,10 @@
     ---
     Use: No, Reject, Remove, Destructive operations
   */
-  --color-danger-1: #5F1E11;
-  --color-danger-2: #CC887A;
-  --color-danger-3: #F0D2CC;
-  --color-danger-4: #FBEDEA;
+  --color-danger-1: #5f1e11;
+  --color-danger-2: #cc887a;
+  --color-danger-3: #f0d2cc;
+  --color-danger-4: #fbedea;
   --color-danger: var(--color-danger-2);
 
   /*
@@ -70,32 +73,33 @@
     ---
     Use: Only for brand-related use, no meaning
   */
-  --color-brand-1: #502B00;
-  --color-brand-2: #CD6F00;
-  --color-brand-3: #F4D4AE;
-  --color-brand-4: #FFEDD7;
+  --color-brand-1: #502b00;
+  --color-brand-2: #cd6f00;
+  --color-brand-3: #f4d4ae;
+  --color-brand-4: #ffedd7;
   --color-brand: var(--color-brand-2);
 
   --color-dark-1: #000000;
-  --color-dark-2: #0F0F0F;
-  --color-dark-3: #2F2F2F;
+  --color-dark-2: #0f0f0f;
+  --color-dark-3: #2f2f2f;
   --color-dark-4: #414141;
   --color-dark: var(--color-dark-3);
   --color-black: var(--color-dark-1);
 
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
   --color-light: var(--color-white);
+  --color-white-50: #ffffff80;
+  --color-light-50: var(--color-white-50);
 
   /*
     Special UI colors
   */
-  --color-focus: #308AFF;
-  --color-hightlight: #FF96A0;
-  --color-list-selection: #FCF9E9;
+  --color-focus: #308aff;
+  --color-hightlight: #ff96a0;
+  --color-list-selection: #fcf9e9;
 }
 
-@media screen and (max-width: 750px),
-screen and (max-height: 640px) {
+@media screen and (max-width: 750px), screen and (max-height: 640px) {
   :root {
     --command-bar-height: 1.75em;
     --command-bar-font-size: 0.8em;
@@ -160,6 +164,48 @@ screen and (max-height: 640px) {
 body {
   margin: 0;
   font-family: var(--system-font-family);
+}
+
+::-webkit-scrollbar {
+  width: calc(var(--border-radius) * 2);
+  height: calc(var(--border-radius) * 2);
+}
+
+::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-tone, var(--color-general-2));
+  border: 0.15rem solid var(--color-tint-1, var(--color-general-3));
+  border-radius: var(--border-radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-shade, var(--color-general-1));
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-white);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-tint-1, var(--color-general-3));
+  border: 0px none;
+  border-radius: 50px;
+}
+
+::-webkit-scrollbar-track:hover {
+  background: var(--color-tint-1, var(--color-general-3));
+}
+
+::-webkit-scrollbar-track:active {
+  background: var(--color-tint-1, var(--color-general-3));
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 h1,
@@ -262,7 +308,7 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   grid-template-rows: auto var(--command-bar-height);
 }
 
-.sdi-app>.sdi-app-workspace {
+.sdi-app > .sdi-app-workspace {
   overflow: scroll;
   overflow-x: hidden;
   overflow-y: overlay;
@@ -273,7 +319,16 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   box-shadow: 0 5px 12px #000000ff;
 }
 
-.sdi-app>.sdi-app-cmdbar {
+.sdi-app > .sdi-app-workspace *::-webkit-scrollbar-track {
+  border-radius: var(--scroll-bar-radius);
+}
+
+.sdi-app > .sdi-app-workspace *::-webkit-scrollbar-thumb {
+  border-radius: var(--scroll-bar-radius);
+  border-width: 0.2rem;
+}
+
+.sdi-app > .sdi-app-cmdbar {
   display: contents;
   font-size: var(--command-bar-font-size, 1em);
   color: var(--color-white);

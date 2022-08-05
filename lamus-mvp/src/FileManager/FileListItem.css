@@ -1,0 +1,14 @@
+.FileListItem {
+  display: grid;
+  grid-template: auto / 1em 3fr 1fr 1.5fr;
+}
+
+.FileListItem > .FileListItem__size {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.FileListItem > .FileListItem__modified {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
