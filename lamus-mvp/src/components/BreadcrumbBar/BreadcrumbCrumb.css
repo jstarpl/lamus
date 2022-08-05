@@ -1,5 +1,6 @@
 .BreadcrumbBar__Crumb {
-  display: inline-block;
+  flex: 0 0;
+  display: block;
   background: var(--color-tint-1);
   padding: 0.5em;
   border-radius: var(--border-radius);
@@ -7,6 +8,7 @@
   font-size: 1em;
   cursor: pointer;
   box-sizing: content-box;
+  white-space: nowrap;
 }
 
 .BreadcrumbBar__Crumb:focus {

@@ -1,5 +1,6 @@
 .BreadcrumbBar__Separator {
-  display: inline-block;
+  flex: 0 0;
+  display: block;
   background: none;
   padding: 0.5em 0.25em;
   border: none;

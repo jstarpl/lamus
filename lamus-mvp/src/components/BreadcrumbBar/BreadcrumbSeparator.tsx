@@ -1,5 +1,5 @@
 import "./BreadcrumbSeparator.css";
 
-export function BreadcrumbSeparator() {
-  return <div className="BreadcrumbBar__Separator">/</div>;
+export function BreadcrumbSeparator({ separator }: { separator?: string }) {
+  return <div className="BreadcrumbBar__Separator">{separator ?? "/"}</div>;
 }

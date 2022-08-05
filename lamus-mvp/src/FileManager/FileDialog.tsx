@@ -1,7 +1,7 @@
 import { motion, TargetAndTransition } from "framer-motion";
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { CommandBar } from "../components/CommandBar";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { ListView } from "../components/ListView";
@@ -53,11 +53,12 @@ export const FileDialog = observer(function FileDialog({
   const [currentStorage, setCurrentStorage] = useState<undefined | ProviderId>(
     initialStorageProvider ?? undefined
   );
-  const [currentPath, _setCurrentPath] = useState<string[]>(initialPath ?? []);
+  const [currentPath, setCurrentPath] = useState<string[]>(initialPath ?? []);
   const [status, setStatus] = useState<LoadStatus>(LoadStatus.LOADING);
   const [animationFinished, setAnimationFinished] = useState(false);
   const [isDirSelected, setDirSelected] = useState(false);
   const [isListFocused, setListFocused] = useState(false);
+  const [isPathFocused, setPathFocused] = useState(false);
 
   useCursorNavigation();
 
@@ -148,9 +149,31 @@ export const FileDialog = observer(function FileDialog({
     const item = fileList.find((item) => item.guid === selectedItem);
     if (!item) return;
 
-    console.log(item);
-
     setDirSelected(!!item.dir);
+  }
+
+  function onGoToSelectedFolder() {
+    const selectedGuid = selectedFiles?.[0];
+    const selectedFolder = fileList.find(
+      (item) => item.guid === selectedGuid && item.dir
+    );
+
+    if (!selectedFolder) return;
+
+    if (selectedFolder.parentDir) {
+      const newPath = currentPath.slice();
+      newPath.pop();
+      setCurrentPath(newPath);
+    } else {
+      setCurrentPath([...currentPath, selectedFolder.fileName]);
+    }
+  }
+
+  function onGoToPath(e: React.MouseEvent<HTMLElement>) {
+    const pathStr = e.currentTarget.dataset["path"];
+    if (!pathStr) return;
+    const path = JSON.parse(pathStr);
+    setCurrentPath(path);
   }
 
   const [focusTrapStart, focusTrapEnd] = useFocusTrap();
@@ -180,13 +203,25 @@ export const FileDialog = observer(function FileDialog({
         <div className="FileDialog__layout">
           <div className="FileDialog__path">
             {currentStorage && (
-              <BreadcrumbBar.Bar>
-                <BreadcrumbBar.Crumb>
+              <BreadcrumbBar.Bar
+                onFocus={() => setPathFocused(true)}
+                onBlur={() => setPathFocused(false)}
+              >
+                <BreadcrumbBar.Crumb
+                  data-path={JSON.stringify([])}
+                  onClick={onGoToPath}
+                >
                   {AppStore.fileSystem.providers.get(currentStorage)?.name}
                 </BreadcrumbBar.Crumb>
                 <BreadcrumbBar.Separator />
-                {currentPath.map((pathSegment) => (
-                  <BreadcrumbBar.Crumb>{pathSegment}</BreadcrumbBar.Crumb>
+                {currentPath.map((pathSegment, index, array) => (
+                  <BreadcrumbBar.Crumb
+                    key={`${index}_${pathSegment}`}
+                    data-path={JSON.stringify(array.slice(0, index + 1))}
+                    onClick={onGoToPath}
+                  >
+                    {pathSegment}
+                  </BreadcrumbBar.Crumb>
                 ))}
               </BreadcrumbBar.Bar>
             )}
@@ -202,8 +237,8 @@ export const FileDialog = observer(function FileDialog({
                 multiple
                 value={selectedFiles}
                 onChange={onListChange}
-                onFocus={(e) => setListFocused(true)}
-                onBlur={(e) => setListFocused(false)}
+                onFocus={() => setListFocused(true)}
+                onBlur={() => setListFocused(false)}
               >
                 {fileList.map((file) => (
                   <ListView.Item key={file.guid} value={file.guid}>
@@ -250,7 +285,7 @@ export const FileDialog = observer(function FileDialog({
         >
           Cancel
         </CommandBar.Button>
-        {(!isDirSelected || !isListFocused) && (
+        {(!isDirSelected || !isListFocused) && !isPathFocused && (
           <CommandBar.Button
             combo={CONFIRM_COMBO}
             position={10}
@@ -260,11 +295,12 @@ export const FileDialog = observer(function FileDialog({
             Save
           </CommandBar.Button>
         )}
-        {isDirSelected && isListFocused && (
+        {((isDirSelected && isListFocused) || isPathFocused) && (
           <CommandBar.Button
             combo={CONFIRM_COMBO}
             position={10}
             showOnlyWhenModifiersActive
+            onClick={!isPathFocused ? onGoToSelectedFolder : undefined}
           >
             Go
           </CommandBar.Button>

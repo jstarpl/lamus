@@ -1,5 +1,6 @@
 import { uniq, isEqual } from "lodash";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { isOrIsAncestorOf } from "../../helpers/util";
 import "./ListView.css";
 
 type TargetValue = { value: string[] };
@@ -109,15 +110,15 @@ export const ListViewList = function ListViewList({
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
-    const el = listEl.current;
+    const elem = listEl.current;
 
     function onKeyDown(e: KeyboardEvent) {
       ctrlState.current = e.ctrlKey;
       shiftState.current = e.shiftKey;
-      const allItems = el.querySelectorAll(
+      const allItems = elem.querySelectorAll(
         ":scope > .list-view-item"
       ) as NodeListOf<HTMLElement>;
-      const currentFocus = el.querySelector(
+      const currentFocus = elem.querySelector(
         ":scope > .list-view-item:focus"
       ) as HTMLElement;
       let currentFocusIndex = -1;
@@ -171,20 +172,20 @@ export const ListViewList = function ListViewList({
       shiftState.current = e.shiftKey;
     }
 
-    el.addEventListener("keydown", onKeyDown);
-    el.addEventListener("pointerdown", onPointerDown);
-    el.addEventListener("pointerup", onPointerUp);
+    elem.addEventListener("keydown", onKeyDown);
+    elem.addEventListener("pointerdown", onPointerDown);
+    elem.addEventListener("pointerup", onPointerUp);
 
     return () => {
-      el.removeEventListener("keydown", onKeyDown);
-      el.removeEventListener("pointerdown", onPointerDown);
-      el.removeEventListener("pointerup", onPointerUp);
+      elem.removeEventListener("keydown", onKeyDown);
+      elem.removeEventListener("pointerdown", onPointerDown);
+      elem.removeEventListener("pointerup", onPointerUp);
     };
   }, []);
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
-    const el = listEl.current;
+    const elem = listEl.current;
 
     function onFocusIn(e: FocusEvent) {
       if (!(e.target instanceof HTMLElement)) return;
@@ -192,7 +193,7 @@ export const ListViewList = function ListViewList({
 
       const itemValue = e.target.dataset["value"];
 
-      const allItems = el.querySelectorAll(
+      const allItems = elem.querySelectorAll(
         ":scope > .list-view-item"
       ) as NodeListOf<HTMLElement>;
       const thisIndex = Array.from(allItems).indexOf(e.target);
@@ -243,16 +244,16 @@ export const ListViewList = function ListViewList({
       }
     }
 
-    el.addEventListener("focusin", onFocusIn);
+    elem.addEventListener("focusin", onFocusIn);
 
     return () => {
-      el.removeEventListener("focusin", onFocusIn);
+      elem.removeEventListener("focusin", onFocusIn);
     };
   }, [isControlled, testedValue, value, multiple, onChange]);
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
-    const el = listEl.current;
+    const elem = listEl.current;
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key !== " " || !ctrlState.current) return;
@@ -287,31 +288,36 @@ export const ListViewList = function ListViewList({
       e.preventDefault();
     }
 
-    el.addEventListener("keydown", onKeyDown);
+    elem.addEventListener("keydown", onKeyDown);
 
     return () => {
-      el.removeEventListener("keydown", onKeyDown);
+      elem.removeEventListener("keydown", onKeyDown);
     };
   }, [testedValue, isControlled, onChange]);
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
-    const el = listEl.current;
+    const elem = listEl.current;
 
     function onLocalFocus(e: FocusEvent) {
       onFocus && onFocus(e);
     }
 
     function onLocalBlur(e: FocusEvent) {
-      onBlur && onBlur(e);
+      if (
+        e.relatedTarget === null ||
+        (e.relatedTarget instanceof HTMLElement &&
+          !isOrIsAncestorOf(elem, e.relatedTarget))
+      )
+        onBlur && onBlur(e);
     }
 
-    el.addEventListener("focusin", onLocalFocus);
-    el.addEventListener("focusout", onLocalBlur);
+    elem.addEventListener("focusin", onLocalFocus);
+    elem.addEventListener("focusout", onLocalBlur);
 
     return () => {
-      el.removeEventListener("focusin", onLocalFocus);
-      el.removeEventListener("focusout", onLocalBlur);
+      elem.removeEventListener("focusin", onLocalFocus);
+      elem.removeEventListener("focusout", onLocalBlur);
     };
   }, [onFocus, onBlur]);
 
