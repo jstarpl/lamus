@@ -1,4 +1,10 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useCursorNavigation } from "../helpers/useCursorNavigation";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -11,6 +17,8 @@ import logo from "./logo.svg";
 import { FocusIndicator } from "../helpers/FocusIndicator";
 import { EVENT_UI_READY } from "../App";
 import classNames from "classnames";
+import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
+import { SoundEffectsContext } from "../helpers/SoundEffects";
 
 // is this the first time we show the home screen. If so, fade in the logo nicely. Otherwise, just show it.
 let FIRST_SHOW = true;
@@ -19,6 +27,8 @@ const Home = function Home() {
   const [firstShow] = useState(FIRST_SHOW);
   const bkgEl = useRef<HTMLImageElement>(null);
   useCursorNavigation();
+  useFocusSoundEffect();
+  const sfxContext = useContext(SoundEffectsContext);
 
   function onAnimationComplete() {
     setTimeout(() => {
@@ -27,8 +37,19 @@ const Home = function Home() {
       ) as HTMLElement;
       if (!el) return;
       el.focus();
+      if (sfxContext && !FIRST_SHOW) {
+        sfxContext.playEffect(10);
+      }
     });
   }
+
+  useEffect(() => {
+    return () => {
+      if (!sfxContext) return;
+
+      sfxContext.playEffect(9);
+    };
+  }, [sfxContext]);
 
   useEffect(() => {
     FIRST_SHOW = false;

@@ -44,3 +44,7 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Acknowledgements & Content Licenses
+
+- [_Universal UI/Menu Soundpack_](https://ellr.itch.io/universal-ui-soundpack) by [ellr](https://www.patreon.com/ellr): CC-BY-4.0

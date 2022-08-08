@@ -18,6 +18,7 @@ import { CommandBar } from "../components/CommandBar";
 import { useNavigate } from "react-router-dom";
 import { FileDialog } from "../FileManager/FileDialog";
 import { AnimatePresence } from "framer-motion";
+import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -51,6 +52,7 @@ const TextEditor = observer(function TextEditor() {
 
   const editorCore = useRef<any>(null);
   const navigate = useNavigate();
+  useFocusSoundEffect("input,button,.list-view,.list-view-item");
 
   const hasDialogOpen = EditorStore.isSaveFileDialogOpen;
 

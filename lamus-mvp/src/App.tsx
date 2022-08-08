@@ -18,6 +18,7 @@ import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
 import Home from "./Home";
 import TextEditor from "./TextEditor";
+import { SoundEffectsContextProvider } from "./helpers/SoundEffects";
 
 export const EVENT_UI_READY = "lamus:uiReady";
 
@@ -77,16 +78,18 @@ export function App() {
   return (
     <div className="App">
       <MotionConfig reducedMotion="user">
-        <KeyboardHandler.Provider value={keyboardHandler}>
-          <AnimatePresence>
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<Home />} />
-              <Route path="/text" element={<TextEditor />} />
-              <Route path="*" element={<Navigate to={"/"} />} />
-            </Routes>
-          </AnimatePresence>
-          <AdminCode />
-        </KeyboardHandler.Provider>
+        <SoundEffectsContextProvider>
+          <KeyboardHandler.Provider value={keyboardHandler}>
+            <AnimatePresence>
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<Home />} />
+                <Route path="/text" element={<TextEditor />} />
+                <Route path="*" element={<Navigate to={"/"} />} />
+              </Routes>
+            </AnimatePresence>
+            <AdminCode />
+          </KeyboardHandler.Provider>
+        </SoundEffectsContextProvider>
       </MotionConfig>
     </div>
   );

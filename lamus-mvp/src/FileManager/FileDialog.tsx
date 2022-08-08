@@ -1,7 +1,7 @@
 import { motion, TargetAndTransition } from "framer-motion";
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { CommandBar } from "../components/CommandBar";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { ListView } from "../components/ListView";
@@ -19,6 +19,7 @@ import { Path } from "../stores/fileSystem/IFileSystemProvider";
 import { ProviderId } from "../stores/FileSystemStore";
 import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
+import { SoundEffectsContext } from "../helpers/SoundEffects";
 
 interface IProps {
   defaultFileName?: string;
@@ -60,6 +61,7 @@ export const FileDialog = observer(function FileDialog({
   const [isDirSelected, setDirSelected] = useState(false);
   const [isListFocused, setListFocused] = useState(false);
   const [isPathFocused, setPathFocused] = useState(false);
+  const sfxContext = useContext(SoundEffectsContext);
 
   useCursorNavigation();
   usePreventTabHijack();
@@ -68,6 +70,9 @@ export const FileDialog = observer(function FileDialog({
     const def = definition as TargetAndTransition;
     if (def.y !== 0) return;
     setAnimationFinished(true);
+
+    if (!sfxContext) return;
+    sfxContext.playEffect(11);
   }
 
   const viewReady = animationFinished && status === LoadStatus.OK;
