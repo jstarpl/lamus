@@ -166,10 +166,13 @@ export function useCursorNavigation() {
       e.preventDefault();
       e.stopPropagation();
 
-      const isDialogOpen = !!document.querySelector("dialog[open]");
+      const isDialogOpen = !!document.querySelector(
+        "dialog[open], .Dialog[data-open]"
+      );
       const focusableSelector = isDialogOpen
         ? // if a Dialog is open, limit the focusable elements to only the ones in the open dialog
-          'dialog[open] button:not([tabindex="-1"]), dialog[open] input:not([tabindex="-1"]), dialog[open] [tabindex]:not([tabindex="-1"])'
+          'dialog[open] button:not([tabindex="-1"]), dialog[open] input:not([tabindex="-1"]), dialog[open] [tabindex]:not([tabindex="-1"]), ' +
+          '.Dialog[data-open] button:not([tabindex="-1"]), .Dialog[data-open] input:not([tabindex="-1"]), .Dialog[data-open] [tabindex]:not([tabindex="-1"])'
         : // no Dialog open, we can look at all the elements
           'button:not([tabindex="-1"]), input:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
       const focusableElements = document.querySelectorAll(

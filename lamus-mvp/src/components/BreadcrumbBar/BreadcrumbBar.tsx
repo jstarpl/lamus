@@ -12,7 +12,7 @@ export function BreadcrumbBar({
   onFocus,
   onBlur,
 }: React.PropsWithChildren<IProps>) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLOListElement>(null);
 
   useLayoutEffect(() => {
     if (!ref.current) return;
@@ -42,8 +42,8 @@ export function BreadcrumbBar({
   }, [onFocus, onBlur]);
 
   return (
-    <div className="BreadcrumbBar__Bar" ref={ref}>
-      {children}
-    </div>
+    <nav className="BreadcrumbBar__Bar">
+      <ol ref={ref}>{children}</ol>
+    </nav>
   );
 }

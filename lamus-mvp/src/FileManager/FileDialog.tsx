@@ -18,6 +18,7 @@ import { ListViewChangeEvent } from "../components/ListView/ListViewList";
 import { Path } from "../stores/fileSystem/IFileSystemProvider";
 import { ProviderId } from "../stores/FileSystemStore";
 import { BreadcrumbBar } from "../components/BreadcrumbBar";
+import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 
 interface IProps {
   defaultFileName?: string;
@@ -61,6 +62,7 @@ export const FileDialog = observer(function FileDialog({
   const [isPathFocused, setPathFocused] = useState(false);
 
   useCursorNavigation();
+  usePreventTabHijack();
 
   function onAnimationComplete(definition: AnimationDefinition) {
     const def = definition as TargetAndTransition;
@@ -181,6 +183,7 @@ export const FileDialog = observer(function FileDialog({
   return (
     <motion.div
       className="FileManager FileDialog Dialog sdi-app"
+      data-open
       exit={{ zIndex: 99 }}
       transition={{ duration: 0.5 }}
     >
@@ -263,13 +266,15 @@ export const FileDialog = observer(function FileDialog({
         {focusTrapEnd}
       </motion.div>
       <CommandBar.Nav>
-        <CommandBar.Button
-          combo={RENAME_COMBO}
-          position={2}
-          showOnlyWhenModifiersActive
-        >
-          Rename
-        </CommandBar.Button>
+        {isListFocused && (
+          <CommandBar.Button
+            combo={RENAME_COMBO}
+            position={2}
+            showOnlyWhenModifiersActive
+          >
+            Rename
+          </CommandBar.Button>
+        )}
         <CommandBar.Button
           combo={MK_DIR_COMBO}
           position={7}

@@ -1,3 +1,17 @@
 .BreadcrumbBar__Bar {
+  display: contents;
+  margin: 0;
+  padding: 0;
+}
+
+.BreadcrumbBar__Bar ol {
   display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.BreadcrumbBar__Bar ol li {
+  display: contents;
+  margin: 0;
+  padding: 0;
 }

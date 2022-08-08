@@ -6,5 +6,9 @@ type IProps = React.DetailedHTMLProps<
 >;
 
 export function BreadcrumbCrumb(props: IProps) {
-  return <button className="BreadcrumbBar__Crumb" {...props} />;
+  return (
+    <li>
+      <button className="BreadcrumbBar__Crumb" {...props} />
+    </li>
+  );
 }
