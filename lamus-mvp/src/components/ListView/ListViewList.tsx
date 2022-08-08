@@ -1,6 +1,6 @@
 import { uniq, isEqual } from "lodash";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { isOrIsAncestorOf } from "../../helpers/util";
+import { assertNever, isOrIsAncestorOf } from "../../helpers/util";
 import "./ListView.css";
 
 type TargetValue = { value: string[] };
@@ -21,6 +21,12 @@ export enum SelectedState {
   Middle = "middle",
   Last = "last",
   Only = "only",
+}
+
+enum SelectionDistance {
+  Near = 1,
+  Far = 2,
+  End = 3,
 }
 
 export const SelectedContext = React.createContext<false | SelectedState>(
@@ -121,11 +127,14 @@ export const ListViewList = function ListViewList({
       const currentFocus = elem.querySelector(
         ":scope > .list-view-item:focus"
       ) as HTMLElement;
+      if (allItems.length === 0) return;
+
       let currentFocusIndex = -1;
       if (currentFocus) {
         currentFocusIndex = Array.from(allItems).indexOf(currentFocus);
       }
       let direction = 0;
+      let distance: SelectionDistance = SelectionDistance.Near;
       switch (e.key) {
         case "ArrowUp":
           direction = -1;
@@ -133,16 +142,51 @@ export const ListViewList = function ListViewList({
         case "ArrowDown":
           direction = 1;
           break;
+        case "Home":
+          direction = -1;
+          distance = SelectionDistance.End;
+          break;
+        case "End":
+          direction = 1;
+          distance = SelectionDistance.End;
+          break;
+        case "PageUp":
+          direction = -1;
+          distance = SelectionDistance.Far;
+          break;
+        case "PageDown":
+          direction = 1;
+          distance = SelectionDistance.Far;
+          break;
       }
       if (direction === 0) return;
 
       let newFocusIndex = 0;
 
       if (currentFocusIndex >= 0) {
-        newFocusIndex = Math.min(
-          Math.max(0, currentFocusIndex + direction),
-          allItems.length - 1
-        );
+        switch (distance) {
+          case SelectionDistance.Near:
+            newFocusIndex = Math.min(
+              Math.max(0, currentFocusIndex + direction),
+              allItems.length - 1
+            );
+            break;
+          case SelectionDistance.Far:
+            const elementHeight = allItems[0].clientHeight;
+            const listHeight = elem.offsetHeight;
+            const pageSize = Math.floor(listHeight / elementHeight);
+            newFocusIndex = Math.min(
+              Math.max(0, currentFocusIndex + direction * pageSize),
+              allItems.length - 1
+            );
+            break;
+          case SelectionDistance.End:
+            newFocusIndex = direction < 0 ? 0 : allItems.length - 1;
+            break;
+          default:
+            assertNever(distance);
+            break;
+        }
       } else if (startIndex.current !== undefined) {
         newFocusIndex = Math.min(startIndex.current, allItems.length - 1);
       }

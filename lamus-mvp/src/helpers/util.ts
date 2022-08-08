@@ -29,3 +29,7 @@ export function isOrIsAncestorOf(
   }
   return false;
 }
+
+export function assertNever(v: never): void {
+  throw new Error("Assertion failed");
+}

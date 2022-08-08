@@ -14,10 +14,14 @@
 }
 
 .FileDialog__layout > .FileDialog__pane {
+}
+
+.FileDialog__layout > .FileDialog__pane > .list-view {
   overflow: auto;
   scroll-behavior: auto;
   scroll-padding: 2.5em;
   padding: 0 0.5em 0 0;
+  height: 100%;
 }
 
 .FileDialog__layout > .FileDialog__pane > .Spinner {
