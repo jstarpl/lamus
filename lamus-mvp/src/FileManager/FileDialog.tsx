@@ -178,6 +178,22 @@ export const FileDialog = observer(function FileDialog({
     setCurrentPath(path);
   }
 
+  function onFileEntryDoubleClick(e: React.MouseEvent<HTMLElement>) {
+    const guid = e.currentTarget.dataset["guid"];
+    if (!guid) return;
+    const clickedEntry = fileList.find((entry) => entry.guid === guid);
+    if (!clickedEntry) return;
+    if (!clickedEntry.dir) return;
+
+    if (clickedEntry.parentDir) {
+      const newPath = currentPath.slice();
+      newPath.pop();
+      setCurrentPath(newPath);
+    } else {
+      setCurrentPath([...currentPath, clickedEntry.fileName]);
+    }
+  }
+
   const [focusTrapStart, focusTrapEnd] = useFocusTrap();
 
   return (
@@ -244,7 +260,12 @@ export const FileDialog = observer(function FileDialog({
                 onBlur={() => setListFocused(false)}
               >
                 {fileList.map((file) => (
-                  <ListView.Item key={file.guid} value={file.guid}>
+                  <ListView.Item
+                    key={file.guid}
+                    value={file.guid}
+                    data-guid={file.guid}
+                    onDoubleClick={onFileEntryDoubleClick}
+                  >
                     <FileListItem file={file} />
                   </ListView.Item>
                 ))}
@@ -279,6 +300,7 @@ export const FileDialog = observer(function FileDialog({
           combo={MK_DIR_COMBO}
           position={7}
           showOnlyWhenModifiersActive
+          onClick={() => {}}
         >
           MkDir
         </CommandBar.Button>

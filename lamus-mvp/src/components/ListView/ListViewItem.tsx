@@ -2,14 +2,17 @@ import React, { useContext, useId } from "react";
 import classNames from "classnames";
 import { SelectedContext, SelectedState } from "./ListViewList";
 
-interface IProps {
-  children?: React.ReactNode;
+type IProps = {
   value?: string;
-}
+} & Omit<
+  React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>,
+  "className" | "aria-selected" | "tabIndex" | "key"
+>;
 
 export const ListViewItem = function ListViewItem({
   value,
   children,
+  ...props
 }: IProps): JSX.Element {
   const id = useId();
   const selected = useContext(SelectedContext);
@@ -30,6 +33,7 @@ export const ListViewItem = function ListViewItem({
       aria-selected={!!selected}
       data-value={itemValue}
       tabIndex={-1}
+      {...props}
     >
       {children}
     </li>

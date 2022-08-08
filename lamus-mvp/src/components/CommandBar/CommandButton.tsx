@@ -71,13 +71,18 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
           e.metaKey === hasMeta
         ) {
           setActive(true);
+
+          if (onClick) e.preventDefault();
         }
       }
 
       function onKeyUp(e: KeyboardEvent) {
         if (e.key === lastKey) {
+          if (isActive && onClick) {
+            onClick(e);
+            e.preventDefault();
+          }
           setActive(false);
-          isActive && onClick && onClick(e);
         }
       }
 

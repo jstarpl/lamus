@@ -13,9 +13,6 @@
   box-sizing: border-box;
 }
 
-.FileDialog__layout > .FileDialog__pane {
-}
-
 .FileDialog__layout > .FileDialog__pane > .list-view {
   overflow: auto;
   scroll-behavior: auto;
