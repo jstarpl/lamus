@@ -10,6 +10,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
 
     <link
+      rel="preload"
+      as="image"
+      href="%PUBLIC_URL%/Home/bkg.png"
+      imagesrcset="%PUBLIC_URL%/Home/bkg_480.webp 853w, %PUBLIC_URL%/Home/bkg_720.webp 1280w, %PUBLIC_URL%/Home/bkg_1440.webp 2560w"
+      imagesizes="100vw"
+    />
+
+    <link rel="preload" as="audio" href="%PUBLIC_URL%/Logo.flac" />
+
+    <link
       rel="apple-touch-icon"
       sizes="180x180"
       href="%PUBLIC_URL%/apple-touch-icon.png"
@@ -136,6 +146,7 @@
           />
         </defs>
       </svg>
+      <audio id="audioSplash" src="%PUBLIC_URL%/Logo.flac" />
     </div>
   </body>
 </html>

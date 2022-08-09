@@ -11,7 +11,6 @@ import List from "@editorjs/list";
 import Delimiter from "@editorjs/delimiter";
 import Checklist from "@editorjs/checklist";
 import { debounce } from "lodash";
-import { EVENT_UI_READY } from "../App";
 import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { CommandBar } from "../components/CommandBar";
@@ -19,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { FileDialog } from "../FileManager/FileDialog";
 import { AnimatePresence } from "framer-motion";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
+import { AppStore } from "../stores/AppStore";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -58,7 +58,7 @@ const TextEditor = observer(function TextEditor() {
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
-    window.dispatchEvent(new CustomEvent(EVENT_UI_READY));
+    AppStore.setUIReady();
 
     setTimeout(() => {
       focusEditor();

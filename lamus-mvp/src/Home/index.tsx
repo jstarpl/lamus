@@ -9,16 +9,12 @@ import { useCursorNavigation } from "../helpers/useCursorNavigation";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import "./Home.css";
-import bkg_480_webp from "./bkg_480.webp";
-import bkg_720_webp from "./bkg_720.webp";
-import bkg_1440_webp from "./bkg_1440.webp";
-import bkg_png from "./bkg.png";
 import logo from "./logo.svg";
 import { FocusIndicator } from "../helpers/FocusIndicator";
-import { EVENT_UI_READY } from "../App";
 import classNames from "classnames";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
+import { AppStore } from "../stores/AppStore";
 
 // is this the first time we show the home screen. If so, fade in the logo nicely. Otherwise, just show it.
 let FIRST_SHOW = true;
@@ -58,7 +54,7 @@ const Home = function Home() {
   useLayoutEffect(() => {
     if (!bkgEl.current) return;
     function onLoaded() {
-      window.dispatchEvent(new CustomEvent(EVENT_UI_READY));
+      AppStore.setUIReady();
     }
 
     if (bkgEl.current.complete) {
@@ -94,11 +90,21 @@ const Home = function Home() {
     >
       <picture>
         <source
-          srcSet={`${bkg_480_webp} 853w, ${bkg_720_webp} 1280w, ${bkg_1440_webp} 2560w`}
+          srcSet={`${process.env.PUBLIC_URL + "/Home/bkg_480.webp"} 853w, ${
+            process.env.PUBLIC_URL + "/Home/bkg_720.webp"
+          } 1280w, ${process.env.PUBLIC_URL + "/Home/bkg_1440.webp"} 2560w`}
           type="image/webp"
         />
-        <source srcSet={`${bkg_png}`} type="image/png" />
-        <img className="bkg" src={bkg_png} alt="" ref={bkgEl} />
+        <source
+          srcSet={`${process.env.PUBLIC_URL + "/Home/bkg.png"}`}
+          type="image/png"
+        />
+        <img
+          className="bkg"
+          src={`${process.env.PUBLIC_URL + "/Home/bkg.png"}`}
+          alt=""
+          ref={bkgEl}
+        />
       </picture>
       <nav>
         <ul>

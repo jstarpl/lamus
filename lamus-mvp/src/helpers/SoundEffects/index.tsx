@@ -77,6 +77,8 @@ export function SoundEffectsContextProvider({
   );
 
   const playEffect = useCallback((effectId: number) => {
+    const hasSplashScreen = !!document.getElementById("splash");
+    if (hasSplashScreen) return;
     if (!containerRef.current) return;
     if (nowPlaying.current) {
       // nowPlaying.current.pause();

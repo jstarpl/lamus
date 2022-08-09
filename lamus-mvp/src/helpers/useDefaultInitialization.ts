@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { EVENT_UI_READY } from "../App";
+import { AppStore } from "../stores/AppStore";
 
 export function useDefaultInitialization() {
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent(EVENT_UI_READY));
+    AppStore.setUIReady();
   }, []);
 }

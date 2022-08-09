@@ -36,6 +36,7 @@ class AppStoreClass {
   loggedIn = false;
   settings: ISettings | null = null;
   fileSystem: FileSystemStoreClass = new FileSystemStoreClass();
+  isUiReady: boolean = false;
 
   private agentSocket: WebSocket | undefined;
   private agentReconnect: NodeJS.Timeout | undefined;
@@ -54,6 +55,10 @@ class AppStoreClass {
 
   setShowAdminCode(value: boolean) {
     this.showAdminCode = value;
+  }
+
+  setUIReady() {
+    this.isUiReady = true;
   }
 
   async login(): Promise<void> {

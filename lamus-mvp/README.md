@@ -48,3 +48,4 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 ## Acknowledgements & Content Licenses
 
 - [_Universal UI/Menu Soundpack_](https://ellr.itch.io/universal-ui-soundpack) by [ellr](https://www.patreon.com/ellr): CC-BY-4.0
+- [_Simple Piano Logo_](https://freesound.org/people/_MC5_/sounds/524847/) by [_MC5_](https://freesound.org/people/_MC5_/): CC-BY-4.0
