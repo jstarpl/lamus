@@ -80,10 +80,7 @@ export function SoundEffectsContextProvider({
     const hasSplashScreen = !!document.getElementById("splash");
     if (hasSplashScreen) return;
     if (!containerRef.current) return;
-    if (nowPlaying.current) {
-      // nowPlaying.current.pause();
-      nowPlaying.current = null;
-    }
+    if (nowPlaying.current) return;
 
     const container = containerRef.current;
     const sfx = container.children[effectId];
@@ -94,6 +91,9 @@ export function SoundEffectsContextProvider({
     sfx.currentTime = 0;
     sfx.volume = 0.5;
     sfx.play().catch(console.log);
+    sfx.addEventListener("ended", () => {
+      nowPlaying.current = null;
+    });
     nowPlaying.current = sfx;
   }, []);
 
