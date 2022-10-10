@@ -21,14 +21,27 @@ import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 
-interface IProps {
+interface IBaseProps {
+  mode: "saveFile" | "openFile" | "selectDir";
   defaultFileName?: string;
-  initialStorageProvider?: ProviderId;
-  initialPath?: Path;
-  scoped?: boolean;
+  disabledMkDir?: boolean;
   onCancel?: () => void;
   onAccept?: () => void;
 }
+
+type IProps = IBaseProps &
+  (
+    | {
+        initialStorageProvider: ProviderId;
+        initialPath: Path;
+        scoped: true;
+      }
+    | {
+        initialStorageProvider?: ProviderId;
+        initialPath?: Path;
+        scoped?: false;
+      }
+  );
 
 const RENAME_COMBO = ["F2"];
 const MK_DIR_COMBO = ["F7"];
@@ -41,10 +54,20 @@ enum LoadStatus {
   OK = "ok",
 }
 
+const SELECT_THIS_DIR: IFileEntryEx = {
+  guid: uuidv4(),
+  fileName: "Select this directory",
+  size: 0,
+  dir: false,
+  virtual: true,
+};
+
 export const FileDialog = observer(function FileDialog({
+  mode,
   defaultFileName,
   initialStorageProvider,
   initialPath,
+  disabledMkDir,
   onAccept,
   onCancel,
 }: IProps) {
@@ -61,6 +84,8 @@ export const FileDialog = observer(function FileDialog({
   const [isDirSelected, setDirSelected] = useState(false);
   const [isListFocused, setListFocused] = useState(false);
   const [isPathFocused, setPathFocused] = useState(false);
+  const [isSelectThisDirSelected, setIsSelectThisFolderSelected] =
+    useState(false);
   const sfxContext = useContext(SoundEffectsContext);
 
   useCursorNavigation();
@@ -76,6 +101,10 @@ export const FileDialog = observer(function FileDialog({
   }
 
   const viewReady = animationFinished && status === LoadStatus.OK;
+
+  const showFileNameInput = mode === "saveFile";
+  const isSelectingDirectory = mode === "selectDir";
+  const disableFileSelection = isSelectingDirectory;
 
   useLayoutEffect(() => {
     setTimeout(() => {
@@ -127,6 +156,9 @@ export const FileDialog = observer(function FileDialog({
                 sensitivity: "base",
               })
             );
+            if (isSelectingDirectory) {
+              files.unshift(SELECT_THIS_DIR);
+            }
             if (currentPath.length > 0) {
               files.unshift({
                 guid: uuidv4(),
@@ -144,7 +176,7 @@ export const FileDialog = observer(function FileDialog({
             setStatus(LoadStatus.ERROR);
           });
       }),
-    [currentStorage, currentPath]
+    [isSelectingDirectory, currentStorage, currentPath]
   );
 
   function onListChange(e: ListViewChangeEvent) {
@@ -157,6 +189,7 @@ export const FileDialog = observer(function FileDialog({
     if (!item) return;
 
     setDirSelected(!!item.dir);
+    setIsSelectThisFolderSelected(item.guid === SELECT_THIS_DIR.guid);
   }
 
   function onGoToSelectedFolder() {
@@ -200,6 +233,12 @@ export const FileDialog = observer(function FileDialog({
   }
 
   const [focusTrapStart, focusTrapEnd] = useFocusTrap();
+
+  const canGo = (isDirSelected && isListFocused) || isPathFocused;
+  const canSave =
+    mode === "saveFile" && (!isDirSelected || !isListFocused) && !isPathFocused;
+  const canOpen = mode === "openFile" && !isDirSelected && !isPathFocused;
+  const canSelectThisDir = isSelectThisDirSelected && !canGo;
 
   return (
     <motion.div
@@ -271,13 +310,20 @@ export const FileDialog = observer(function FileDialog({
                     data-guid={file.guid}
                     onDoubleClick={onFileEntryDoubleClick}
                   >
-                    <FileListItem file={file} />
+                    <FileListItem
+                      file={file}
+                      disabled={
+                        disableFileSelection &&
+                        !file.dir &&
+                        file.guid !== SELECT_THIS_DIR.guid
+                      }
+                    />
                   </ListView.Item>
                 ))}
               </ListView.List>
             )}
           </div>
-          {status === LoadStatus.OK && (
+          {showFileNameInput && status === LoadStatus.OK && (
             <div className="FileDialog__fileNameInput">
               <input
                 type="text"
@@ -301,14 +347,16 @@ export const FileDialog = observer(function FileDialog({
             Rename
           </CommandBar.Button>
         )}
-        <CommandBar.Button
-          combo={MK_DIR_COMBO}
-          position={7}
-          showOnlyWhenModifiersActive
-          onClick={() => {}}
-        >
-          MkDir
-        </CommandBar.Button>
+        {!disabledMkDir && (
+          <CommandBar.Button
+            combo={MK_DIR_COMBO}
+            position={7}
+            showOnlyWhenModifiersActive
+            onClick={() => {}}
+          >
+            MkDir
+          </CommandBar.Button>
+        )}
         <CommandBar.Button
           combo={CANCEL_COMBO}
           position={9}
@@ -317,7 +365,7 @@ export const FileDialog = observer(function FileDialog({
         >
           Cancel
         </CommandBar.Button>
-        {(!isDirSelected || !isListFocused) && !isPathFocused && (
+        {canSave && (
           <CommandBar.Button
             combo={CONFIRM_COMBO}
             position={10}
@@ -327,7 +375,27 @@ export const FileDialog = observer(function FileDialog({
             Save
           </CommandBar.Button>
         )}
-        {((isDirSelected && isListFocused) || isPathFocused) && (
+        {canOpen && (
+          <CommandBar.Button
+            combo={CONFIRM_COMBO}
+            position={10}
+            showOnlyWhenModifiersActive
+            onClick={onAccept}
+          >
+            Open
+          </CommandBar.Button>
+        )}
+        {canSelectThisDir && (
+          <CommandBar.Button
+            combo={CONFIRM_COMBO}
+            position={10}
+            showOnlyWhenModifiersActive
+            onClick={onAccept}
+          >
+            Select
+          </CommandBar.Button>
+        )}
+        {canGo && (
           <CommandBar.Button
             combo={CONFIRM_COMBO}
             position={10}
