@@ -168,8 +168,13 @@ const TextEditor = observer(function TextEditor() {
         {EditorStore.isSaveFileDialogOpen && (
           <FileDialog
             key="save-file-dialog"
+            mode="saveFile"
             onCancel={onDialogCancel}
-            defaultFileName={DEFAULT_NEW_FILE_NAME}
+            initialStorageProvider={EditorStore.file?.providerId}
+            initialPath={EditorStore.file?.path}
+            defaultFileName={
+              EditorStore.file?.fileName ?? DEFAULT_NEW_FILE_NAME
+            }
           />
         )}
       </AnimatePresence>

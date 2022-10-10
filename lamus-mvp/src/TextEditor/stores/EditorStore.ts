@@ -11,13 +11,14 @@ const AUTOSAVE_DEBOUNCE = 5000;
 
 class EditorStoreClass {
   document: Document | null = null;
-  file: FileHandle = {
+  file: FileHandle | null = {
     fileName: "temp.md",
     path: [],
     providerId: "dropbox",
   };
   meta: any = null;
   isSaveFileDialogOpen: boolean = false;
+  isOpenFileDialogOpen: boolean = false;
 
   private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
@@ -46,6 +47,7 @@ class EditorStoreClass {
 
   async save(): Promise<void> {
     if (this.document === null) return;
+    if (this.file === null) return;
     if (!AppStore.fileSystem.providers.get(this.file.providerId)) return;
 
     const result = await AppStore.fileSystem.write(
@@ -71,6 +73,10 @@ class EditorStoreClass {
 
   setOpenSaveFileDialog(open: boolean) {
     this.isSaveFileDialogOpen = open;
+  }
+
+  setOpenOpenFileDialog(open: boolean) {
+    this.isOpenFileDialogOpen = open;
   }
 }
 
