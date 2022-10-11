@@ -1,9 +1,92 @@
-.CodeEditor .sdi-app-workspace {
-  display: grid;
-  grid-template-columns: auto 400px;
-  grid-template-rows: 1;
+.CodeEditor {
+  --output-size: 1;
+  --gutter-min-width: 80px;
+  --editor-font-size: 1em;
 }
 
-.CodeEditor .sdi-app-workspace .Document {
+.CodeEditor > .sdi-app-workspace {
+  display: grid;
+  grid-template-areas: "Document Output";
+  grid-template-columns: auto calc(400px * var(--output-size));
+  grid-template-rows: auto;
+}
+
+.CodeEditor > .sdi-app-workspace > .Document {
+  grid-area: Document;
+  overflow: hidden;
+}
+
+.CodeEditor > .sdi-app-workspace > .Output {
+  grid-area: Output;
   overflow: auto;
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: auto;
+  justify-items: center;
+  align-items: center;
+  background-color: #afafaf;
+}
+
+.CodeEditor .Output__Canvas {
+  height: calc(600px * var(--output-size));
+  width: calc(320px * var(--output-size));
+  background-color: black;
+}
+
+.CodeEditor .cm-editor {
+  font-size: var(--editor-font-size);
+  width: 100%;
+  height: 100%;
+}
+
+.CodeEditor .cm-editor .cm-activeLine {
+  background-color: var(--color-light);
+}
+
+.CodeEditor .cm-editor .cm-selectionBackground {
+  background: var(--color-selection);
+}
+
+.CodeEditor .cm-editor .cm-gutters {
+  background-color: var(--color-tint-1);
+  min-width: var(--gutter-min-width);
+}
+
+.CodeEditor .cm-editor .cm-content {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.CodeEditor .cm-editor .cm-lineNumbers {
+  flex-grow: 1;
+}
+
+.CodeEditor .cm-editor .cm-activeLineGutter {
+  background-color: var(--color-tone);
+}
+
+.CodeEditor .cm-editor .cm-scroller {
+  font-family: var(--system-code-font-family);
+  overflow: auto;
+  max-height: 100%;
+}
+
+@media screen and ((max-width: 750px) or (max-height: 500px)) {
+  .CodeEditor {
+    --editor-font-size: 0.75em;
+    --output-size: 0.5;
+    --gutter-min-width: auto;
+  }
+}
+
+@media screen and (min-width: 750px) and (max-width: 1279px) and (min-height: 500px) {
+  .CodeEditor {
+    --output-size: 0.75;
+  }
+}
+
+@media screen and (min-width: 1400px) and (min-height: 950px) {
+  .CodeEditor {
+    --output-size: 1.5;
+  }
 }

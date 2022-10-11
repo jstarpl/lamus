@@ -100,6 +100,7 @@
     Special UI colors
   */
   --color-focus: #308aff;
+  --color-selection: #d5e7ff;
   --color-hightlight: #ff96a0;
   --color-list-selection: #fcf9e9;
 }
@@ -211,6 +212,10 @@ body {
 
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+::selection {
+  background: var(--color-selection);
 }
 
 h1,

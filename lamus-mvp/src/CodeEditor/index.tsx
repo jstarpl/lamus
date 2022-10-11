@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import { observer } from "mobx-react-lite";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { basicSetup } from "@codemirror/basic-setup";
 import { indentWithTab } from "@codemirror/commands";
@@ -8,7 +8,6 @@ import { javascript } from "@codemirror/lang-javascript";
 import { AppStore } from "../stores/AppStore";
 import { EditorStore } from "./stores/EditorStore";
 import { updateModel } from "./extensions/updateStore";
-import { style } from "./extensions/style";
 import { CommandBar } from "../components/CommandBar";
 import { useNavigate } from "react-router-dom";
 import {
@@ -42,8 +41,8 @@ const CodeEditor = observer(function CodeEditor() {
         doc: EditorStore.document ?? undefined,
         extensions: [
           basicSetup,
-          style,
           keymap.of([indentWithTab]),
+          scrollPastEnd(),
           javascript(),
           updateModel,
         ],
@@ -65,7 +64,9 @@ const CodeEditor = observer(function CodeEditor() {
     <div className="CodeEditor sdi-app">
       <div className="sdi-app-workspace bg-general">
         <div className="Document" ref={editorViewParent}></div>
-        <div className="Output"></div>
+        <div className="Output">
+          <div className="Output__Canvas" />
+        </div>
       </div>
       {!hasDialogOpen && (
         <CommandBar.Nav key="command-bar">

@@ -1,9 +1,18 @@
+.TextEditor .ce-block--selected .ce-block__content {
+  background: var(--color-selection);
+}
+
+.TextEditor .ce-toolbar__actions > .ce-toolbar__plus:hover,
+.TextEditor .ce-toolbar__actions > .ce-toolbar__settings-btn:hover {
+  background: var(--color-tint-1);
+}
+
 @media screen and (min-width: 650px) {
-  .text-editor .ce-toolbar__content {
+  .TextEditor .ce-toolbar__content {
     max-width: min(650px, 80vw);
   }
 
-  .text-editor .ce-block__content {
+  .TextEditor .ce-block__content {
     max-width: min(650px, 80vw);
   }
 }
