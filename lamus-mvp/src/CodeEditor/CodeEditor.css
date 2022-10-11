@@ -1,0 +1,9 @@
+.CodeEditor .sdi-app-workspace {
+  display: grid;
+  grid-template-columns: auto 400px;
+  grid-template-rows: 1;
+}
+
+.CodeEditor .sdi-app-workspace .Document {
+  overflow: auto;
+}

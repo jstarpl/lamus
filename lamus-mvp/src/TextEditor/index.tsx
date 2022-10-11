@@ -19,15 +19,16 @@ import { FileDialog } from "../FileManager/FileDialog";
 import { AnimatePresence } from "framer-motion";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { AppStore } from "../stores/AppStore";
+import {
+  OPEN_COMBO,
+  QUIT_COMBO,
+  SAVE_AS_COMBO,
+  SAVE_COMBO,
+} from "../lib/commonHotkeys";
 
 const ReactEditorJS = createReactEditorJS();
 
 const INITIAL_FOCUS_RETRY_COUNT = 3;
-
-const SAVE_COMBO = ["F2"];
-const SAVE_AS_COMBO = ["Shift", "F2"];
-const OPEN_COMBO = ["F3"];
-const QUIT_COMBO = ["F10"];
 
 const DEFAULT_NEW_FILE_NAME = "New_Text_File.md";
 

@@ -16,10 +16,11 @@ import { AppStore } from "./stores/AppStore";
 import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
 import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import { AdminCode } from "./AdminCode/AdminCode";
-import Home from "./Home";
-import TextEditor from "./TextEditor";
 import { SoundEffectsContextProvider } from "./helpers/SoundEffects";
 import { autorun } from "mobx";
+import Home from "./Home";
+import TextEditor from "./TextEditor";
+import CodeEditor from "./CodeEditor";
 
 function removeSplashScreen() {
   const splashScreen = document.getElementById("splash");
@@ -115,6 +116,7 @@ export function App() {
               <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<Home />} />
                 <Route path="/text" element={<TextEditor />} />
+                <Route path="/code" element={<CodeEditor />} />
                 <Route path="*" element={<Navigate to={"/"} />} />
               </Routes>
             </AnimatePresence>

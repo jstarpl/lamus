@@ -1,16 +1,16 @@
-import { Document } from "@editorjs/editorjs";
 import { makeAutoObservable } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
 import { FileHandle } from "../../stores/FileSystemStore";
-import { toMarkdown } from "../markdown";
 
-const ACTIVE_DOCUMENT_KEY = "textEditor:activeDocument";
+const ACTIVE_DOCUMENT_KEY = "codeEditor:activeDocument";
 
 const AUTOSAVE_DEBOUNCE = 5000;
 
+type Text = string;
+
 class EditorStoreClass {
-  document: Document | null = null;
+  document: Text | null = null;
   file: FileHandle | null = {
     fileName: "temp.md",
     path: [],
@@ -28,11 +28,11 @@ class EditorStoreClass {
     });
 
     this.document = JSON.parse(
-      localStorage.getItem(ACTIVE_DOCUMENT_KEY) || JSON.stringify([])
+      localStorage.getItem(ACTIVE_DOCUMENT_KEY) || JSON.stringify("")
     );
   }
 
-  setDocument(newDocument: Document) {
+  setDocument(newDocument: Text) {
     this.document = newDocument;
     localStorage.setItem(ACTIVE_DOCUMENT_KEY, JSON.stringify(newDocument));
     this.autosave();
@@ -50,25 +50,25 @@ class EditorStoreClass {
     if (this.file === null) return;
     if (!AppStore.fileSystem.providers.get(this.file.providerId)) return;
 
-    const result = await AppStore.fileSystem.write(
-      this.file.providerId,
-      this.file.path,
-      this.file.fileName,
-      Promise.resolve(
-        new Blob([toMarkdown(this.document.blocks)], {
-          type: "text/markdown",
-        })
-      ),
-      this.file.meta ?? undefined
-    );
+    // const result = await AppStore.fileSystem.write(
+    //   this.file.providerId,
+    //   this.file.path,
+    //   this.file.fileName,
+    //   Promise.resolve(
+    //     new Blob([toMarkdown(this.document.blocks)], {
+    //       type: "text/markdown",
+    //     })
+    //   ),
+    //   this.file.meta ?? undefined
+    // );
 
-    if (!result.ok) {
-      console.error(result);
-      return;
-    }
+    // if (!result.ok) {
+    //   console.error(result);
+    //   return;
+    // }
 
-    this.file.fileName = result.fileName || this.file.fileName;
-    this.file.meta = result.meta || null;
+    // this.file.fileName = result.fileName || this.file.fileName;
+    // this.file.meta = result.meta || null;
   }
 
   setOpenSaveFileDialog(open: boolean) {
