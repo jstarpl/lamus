@@ -49,6 +49,7 @@
 
 .CodeEditor .cm-editor .cm-gutters {
   background-color: var(--color-tint-1);
+  border-right: 1px solid var(--color-tone);
   min-width: var(--gutter-min-width);
 }
 
