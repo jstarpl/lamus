@@ -1,0 +1,6 @@
+{
+	"editor.wordSeparators": "`~!@^&*()-=+[{]}\\|;:'\",.<>/?",
+	"editor.linkedEditing": true,
+	"editor.rulers": [80],
+	"typescript.tsdk": "node_modules\\typescript\\lib"
+}

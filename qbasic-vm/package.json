@@ -1,0 +1,61 @@
+{
+  "name": "@lamus/qbasic-vm",
+  "version": "0.0.0",
+  "description": "A QBASIC Virtual Machine implemented in TypeScript, based on qb.js by Steve Hanov",
+  "main": "dist/qbasic-vm.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "repository": "https://github.com/jstarpl/qbasic-vm",
+  "author": "Jan Starzak <jan.starzak@gmail.com>",
+  "contributors": [
+    {
+      "name": "Jan Starzak",
+      "email": "jan.starzak@gmail.com",
+      "url": "https://github.com/jstarpl"
+    },
+    {
+      "name": "Steve Hanov",
+      "email": "steve.hanov@gmail.com",
+      "url": "http://stevehanov.ca"
+    }
+  ],
+  "license": "GPL v3.0-only",
+  "scripts": {
+    "start": "webpack serve",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
+    "lint-fix": "",
+    "format": "prettier --write --config \"./.prettierrc.json\" \"src/**\"",
+    "bundle": "rimraf ./dist && webpack",
+    "api-docs": "npm run api-docs:html && opn api-docs/index.html",
+    "api-docs:html": "typedoc",
+    "api-docs:json": "typedoc --json api-docs/typedoc.json",
+    "docs": "cd docs && npm run start",
+    "docs:html": "cd docs && npm run build",
+    "docs:publish": "npm run docs:html && gh-pages -d docs"
+  },
+  "devDependencies": {
+    "@sofie-automation/code-standard-preset": "^2.0.0",
+    "@types/jsonpath": "^0.2.0",
+    "@types/node": "^12.12.7",
+    "@webpack-cli/serve": "^1.5.1",
+    "opn": "^6.0.0",
+    "prettier": "^2.6.2",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^6.2.1",
+    "typedoc": "^0.22.13",
+    "typescript": "^4.5.5",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^4.7.4"
+  },
+  "dependencies": {
+    "assert-browserify": "^2.0.0",
+    "easy-web-crypto": "^1.2.10",
+    "eventemitter3": "^4.0.0",
+    "jsonpath": "^1.1.1",
+    "mml-iterator": "^1.1.0",
+    "process": "^0.11.10",
+    "radix-router": "^3.0.1",
+    "seq-emitter": "^1.2.0"
+  }
+}

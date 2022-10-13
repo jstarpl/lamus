@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"moduleResolution": "node",
+		"declaration": true,
+		"skipLibCheck": true,
+	},
+	"extends": "./config/tsconfig.base",
+	"exclude": ["node_modules/**", "src/**/*spec.ts", "src/**/__mocks__/*"],
+	"types": [],
+	"typedocOptions": {
+		"entryPoints": ["src/index.ts"],
+		"out": "api-docs",
+	}
+}

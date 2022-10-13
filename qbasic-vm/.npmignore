@@ -1,0 +1,15 @@
+.vscode
+config
+src
+api-docs
+docs
+demo
+tsconfig.json
+tslint.json
+.prettierrc.json
+.prettierignore
+.editorconfig
+.gitignore
+.editorconfig
+.eslintrc.json
+webpack.config.js

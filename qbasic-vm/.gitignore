@@ -1,0 +1,8 @@
+node_modules/*
+dist
+api-docs
+qbasic-vm
+qbasic-vm.map
+
+yarn.lock
+*.log
