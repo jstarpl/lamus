@@ -1,5 +1,5 @@
 .CodeEditor {
-  --output-size: 1;
+  --output-zoom: 1;
   --gutter-min-width: 80px;
   --editor-font-size: 1em;
 }
@@ -7,7 +7,7 @@
 .CodeEditor > .sdi-app-workspace {
   display: grid;
   grid-template-areas: "Document Output";
-  grid-template-columns: auto calc(400px * var(--output-size));
+  grid-template-columns: auto calc(400px * var(--output-zoom));
   grid-template-rows: auto;
 }
 
@@ -28,8 +28,8 @@
 }
 
 .CodeEditor .Output__Canvas {
-  height: calc(600px * var(--output-size));
-  width: calc(320px * var(--output-size));
+  height: calc(600px * var(--output-zoom));
+  width: calc(320px * var(--output-zoom));
   background-color: black;
 }
 
@@ -75,19 +75,19 @@
 @media screen and ((max-width: 750px) or (max-height: 500px)) {
   .CodeEditor {
     --editor-font-size: 0.75em;
-    --output-size: 0.5;
+    --output-zoom: 0.5;
     --gutter-min-width: auto;
   }
 }
 
 @media screen and (min-width: 750px) and (max-width: 1279px) and (min-height: 500px) {
   .CodeEditor {
-    --output-size: 0.75;
+    --output-zoom: 0.75;
   }
 }
 
 @media screen and (min-width: 1400px) and (min-height: 950px) {
   .CodeEditor {
-    --output-size: 1.5;
+    --output-zoom: 1.5;
   }
 }
