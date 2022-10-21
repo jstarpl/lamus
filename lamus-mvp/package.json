@@ -102,7 +102,7 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "build:libs": "cd ../qbasic-vm && npm install && npm run bundle",
+    "build:libs": "cd ../qbasic-vm && npm install && npm run bundle && cd ../../codemirror-lang-qbasic-vm && npm install && npm run prepare",
     "build:app": "node scripts/build.js",
     "build": "npm run build:libs && npm run build:app",
     "test": "node scripts/test.js",
