@@ -5,6 +5,16 @@ import { EditorState } from "@codemirror/state";
 import { basicSetup } from "@codemirror/basic-setup";
 import { indentWithTab } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
+import {
+  Console,
+  AudioDevice,
+  NetworkAdapter,
+  LocalStorageFileSystem,
+  GeneralIORouter,
+  VirtualMachine,
+  QBasicProgram,
+  Cryptography,
+} from "@lamus/qbasic-vm";
 import { AppStore } from "../stores/AppStore";
 import { EditorStore } from "./stores/EditorStore";
 import { updateModel } from "./extensions/updateStore";
@@ -20,9 +30,19 @@ import {
 
 import "./CodeEditor.css";
 
+function displayFocusToClassName(displayFocus: "editor" | "output") {
+  if (displayFocus === "editor") {
+    return "Editor-Active";
+  } else {
+    return "Output-Active";
+  }
+}
+
 const CodeEditor = observer(function CodeEditor() {
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
+  const virtualMachine = useRef<VirtualMachine | null>(null);
+  const consoleViewParent = useRef<HTMLDivElement | null>(null);
 
   const hasDialogOpen = false;
 
@@ -56,16 +76,82 @@ const CodeEditor = observer(function CodeEditor() {
     };
   }, [onInitialize]);
 
+  useEffect(() => {
+    if (!consoleViewParent.current) return;
+
+    const viewParent = consoleViewParent.current;
+
+    const cons = new Console(
+      viewParent,
+      undefined,
+      320,
+      600,
+      process.env.PUBLIC_URL + "/CodeEditor/"
+    );
+    const audio = new AudioDevice();
+    const network = new NetworkAdapter();
+    const fileSystem = new LocalStorageFileSystem();
+    const generalIORouter = new GeneralIORouter();
+    const crypto = new Cryptography();
+    const vm = new VirtualMachine(
+      cons,
+      audio,
+      network,
+      fileSystem,
+      generalIORouter,
+      crypto
+    );
+
+    virtualMachine.current = vm;
+    // const dbg = new DebugConsole(document.getElementById('debug'))
+
+    setTimeout(() => {
+      cons.print("\nREADY.");
+    }, 1000);
+
+    return () => {
+      vm.reset();
+      viewParent.replaceChildren();
+    };
+  }, []);
+
   const onQuit = useCallback(() => {
     navigate("/");
   }, [navigate]);
 
+  const onRun = useCallback(() => {
+    const vm = virtualMachine.current;
+    if (!vm) return;
+
+    const code = EditorStore.document ?? "";
+
+    vm.reset();
+    const program = new QBasicProgram(code, false);
+    if (program.errors.length === 0) {
+      vm.cwd = "";
+
+      vm.run(program, false);
+      // vm.on("error", (error) => {
+      //   // dbg.print('Runtime error: ' + error + ' at ' + error.locus + '\n')
+      // });
+    } else {
+      vm.reset();
+      // for (let i = 0; i < program.errors.length; i++) {
+      //   dbg.print(program.errors[i].message + '\n')
+      // }
+    }
+  }, [virtualMachine]);
+
   return (
     <div className="CodeEditor sdi-app">
-      <div className="sdi-app-workspace bg-general">
+      <div
+        className={`sdi-app-workspace bg-general ${displayFocusToClassName(
+          EditorStore.displayFocus
+        )}`}
+      >
         <div className="Document" ref={editorViewParent}></div>
         <div className="Output">
-          <div className="Output__Canvas" />
+          <div className="Output__Canvas" ref={consoleViewParent} />
         </div>
       </div>
       {!hasDialogOpen && (
@@ -93,11 +179,7 @@ const CodeEditor = observer(function CodeEditor() {
           >
             Open
           </CommandBar.Button>
-          <CommandBar.Button
-            combo={RUN_COMBO}
-            position={5}
-            onClick={console.log}
-          >
+          <CommandBar.Button combo={RUN_COMBO} position={5} onClick={onRun}>
             Run
           </CommandBar.Button>
           <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>

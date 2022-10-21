@@ -2,6 +2,7 @@ import { makeAutoObservable } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
 import { FileHandle } from "../../stores/FileSystemStore";
+import { VMStoreClass } from "./VMStore";
 
 const ACTIVE_DOCUMENT_KEY = "codeEditor:activeDocument";
 
@@ -12,13 +13,17 @@ type Text = string;
 class EditorStoreClass {
   document: Text | null = null;
   file: FileHandle | null = {
-    fileName: "temp.md",
+    fileName: "program.bas",
     path: [],
     providerId: "dropbox",
   };
   meta: any = null;
   isSaveFileDialogOpen: boolean = false;
   isOpenFileDialogOpen: boolean = false;
+
+  displayFocus: "editor" | "output" = "editor";
+
+  vm = new VMStoreClass();
 
   private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
@@ -50,25 +55,25 @@ class EditorStoreClass {
     if (this.file === null) return;
     if (!AppStore.fileSystem.providers.get(this.file.providerId)) return;
 
-    // const result = await AppStore.fileSystem.write(
-    //   this.file.providerId,
-    //   this.file.path,
-    //   this.file.fileName,
-    //   Promise.resolve(
-    //     new Blob([toMarkdown(this.document.blocks)], {
-    //       type: "text/markdown",
-    //     })
-    //   ),
-    //   this.file.meta ?? undefined
-    // );
+    const result = await AppStore.fileSystem.write(
+      this.file.providerId,
+      this.file.path,
+      this.file.fileName,
+      Promise.resolve(
+        new Blob([this.document], {
+          type: "text/basic",
+        })
+      ),
+      this.file.meta ?? undefined
+    );
 
-    // if (!result.ok) {
-    //   console.error(result);
-    //   return;
-    // }
+    if (!result.ok) {
+      console.error(result);
+      return;
+    }
 
-    // this.file.fileName = result.fileName || this.file.fileName;
-    // this.file.meta = result.meta || null;
+    this.file.fileName = result.fileName || this.file.fileName;
+    this.file.meta = result.meta || null;
   }
 
   setOpenSaveFileDialog(open: boolean) {

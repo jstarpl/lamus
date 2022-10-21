@@ -118,7 +118,7 @@ const DEBUG = false
  some instructions and then stop. That way, the program appears to run while
  letting the user use the browser window.
  */
-export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'resumed'> {
+export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'running' | 'finished'> {
 	// Stack
 	stack: any[] = []
 
@@ -219,7 +219,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'resume
 	/**
 	 Resets the virtual machine, halting any running program.
 	*/
-	public reset(program: QBasicProgram) {
+	public reset(program?: QBasicProgram) {
 		if (program) {
 			this.instructions = program.instructions
 			this.types = program.types
@@ -261,6 +261,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'resume
 		this.reset(program)
 		this.asynchronous = !synchronous
 
+		this.emit('running')
 		if (synchronous) {
 			try {
 				while (this.pc < this.instructions.length) {
@@ -268,6 +269,8 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'resume
 				}
 			} catch (e) {
 				this.emit('error', e)
+			} finally {
+				this.emit('finished')
 			}
 		} else {
 			this.interval = setInterval(() => this.runSome(), this.INTERVAL_MS)
@@ -291,7 +294,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'resume
 	*/
 	public resume() {
 		this.suspended = false
-		this.emit('resumed')
+		this.emit('running')
 		if (this.asynchronous) {
 			this.runSome()
 			this.interval = setInterval(() => this.runSome(), this.INTERVAL_MS)
@@ -317,6 +320,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'resume
 
 		if (this.pc === this.instructions.length) {
 			clearInterval(this.interval)
+			this.emit('finished')
 		}
 	}
 
