@@ -3,21 +3,12 @@ import { observer } from "mobx-react-lite";
 import { LoginStore } from "../stores/LoginStore";
 import QrScanner from "qr-scanner";
 import { Button, Container, Form } from "react-bootstrap";
-import { AppStore } from "../stores/AppStore";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import classNames from "classnames";
 
-async function onLogin(deviceId: string) {
-  LoginStore.setPending();
-  try {
-    const result = await AppStore.login(deviceId);
-    LoginStore.setPending(false);
-    return result;
-  } catch {
-    LoginStore.setPending(false);
-    return false;
-  }
+async function onLogin(deviceId: string): Promise<boolean> {
+  return LoginStore.login(deviceId);
 }
 
 export const Login = observer(function Login(props) {

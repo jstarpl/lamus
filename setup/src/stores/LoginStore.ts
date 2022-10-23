@@ -3,6 +3,7 @@ import { TypeCheckingRule, Rules } from "validatorjs";
 import { makeAutoObservable } from "mobx";
 import Validator from "validatorjs";
 import { NotificationStore } from "./NotificationStore";
+import { AppStore } from "./AppStore";
 
 type LoginMode = "qrcode" | "text";
 
@@ -52,6 +53,20 @@ class LoginStoreClass {
 
   setLoginMode(mode: LoginMode) {
     this.loginMode = mode;
+  }
+
+  async login(deviceId: string): Promise<boolean> {
+    if (AppStore.loggedIn) return false;
+    let result = false;
+    try {
+      this.setPending(true);
+      result = await AppStore.login(deviceId);
+      this.setPending(false);
+    } catch (e) {
+      console.error(e);
+    }
+
+    return result;
   }
 
   setPending(value: boolean = true) {
