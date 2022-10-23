@@ -1,0 +1,18 @@
+{
+  "name": "lamus-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd lamus-mvp && node scripts/start.js",
+    "build:qbaisc": "cd qbasic-vm && npm run bundle",
+    "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && npm run prepare",
+    "build:app": "cd lamus-mvp && node scripts/build.js",
+    "build": "npm run build:libs && npm run build:qbasic-lang && npm run build:app"
+  },
+  "workspaces": [
+    "lamus-mvp",
+    "setup",
+    "qbasic-vm",
+    "codemirror-lang-qbasic-vm"
+  ]
+}
