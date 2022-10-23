@@ -5,9 +5,9 @@
   "scripts": {
     "start": "cd lamus-mvp && node scripts/start.js",
     "build:qbasic": "cd qbasic-vm && npm run bundle",
-    "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && npm run prepare",
+    "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && npm run build",
     "build:app": "cd lamus-mvp && node scripts/build.js",
-    "build": "npm run build:qbasic && npm run build:qbasic-lang && npm run build:app"
+    "build": "npm run build:qbasic && npm run build:app"
   },
   "workspaces": [
     "lamus-mvp",
