@@ -10,9 +10,14 @@ import classNames from "classnames";
 
 async function onLogin(deviceId: string) {
   LoginStore.setPending();
-  const result = await AppStore.login(deviceId);
-  LoginStore.setPending(false);
-  return result;
+  try {
+    const result = await AppStore.login(deviceId);
+    LoginStore.setPending(false);
+    return result;
+  } catch {
+    LoginStore.setPending(false);
+    return false;
+  }
 }
 
 export const Login = observer(function Login(props) {
@@ -50,6 +55,7 @@ export const Login = observer(function Login(props) {
 
   const onQrCodeResult = useCallback(
     (result: QrScanner.ScanResult) => {
+      if (LoginStore.pending) return;
       if (result.data.startsWith("https://setup.lamus.cloud/d/")) {
         console.log(result.data);
         const deviceId = result.data.replace(
