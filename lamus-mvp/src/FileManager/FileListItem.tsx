@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import "./FileListItem.css";
 import { IFileEntryEx } from "./FileList";
 import classNames from "classnames";
+import { FILE_PATH_SEPARATOR } from "../stores/fileSystem/IFileSystemProvider";
 
 const UP_DIR = "UP-DIR";
 const SUB_DIR = "SUB-DIR";
@@ -27,7 +28,9 @@ export function FileListItem({ file, disabled }: IProps) {
         "FileListItem--disabled": disabled,
       })}
     >
-      <div className="FileListItem__icon">{file.dir && "/"}</div>
+      <div className="FileListItem__icon">
+        {file.dir && FILE_PATH_SEPARATOR}
+      </div>
       <div className="FileListItem__fileName">{file.fileName}</div>
       <div className="FileListItem__size">{listItemSizeLabel}</div>
       <div className="FileListItem__modified">

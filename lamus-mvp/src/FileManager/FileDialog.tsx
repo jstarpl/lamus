@@ -15,7 +15,10 @@ import { FileListItem } from "./FileListItem";
 import { IFileEntryEx } from "./FileList";
 import { v4 as uuidv4 } from "uuid";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
-import { Path } from "../stores/fileSystem/IFileSystemProvider";
+import {
+  Path,
+  PROVIDER_SEPARATOR,
+} from "../stores/fileSystem/IFileSystemProvider";
 import { ProviderId } from "../stores/FileSystemStore";
 import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
@@ -275,16 +278,20 @@ export const FileDialog = observer(function FileDialog({
                   onClick={onGoToPath}
                 >
                   {AppStore.fileSystem.providers.get(currentStorage)?.name}
+                  {PROVIDER_SEPARATOR}
                 </BreadcrumbBar.Crumb>
                 <BreadcrumbBar.Separator />
                 {currentPath.map((pathSegment, index, array) => (
-                  <BreadcrumbBar.Crumb
-                    key={`${index}_${pathSegment}`}
-                    data-path={JSON.stringify(array.slice(0, index + 1))}
-                    onClick={onGoToPath}
-                  >
-                    {pathSegment}
-                  </BreadcrumbBar.Crumb>
+                  <>
+                    <BreadcrumbBar.Crumb
+                      key={`${index}_${pathSegment}`}
+                      data-path={JSON.stringify(array.slice(0, index + 1))}
+                      onClick={onGoToPath}
+                    >
+                      {pathSegment}
+                    </BreadcrumbBar.Crumb>
+                    {index !== array.length - 1 && <BreadcrumbBar.Separator />}
+                  </>
                 ))}
               </BreadcrumbBar.Bar>
             )}

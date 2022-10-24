@@ -2,6 +2,9 @@ export type Path = string[];
 export type FileName = string;
 export type FileSize = number;
 
+export const FILE_PATH_SEPARATOR = "/";
+export const PROVIDER_SEPARATOR = ":";
+
 export interface IFileEntry {
   readonly fileName: FileName;
   readonly dir?: boolean;
