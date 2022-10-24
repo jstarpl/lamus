@@ -16,6 +16,7 @@
     "codemirror-lang-qbasic-vm"
   ],
   "dependencies": {
+    "@supabase/supabase-js": "^2.0.4",
     "@vercel/node": "^2.5.26",
     "dropbox": "^10.33.0",
     "jose": "^4.10.3",
