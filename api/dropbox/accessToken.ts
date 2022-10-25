@@ -25,6 +25,7 @@ export default async function accessKey(
   const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
 
   const supabase = createSupabaseClient();
+  // @ts-ignore
   const { data: deviceSettingsAll, error } = await supabase
     .from("device_settings")
     .select("dropbox_refresh_token")
@@ -34,6 +35,7 @@ export default async function accessKey(
     sendStatus(res, 500, { error: "Internal Server Error" });
     return;
   }
+
   const deviceSettings = deviceSettingsAll[0];
   if (error) {
     console.error(error);

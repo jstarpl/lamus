@@ -66,6 +66,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
     dbxAuth.setCodeVerifier(codeVerifier);
     const tokenRes = await dbxAuth.getAccessTokenFromCode(REDIRECT_URI, code);
 
+    // @ts-ignore
     const { error } = await supabase
       .from("device_settings")
       .update({

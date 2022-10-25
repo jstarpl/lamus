@@ -67,6 +67,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    // @ts-ignore
     const { error } = await supabase
       .from("device_settings")
       .update({

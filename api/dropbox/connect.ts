@@ -19,7 +19,7 @@ export default async function connect(req: VercelRequest, res: VercelResponse) {
   const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
   const authUrl = await dbxAuth.getAuthenticationUrl(
     REDIRECT_URI,
-    null,
+    undefined,
     "code",
     "offline",
     SCOPES,

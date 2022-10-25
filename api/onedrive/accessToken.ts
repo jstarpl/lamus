@@ -22,13 +22,15 @@ export default async function accessKey(
   }
 
   const supabase = createSupabaseClient();
+  // @ts-ignore
   const { data: deviceSettings, error } = await supabase
     .from("device_settings")
     .select("onedrive_refresh_token")
     .eq("device_id", deviceId);
-  if (error) {
+  if (error || !deviceSettings) {
     console.error(error);
     sendStatus(res, 500, { error: "Internal Server Error" });
+    return;
   }
 
   const { onedrive_refresh_token: refreshToken } = deviceSettings[0];
