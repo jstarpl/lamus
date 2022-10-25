@@ -36,13 +36,15 @@ export default async function accessKey(
     return;
   }
 
-  const deviceSettings = deviceSettingsAll[0];
   if (error) {
     console.error(error);
     sendStatus(res, 500, { error: "Internal Server Error" });
     return;
   }
 
+  const deviceSettings = deviceSettingsAll[0] as unknown as {
+    dropbox_refresh_token: string;
+  };
   const { dropbox_refresh_token: refreshToken } = deviceSettings;
 
   dbxAuth.setRefreshToken(refreshToken);

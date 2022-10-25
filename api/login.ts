@@ -31,6 +31,7 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   const noCreate = deArray(req.query.no_create) ?? req.body?.no_create ?? false;
 
   const supabase = createSupabaseClient();
+  // @ts-ignore
   const { data: deviceSettings, error } = await supabase
     .from("device_settings")
     .select(
@@ -46,6 +47,7 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
   const { jwt } = await loginDeviceId(deviceId, scopes);
 
   if (deviceSettings.length === 1) {
+    // @ts-ignore
     let { error } = await supabase
       .from("device_settings")
       .update({ last_seen: new Date().toISOString() })
@@ -63,6 +65,7 @@ export default async function login(req: VercelRequest, res: VercelResponse) {
       sendStatus(res, 404);
       return;
     }
+    // @ts-ignore
     let { error } = await supabase
       .from("device_settings")
       .insert({ device_id: deviceId, last_seen: new Date().toISOString() });
