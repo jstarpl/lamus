@@ -39,6 +39,14 @@ function displayFocusToClassName(displayFocus: "editor" | "output") {
   }
 }
 
+function orientationToClassName(orientation: "landscape" | "portrait") {
+  if (orientation === "landscape") {
+    return "Orientation-Landscape";
+  } else {
+    return "Orientation-Portrait";
+  }
+}
+
 const CodeEditor = observer(function CodeEditor() {
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
@@ -190,7 +198,7 @@ const CodeEditor = observer(function CodeEditor() {
       vm.run(program, false);
       vm.once("running", () => {
         if (virtualMachine.current) {
-          EditorStore.vm.setRunState(VMRunState.RUNNING);
+          EditorStore.run();
         }
       });
       // vm.on("error", (error) => {
@@ -210,7 +218,7 @@ const CodeEditor = observer(function CodeEditor() {
       <div
         className={`sdi-app-workspace bg-general ${displayFocusToClassName(
           EditorStore.displayFocus
-        )}`}
+        )} ${orientationToClassName(EditorStore.vm.outputOrientation)}`}
       >
         <div className="Document" ref={editorViewParent}></div>
         <div className="Output">

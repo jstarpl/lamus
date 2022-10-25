@@ -97,17 +97,28 @@
   .CodeEditor > .sdi-app-workspace:not(.Output-Active) {
     display: grid;
     grid-template-areas: "Document Output";
-    grid-template-columns: 100vw 100vw;
+    grid-template-columns: 100vw 0;
     grid-template-rows: auto;
     overflow: hidden;
   }
 
-  .CodeEditor > .sdi-app-workspace:not(.Output-Active) > .Output {
+  .CodeEditor > .sdi-app-workspace.Output-Active {
+    display: grid;
+    grid-template-areas: "Document Output";
+    grid-template-columns: 0 100vw;
+    grid-template-rows: auto;
+    overflow: hidden;
   }
+}
 
-  .CodeEditor > .sdi-app-workspace:not(.Output-Active) > .ShowOutput {
+@media screen and (max-width: 340px) and (orientation: portrait) {
+  .CodeEditor {
+    --output-zoom: 0.75;
   }
+}
 
-  .CodeEditor > .sdi-app-workspace.Output-Active > .ShowDocument {
+@media screen and (min-width: 600px) and (min-height: 960px) and (orientation: portrait) {
+  .CodeEditor {
+    --output-zoom: 1.5;
   }
 }

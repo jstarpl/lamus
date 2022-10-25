@@ -87,6 +87,11 @@ class EditorStoreClass {
   setDisplayFocus(focus: "editor" | "output") {
     this.displayFocus = focus;
   }
+
+  run() {
+    this.setDisplayFocus("output");
+    this.vm.run();
+  }
 }
 
 export const EditorStore = new EditorStoreClass();

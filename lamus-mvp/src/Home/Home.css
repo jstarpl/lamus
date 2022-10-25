@@ -16,7 +16,7 @@
   object-fit: cover;
 }
 
-#home-screen>nav>ul {
+#home-screen > nav > ul {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -27,18 +27,18 @@
   align-items: stretch;
 }
 
-#home-screen>nav>ul>li {
+#home-screen > nav > ul > li {
   display: block;
   padding: 0;
   margin: 0;
 }
 
-#home-screen>nav>ul>li {
+#home-screen > nav > ul > li {
   width: 100%;
 }
 
-#home-screen>nav>ul>li>button,
-#home-screen>nav>ul>li>.btn {
+#home-screen > nav > ul > li > button,
+#home-screen > nav > ul > li > .btn {
   display: block;
   background: none;
   border: none;
@@ -54,15 +54,15 @@
   width: stretch;
 }
 
-#home-screen>nav>ul>li>.btn:visited {
+#home-screen > nav > ul > li > .btn:visited {
   color: #fff;
 }
 
-#home-screen>nav>ul>li>.btn:active {
+#home-screen > nav > ul > li > .btn:active {
   color: #fff;
 }
 
-#home-screen>.logo {
+#home-screen > .logo {
   position: absolute;
   top: auto;
   left: 50%;
@@ -85,24 +85,36 @@
   }
 }
 
-#home-screen>.logo.first-show {
+#home-screen > .logo.first-show {
   animation: 1s logo-fade-in 3s 1 cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+#home-screen > nav > ul > li > button > span.icon,
+#home-screen > nav > ul > li > .btn > span.icon {
+  display: none;
+}
+
 @media screen and (orientation: landscape) {
-  #home-screen>nav>ul {
+  #home-screen > nav > ul {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
   }
 
-  #home-screen>nav>ul>li {
+  #home-screen > nav > ul > li {
     width: auto;
   }
 
-  #home-screen>nav>ul>li>button,
-  #home-screen>nav>ul>li>.btn {
+  #home-screen > nav > ul > li > button,
+  #home-screen > nav > ul > li > .btn {
     width: 4.5em;
+    padding: 1em 0 0.75em;
+  }
+
+  #home-screen > nav > ul > li > button > span.icon,
+  #home-screen > nav > ul > li > .btn > span.icon {
+    display: block;
+    font-size: 2em;
   }
 }

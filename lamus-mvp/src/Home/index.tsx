@@ -15,6 +15,11 @@ import classNames from "classnames";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { AppStore } from "../stores/AppStore";
+import {
+  BsFileEarmarkText,
+  BsFolder2Open,
+  BsFileEarmarkCode,
+} from "react-icons/bs";
 
 // is this the first time we show the home screen. If so, fade in the logo nicely. Otherwise, just show it.
 let FIRST_SHOW = true;
@@ -110,16 +115,25 @@ const Home = function Home() {
         <ul>
           <li>
             <Link to={"/text"} tabIndex={0} className="btn">
+              <span className="icon">
+                <BsFileEarmarkText />
+              </span>
               Text
             </Link>
           </li>
           <li>
             <Link to={"/files"} tabIndex={1} className="btn" data-focus>
+              <span className="icon">
+                <BsFolder2Open />
+              </span>
               Files
             </Link>
           </li>
           <li>
             <Link to={"/code"} tabIndex={2} className="btn">
+              <span className="icon">
+                <BsFileEarmarkCode />
+              </span>
               Code
             </Link>
           </li>
