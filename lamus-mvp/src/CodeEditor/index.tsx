@@ -4,7 +4,6 @@ import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { basicSetup } from "@codemirror/basic-setup";
 import { indentWithTab } from "@codemirror/commands";
-import { javascript } from "@codemirror/lang-javascript";
 import {
   Console,
   AudioDevice,
@@ -29,6 +28,8 @@ import {
 } from "../lib/commonHotkeys";
 
 import "./CodeEditor.css";
+import { VMRunState } from "./stores/VMStore";
+import { autorun } from "mobx";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -50,6 +51,54 @@ const CodeEditor = observer(function CodeEditor() {
 
   const onInitialize = useCallback(() => {
     AppStore.setUIReady();
+    const focusEditor = setTimeout(() => {
+      editorView.current?.focus();
+    }, 1000);
+
+    return () => {
+      clearTimeout(focusEditor);
+    };
+  }, []);
+
+  const onError = useCallback((error: any) => {
+    console.error(error);
+  }, []);
+
+  const onFinished = useCallback(() => {
+    console.log("finished");
+    EditorStore.vm.setRunState(VMRunState.STOPPED);
+  }, []);
+
+  const onInput = useCallback(() => {
+    console.log("VM is waiting for input");
+    EditorStore.setDisplayFocus("output");
+  }, []);
+
+  useEffect(
+    () =>
+      autorun(() => {
+        if (
+          EditorStore.displayFocus === "output" &&
+          consoleViewParent.current
+        ) {
+          const firstChild =
+            consoleViewParent.current.querySelector("[tabindex]");
+          if (!firstChild || !(firstChild instanceof HTMLElement)) return;
+          firstChild.focus();
+        } else if (
+          EditorStore.displayFocus === "editor" &&
+          editorView.current
+        ) {
+          console.log("Focusing");
+          editorView.current.focus();
+        }
+      }),
+    []
+  );
+
+  const onOrientationChange = useCallback((event: Event) => {
+    if (!(event instanceof CustomEvent)) return;
+    console.log(event.detail);
   }, []);
 
   useEffect(() => {
@@ -63,7 +112,6 @@ const CodeEditor = observer(function CodeEditor() {
           basicSetup,
           keymap.of([indentWithTab]),
           scrollPastEnd(),
-          javascript(),
           updateModel,
         ],
       }),
@@ -105,15 +153,24 @@ const CodeEditor = observer(function CodeEditor() {
     virtualMachine.current = vm;
     // const dbg = new DebugConsole(document.getElementById('debug'))
 
+    vm.addListener("error", onError);
+    vm.addListener("finished", onFinished);
+    cons.addEventListener("input", onInput);
+    cons.addEventListener("orientationchange", onOrientationChange);
+
     setTimeout(() => {
       cons.print("\nREADY.");
     }, 1000);
 
     return () => {
+      vm.removeListener("error", onError);
+      vm.removeListener("finished", onFinished);
+      cons.removeEventListener("orientationchange", onOrientationChange);
+
       vm.reset();
       viewParent.replaceChildren();
     };
-  }, []);
+  }, [onError, onFinished, onOrientationChange, onInput]);
 
   const onQuit = useCallback(() => {
     navigate("/");
@@ -131,11 +188,17 @@ const CodeEditor = observer(function CodeEditor() {
       vm.cwd = "";
 
       vm.run(program, false);
+      vm.once("running", () => {
+        if (virtualMachine.current) {
+          EditorStore.vm.setRunState(VMRunState.RUNNING);
+        }
+      });
       // vm.on("error", (error) => {
       //   // dbg.print('Runtime error: ' + error + ' at ' + error.locus + '\n')
       // });
     } else {
       vm.reset();
+      console.error(program.errors);
       // for (let i = 0; i < program.errors.length; i++) {
       //   dbg.print(program.errors[i].message + '\n')
       // }

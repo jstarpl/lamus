@@ -339,7 +339,6 @@ export class TypeChecker implements IVisitor {
 		let declare = this.declaredSubs[call.name]
 		// sub must exist and argument number and types must be compatible.
 		if (!declare) {
-			debugger
 			this.error(call, "Call to undefined SUB '%s'", call.name)
 		} else {
 			this.checkCallArguments(declare, call.args)

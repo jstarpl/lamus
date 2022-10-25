@@ -784,6 +784,7 @@ export class Console extends EventTarget implements IConsole {
 
 				resolve(str)
 			} else {
+				this.dispatchEvent(new CustomEvent('input'))
 				this.enableCursor(true)
 				this.onInputDone = resolve
 				this.inputMode = true

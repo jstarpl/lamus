@@ -83,6 +83,10 @@ class EditorStoreClass {
   setOpenOpenFileDialog(open: boolean) {
     this.isOpenFileDialogOpen = open;
   }
+
+  setDisplayFocus(focus: "editor" | "output") {
+    this.displayFocus = focus;
+  }
 }
 
 export const EditorStore = new EditorStoreClass();

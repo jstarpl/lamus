@@ -43,7 +43,7 @@ import { IGeneralIO } from './IGeneralIO'
 import { ICryptography } from './ICryptography'
 import { QBasicProgram } from './QBasic'
 import { Locus } from './Tokenizer'
-import * as EventEmitter from 'eventemitter3'
+import { EventEmitter } from 'eventemitter3'
 import * as jsonPath from 'jsonpath'
 import { FileAccessMode, IFileSystem } from './IFileSystem'
 
@@ -226,6 +226,8 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 			this.defaultType = program.defaultType
 			this.data = program.data
 			this.shared = program.shared
+		} else {
+			this.instructions.length = 0
 		}
 
 		this.stack.length = 0
