@@ -109,6 +109,12 @@
   #home-screen > nav > ul > li > button,
   #home-screen > nav > ul > li > .btn {
     width: 4.5em;
+  }
+}
+
+@media screen and (orientation: landscape) and (min-height: 300px) {
+  #home-screen > nav > ul > li > button,
+  #home-screen > nav > ul > li > .btn {
     padding: 1em 0 0.75em;
   }
 
