@@ -23,8 +23,12 @@ export function useFocusTrap(ref?: React.RefObject<HTMLElement>) {
     focusableElements[0].focus();
   }
 
-  return [
-    <div tabIndex={0} onFocusCapture={onFocusStart} data-focus-trap></div>,
-    <div tabIndex={0} onFocusCapture={onFocusEnd} data-focus-trap></div>,
-  ];
+  return {
+    FocusTrapStart: () => (
+      <div tabIndex={0} onFocusCapture={onFocusStart} data-focus-trap></div>
+    ),
+    FocusTrapEnd: () => (
+      <div tabIndex={0} onFocusCapture={onFocusEnd} data-focus-trap></div>
+    ),
+  };
 }

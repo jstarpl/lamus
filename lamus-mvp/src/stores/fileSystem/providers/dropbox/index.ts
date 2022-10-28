@@ -1,12 +1,22 @@
 import {
+  IAccessResult,
+  IDeleteResult,
   IFileEntry,
   IFileSystemProvider,
   IListResult,
+  IMkDirResult,
   IReadResult,
+  IRenameResult,
   IWriteResult,
   Path,
 } from "../../IFileSystemProvider";
-import { Dropbox, DropboxAuth, DropboxResponse, files } from "dropbox";
+import {
+  Dropbox,
+  DropboxAuth,
+  DropboxResponse,
+  DropboxResponseError,
+  files,
+} from "dropbox";
 import { CustomDropboxAuth } from "./CustomDropboxAuth";
 
 const DROPBOX_ROOT_FOLDER = "/";
@@ -49,7 +59,7 @@ export class DropboxProvider implements IFileSystemProvider {
         return {
           fileName: reference.name,
           size: reference.size,
-          modified: new Date(Date.parse(reference.client_modified)),
+          modified: new Date(Date.parse(reference.server_modified)),
         };
       case "folder":
         return {
@@ -59,6 +69,55 @@ export class DropboxProvider implements IFileSystemProvider {
         };
       case "deleted":
         return null;
+    }
+  }
+  async access(path: Path, name: string): Promise<IAccessResult> {
+    if (!this.dropbox) throw new Error("Not initialized");
+
+    try {
+      const result = await this.dropbox.filesGetMetadata({
+        path: DROPBOX_ROOT_FOLDER + [...path, name].join("/"),
+      });
+
+      if (isError(result)) {
+        return {
+          ok: false,
+          error: String(result.status),
+        };
+      }
+
+      if (result.result[".tag"] === "folder") {
+        return {
+          ok: false,
+          error: "There is a folder of the same name",
+        };
+      }
+
+      const found = result.result[".tag"] === "file";
+
+      return {
+        ok: true,
+        found,
+        meta: result.result[".tag"] === "file" ? result.result.rev : undefined,
+      };
+    } catch (e) {
+      if (e instanceof DropboxResponseError) {
+        const error = e.error as DropboxResponseError<files.GetMetadataError>;
+        if (
+          error.error[".tag"] === "path" &&
+          error.error.path?.[".tag"] === "not_found"
+        ) {
+          return {
+            ok: true,
+            found: false,
+          };
+        }
+      }
+
+      return {
+        ok: false,
+        error: String(e),
+      };
     }
   }
   async list(path: Path): Promise<IListResult> {
@@ -110,14 +169,68 @@ export class DropboxProvider implements IFileSystemProvider {
       };
     }
   }
-  async mkdir(path: Path, name: string): Promise<IWriteResult> {
-    throw new Error("Method not implemented.");
+  async mkdir(path: Path, name: string): Promise<IMkDirResult> {
+    if (!this.dropbox) throw new Error("Not initialized");
+
+    try {
+      const result = await this.dropbox.filesCreateFolderV2({
+        path: DROPBOX_ROOT_FOLDER + [...path, name].join("/"),
+      });
+
+      if (isError(result)) {
+        console.error(result);
+        return {
+          ok: false,
+          error: String(result.status),
+        };
+      }
+
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
-  async unlink(path: Path, fileName: string): Promise<IWriteResult> {
+  async unlink(path: Path, fileName: string): Promise<IDeleteResult> {
     throw new Error("Method not implemented.");
   }
   async read(path: Path, fileName: string): Promise<IReadResult> {
     throw new Error("Method not implemented.");
+  }
+  async rename(
+    path: Path,
+    oldFileName: string,
+    newFileName: string
+  ): Promise<IRenameResult> {
+    if (!this.dropbox) throw new Error("Not initialized");
+
+    try {
+      const result = await this.dropbox.filesMoveV2({
+        from_path: DROPBOX_ROOT_FOLDER + [...path, oldFileName].join("/"),
+        to_path: DROPBOX_ROOT_FOLDER + [...path, newFileName].join("/"),
+      });
+
+      if (isError(result)) {
+        console.error(result);
+        return {
+          ok: false,
+          error: String(result.status),
+        };
+      }
+
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
   async write(
     path: Path,

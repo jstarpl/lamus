@@ -1,11 +1,13 @@
 import { action, makeObservable, observable, ObservableMap } from "mobx";
 import {
   FileName,
+  IAccessResult,
   IDeleteResult,
   IFileSystemProvider,
   IListResult,
   IMkDirResult,
   IReadResult,
+  IRenameResult,
   IWriteResult,
   Path,
 } from "./fileSystem/IFileSystemProvider";
@@ -62,6 +64,17 @@ export class FileSystemStoreClass {
     return provider.unlink(path, fileName);
   }
 
+  async access(
+    providerId: ProviderId,
+    path: Path,
+    fileName: FileName
+  ): Promise<IAccessResult> {
+    const provider = this.providers.get(providerId);
+    if (!provider) throw new Error(`Provider "${providerId}" not found!`);
+
+    return provider.access(path, fileName);
+  }
+
   async mkdir(
     providerId: ProviderId,
     path: Path,
@@ -71,6 +84,18 @@ export class FileSystemStoreClass {
     if (!provider) throw new Error(`Provider "${providerId}" not found!`);
 
     return provider.mkdir(path, name);
+  }
+
+  async rename(
+    providerId: ProviderId,
+    path: Path,
+    oldName: FileName,
+    newName: FileName
+  ): Promise<IRenameResult> {
+    const provider = this.providers.get(providerId);
+    if (!provider) throw new Error(`Provider "${providerId}" not found!`);
+
+    return provider.rename(path, oldName, newName);
   }
 
   async write(

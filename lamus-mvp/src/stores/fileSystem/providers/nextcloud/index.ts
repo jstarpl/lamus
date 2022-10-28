@@ -1,5 +1,11 @@
-import { createClient, FileStat, WebDAVClient } from "webdav/web";
 import {
+  createClient,
+  FileStat,
+  WebDAVClient,
+  WebDAVClientError,
+} from "webdav/web";
+import {
+  IAccessResult,
   IFileEntry,
   IFileSystemProvider,
   IListResult,
@@ -69,6 +75,35 @@ export class NextcloudProvider implements IFileSystemProvider {
       this.mkdir([]);
     }
   }
+  async access(path: Path, name: string): Promise<IAccessResult> {
+    if (!this.client) throw new Error("Not initialized");
+
+    try {
+      (await this.client.stat(NEXTCLOUD_ROOT_FOLDER + "/" + path.join("/"), {
+        details: false,
+      })) as FileStat;
+
+      return {
+        ok: true,
+        found: true,
+      };
+    } catch (e) {
+      if (e instanceof Error) {
+        const error = e as WebDAVClientError;
+        if (error.status === 404) {
+          return {
+            ok: true,
+            found: false,
+          };
+        }
+      }
+
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
+  }
   async list(path: Path): Promise<IListResult> {
     if (!this.client) throw new Error("Not initialized");
 
@@ -108,6 +143,29 @@ export class NextcloudProvider implements IFileSystemProvider {
         {
           recursive: true,
         }
+      );
+
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
+  }
+  async rename(
+    path: Path,
+    oldFileName: string,
+    newFileName: string
+  ): Promise<IMkDirResult> {
+    if (!this.client) throw new Error("Not initialized");
+
+    try {
+      await this.client.moveFile(
+        NEXTCLOUD_ROOT_FOLDER + "/" + [...path, oldFileName].join("/"),
+        NEXTCLOUD_ROOT_FOLDER + "/" + [...path, newFileName].join("/")
       );
 
       return {

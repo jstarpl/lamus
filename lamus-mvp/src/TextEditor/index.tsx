@@ -15,7 +15,7 @@ import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { CommandBar } from "../components/CommandBar";
 import { useNavigate } from "react-router-dom";
-import { FileDialog } from "../FileManager/FileDialog";
+import { FileDialog, IAcceptEventProps } from "../FileManager/FileDialog";
 import { AnimatePresence } from "framer-motion";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { AppStore } from "../stores/AppStore";
@@ -25,6 +25,14 @@ import {
   SAVE_AS_COMBO,
   SAVE_COMBO,
 } from "../lib/commonHotkeys";
+import {
+  DialogButtonResult,
+  DialogButtons,
+  DialogTemplates,
+  DialogType,
+  useModalDialog,
+} from "../helpers/useModalDialog";
+import { assertNever } from "../helpers/util";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -53,6 +61,8 @@ const TextEditor = observer(function TextEditor() {
 
   const editorCore = useRef<any>(null);
   const navigate = useNavigate();
+  const { showDialog } = useModalDialog();
+
   useFocusSoundEffect("input,button,.list-view,.list-view-item");
 
   const hasDialogOpen = EditorStore.isSaveFileDialogOpen;
@@ -97,8 +107,52 @@ const TextEditor = observer(function TextEditor() {
     };
   }, []);
 
-  function onDialogCancel() {
+  function onSaveDialogCancel() {
     EditorStore.setOpenSaveFileDialog(false);
+  }
+
+  function onSaveDialogAccept({
+    providerId,
+    path,
+    fileName,
+  }: IAcceptEventProps) {
+    if (!fileName) return;
+
+    EditorStore.checkIfCanSaveOver(providerId, path, fileName)
+      .then(async ({ ok, meta }) => {
+        if (!ok) {
+          // file will be overwriten, ask
+          const result = await showDialog(
+            DialogTemplates.overwriteExistingFile(fileName)
+          );
+          if (result.result === DialogButtonResult.NO) {
+            return;
+          } else if (result.result !== DialogButtonResult.YES) {
+            assertNever(result.result);
+          }
+        }
+
+        const saveAsOk = await EditorStore.saveAs(
+          providerId,
+          path,
+          fileName,
+          meta
+        );
+        if (!saveAsOk) {
+          await showDialog({
+            message:
+              "There was an error saving the file. Try using a different file name.",
+            choices: DialogButtons.OK,
+            type: DialogType.ERROR,
+          });
+          return;
+        }
+        // write file
+        EditorStore.setOpenSaveFileDialog(false);
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,7 +193,7 @@ const TextEditor = observer(function TextEditor() {
           <CommandBar.Button
             combo={SAVE_COMBO}
             position={2}
-            highlight
+            highlight={!EditorStore.saved}
             showOnlyWhenModifiersActive
             onClick={onSave}
           >
@@ -148,7 +202,6 @@ const TextEditor = observer(function TextEditor() {
           <CommandBar.Button
             combo={SAVE_AS_COMBO}
             position={2}
-            highlight
             showOnlyWhenModifiersActive
           >
             SaveAs
@@ -170,7 +223,8 @@ const TextEditor = observer(function TextEditor() {
           <FileDialog
             key="save-file-dialog"
             mode="saveFile"
-            onCancel={onDialogCancel}
+            onAccept={onSaveDialogAccept}
+            onCancel={onSaveDialogCancel}
             initialStorageProvider={EditorStore.file?.providerId}
             initialPath={EditorStore.file?.path}
             defaultFileName={

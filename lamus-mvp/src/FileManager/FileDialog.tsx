@@ -16,6 +16,7 @@ import { IFileEntryEx } from "./FileList";
 import { v4 as uuidv4 } from "uuid";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
 import {
+  FileName,
   Path,
   PROVIDER_SEPARATOR,
 } from "../stores/fileSystem/IFileSystemProvider";
@@ -24,12 +25,19 @@ import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 
+export interface IAcceptEventProps {
+  providerId: string;
+  path: Path;
+  fileName?: FileName;
+}
+
 interface IBaseProps {
   mode: "saveFile" | "openFile" | "selectDir";
-  defaultFileName?: string;
+  defaultFileName?: FileName;
+  disabledRename?: boolean;
   disabledMkDir?: boolean;
   onCancel?: () => void;
-  onAccept?: () => void;
+  onAccept?: (props: IAcceptEventProps) => void;
 }
 
 type IProps = IBaseProps &
@@ -71,17 +79,19 @@ export const FileDialog = observer(function FileDialog({
   initialStorageProvider,
   initialPath,
   disabledMkDir,
+  disabledRename,
   onAccept,
   onCancel,
 }: IProps) {
+  const [localFileName, setLocalFileName] = useState<FileName>("");
   const [fileList, setFileList] = useState<IFileEntryEx[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<undefined | string[]>(
+  const [selectedFiles, setSelectedFiles] = useState<undefined | FileName[]>(
     undefined
   );
   const [currentStorage, setCurrentStorage] = useState<undefined | ProviderId>(
     initialStorageProvider ?? undefined
   );
-  const [currentPath, setCurrentPath] = useState<string[]>(initialPath ?? []);
+  const [currentPath, setCurrentPath] = useState<Path>(initialPath ?? []);
   const [status, setStatus] = useState<LoadStatus>(LoadStatus.LOADING);
   const [animationFinished, setAnimationFinished] = useState(false);
   const [isDirSelected, setDirSelected] = useState(false);
@@ -122,10 +132,11 @@ export const FileDialog = observer(function FileDialog({
   useEffect(
     () =>
       autorun(() => {
+        if (initialStorageProvider) return;
         const providerId = Array.from(AppStore.fileSystem.providers.keys())[0];
         setCurrentStorage(providerId);
       }),
-    []
+    [initialStorageProvider]
   );
 
   useEffect(
@@ -152,13 +163,7 @@ export const FileDialog = observer(function FileDialog({
               ...file,
               guid: uuidv4(),
             }));
-            files = files.sort((a, b) =>
-              a.fileName.localeCompare(b.fileName, undefined, {
-                numeric: true,
-                caseFirst: "upper",
-                sensitivity: "base",
-              })
-            );
+            files = files.sort(fileComparator);
             if (isSelectingDirectory) {
               files.unshift(SELECT_THIS_DIR);
             }
@@ -235,7 +240,24 @@ export const FileDialog = observer(function FileDialog({
     }
   }
 
-  const [focusTrapStart, focusTrapEnd] = useFocusTrap();
+  function onAcceptInner() {
+    if (!onAccept) return;
+    if (!currentStorage) return;
+
+    const selectedGuid = selectedFiles?.[0];
+    const item = fileList.find((item) => item.guid === selectedGuid);
+    const fileName =
+      (isListFocused && !isDirSelected ? item?.fileName : localFileName) ??
+      defaultFileName;
+
+    onAccept({
+      providerId: currentStorage,
+      path: currentPath,
+      fileName,
+    });
+  }
+
+  const { FocusTrapStart, FocusTrapEnd } = useFocusTrap();
 
   const canGo = (isDirSelected && isListFocused) || isPathFocused;
   const canSave =
@@ -265,7 +287,7 @@ export const FileDialog = observer(function FileDialog({
         transition={{ duration: 0.5 }}
         onAnimationComplete={onAnimationComplete}
       >
-        {focusTrapStart}
+        <FocusTrapStart />
         <div className="FileDialog__layout">
           <div className="FileDialog__path">
             {currentStorage && (
@@ -282,16 +304,15 @@ export const FileDialog = observer(function FileDialog({
                 </BreadcrumbBar.Crumb>
                 <BreadcrumbBar.Separator />
                 {currentPath.map((pathSegment, index, array) => (
-                  <>
+                  <React.Fragment key={`${index}_${pathSegment}`}>
                     <BreadcrumbBar.Crumb
-                      key={`${index}_${pathSegment}`}
                       data-path={JSON.stringify(array.slice(0, index + 1))}
                       onClick={onGoToPath}
                     >
                       {pathSegment}
                     </BreadcrumbBar.Crumb>
                     {index !== array.length - 1 && <BreadcrumbBar.Separator />}
-                  </>
+                  </React.Fragment>
                 ))}
               </BreadcrumbBar.Bar>
             )}
@@ -331,21 +352,29 @@ export const FileDialog = observer(function FileDialog({
             )}
           </div>
           {showFileNameInput && status === LoadStatus.OK && (
-            <div className="FileDialog__fileNameInput">
+            <form
+              className="FileDialog__fileNameInput"
+              onSubmit={(e) => {
+                e.preventDefault();
+                onAcceptInner();
+              }}
+            >
               <input
                 type="text"
                 data-focus
                 className="form-control"
+                value={localFileName}
                 placeholder={defaultFileName}
+                onChange={(e) => setLocalFileName(e.target.value)}
               />
-            </div>
+            </form>
           )}
         </div>
         <EmojiPicker />
-        {focusTrapEnd}
+        <FocusTrapEnd />
       </motion.div>
       <CommandBar.Nav>
-        {isListFocused && (
+        {!disabledRename && isListFocused && (
           <CommandBar.Button
             combo={RENAME_COMBO}
             position={2}
@@ -377,7 +406,7 @@ export const FileDialog = observer(function FileDialog({
             combo={CONFIRM_COMBO}
             position={10}
             showOnlyWhenModifiersActive
-            onClick={onAccept}
+            onClick={onAcceptInner}
           >
             Save
           </CommandBar.Button>
@@ -387,7 +416,7 @@ export const FileDialog = observer(function FileDialog({
             combo={CONFIRM_COMBO}
             position={10}
             showOnlyWhenModifiersActive
-            onClick={onAccept}
+            onClick={onAcceptInner}
           >
             Open
           </CommandBar.Button>
@@ -397,7 +426,7 @@ export const FileDialog = observer(function FileDialog({
             combo={CONFIRM_COMBO}
             position={10}
             showOnlyWhenModifiersActive
-            onClick={onAccept}
+            onClick={onAcceptInner}
           >
             Select
           </CommandBar.Button>
@@ -417,3 +446,19 @@ export const FileDialog = observer(function FileDialog({
   );
 });
 FileDialog.displayName = "FileDialog";
+
+function fileComparator(a: IFileEntryEx, b: IFileEntryEx): number {
+  if (a.dir !== b.dir) {
+    if (a.dir) return -1;
+    return 1;
+  }
+  if (a.virtual !== b.virtual) {
+    if (a.virtual) return -1;
+    return 1;
+  }
+  return a.fileName.localeCompare(b.fileName, undefined, {
+    numeric: true,
+    caseFirst: "upper",
+    sensitivity: "base",
+  });
+}

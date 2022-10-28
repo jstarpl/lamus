@@ -12,9 +12,12 @@ function isElementChildOf(element: HTMLElement, parent: HTMLElement) {
   return false;
 }
 
-export const Dialog: React.FC<React.PropsWithChildren<{}>> = function Dialog({
-  children,
-}) {
+export const Dialog: React.FC<
+  React.PropsWithChildren<{
+    onKeyDown?: React.KeyboardEventHandler<HTMLDialogElement>;
+    onKeyUp?: React.KeyboardEventHandler<HTMLDialogElement>;
+  }>
+> = function Dialog({ children, onKeyDown, onKeyUp }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -68,18 +71,16 @@ export const Dialog: React.FC<React.PropsWithChildren<{}>> = function Dialog({
     };
   }, [focusButton]);
 
-  const [focusTrapStart, focusTrapEnd] = useFocusTrap(dialogRef);
+  const { FocusTrapStart, FocusTrapEnd } = useFocusTrap(dialogRef);
 
   return (
     <>
       <FocusIndicator />
       <div className="dialog__backdrop"></div>
-      <dialog open ref={dialogRef}>
-        {/* Focus trap */}
-        {focusTrapStart}
+      <dialog open ref={dialogRef} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
+        <FocusTrapStart />
         {children}
-        {/* Focus trap */}
-        {focusTrapEnd}
+        <FocusTrapEnd />
       </dialog>
     </>
   );

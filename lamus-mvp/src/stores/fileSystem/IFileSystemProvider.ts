@@ -26,6 +26,19 @@ export interface IReadResultSuccess {
 
 export type IReadResult = IReadResultSuccess | IReadResultFailure;
 
+export interface IAccessResultFailure {
+  readonly ok: false;
+  readonly error: string;
+}
+
+export interface IAccessResultSuccess {
+  readonly ok: true;
+  readonly found: boolean;
+  readonly meta?: any;
+}
+
+export type IAccessResult = IAccessResultSuccess | IAccessResultFailure;
+
 export interface IWriteResultFailure {
   readonly ok: false;
   readonly error: string;
@@ -50,6 +63,7 @@ export interface IMkDirResultSuccess {
 
 export type IMkDirResult = IMkDirResultSuccess | IMkDirResultFailure;
 export type IDeleteResult = IMkDirResult;
+export type IRenameResult = IMkDirResult;
 
 export interface IListResultFailure {
   readonly ok: false;
@@ -69,8 +83,14 @@ export interface IFileSystemProvider {
 
   init(): Promise<void>;
   list(path: Path): Promise<IListResult>;
+  access(path: Path, name: FileName): Promise<IAccessResult>;
   mkdir(path: Path, name: FileName): Promise<IMkDirResult>;
   unlink(path: Path, fileName: FileName): Promise<IDeleteResult>;
+  rename(
+    path: Path,
+    oldFileName: FileName,
+    newFileName: FileName
+  ): Promise<IRenameResult>;
   read(path: Path, fileName: FileName): Promise<IReadResult>;
   write(
     path: Path,

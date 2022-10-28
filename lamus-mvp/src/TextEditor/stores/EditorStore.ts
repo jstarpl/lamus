@@ -2,7 +2,8 @@ import { Document } from "@editorjs/editorjs";
 import { makeAutoObservable } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
-import { FileHandle } from "../../stores/FileSystemStore";
+import { FileName, Path } from "../../stores/fileSystem/IFileSystemProvider";
+import { FileHandle, ProviderId } from "../../stores/FileSystemStore";
 import { toMarkdown } from "../markdown";
 
 const ACTIVE_DOCUMENT_KEY = "textEditor:activeDocument";
@@ -11,12 +12,7 @@ const AUTOSAVE_DEBOUNCE = 5000;
 
 class EditorStoreClass {
   document: Document | null = null;
-  file: FileHandle | null = {
-    fileName: "temp.md",
-    path: [],
-    providerId: "dropbox",
-  };
-  meta: any = null;
+  file: FileHandle | null = null;
   isSaveFileDialogOpen: boolean = false;
   isOpenFileDialogOpen: boolean = false;
 
@@ -28,13 +24,13 @@ class EditorStoreClass {
     });
 
     this.document = JSON.parse(
-      localStorage.getItem(ACTIVE_DOCUMENT_KEY) || JSON.stringify([])
+      sessionStorage.getItem(ACTIVE_DOCUMENT_KEY) || JSON.stringify([])
     );
   }
 
   setDocument(newDocument: Document) {
     this.document = newDocument;
-    localStorage.setItem(ACTIVE_DOCUMENT_KEY, JSON.stringify(newDocument));
+    sessionStorage.setItem(ACTIVE_DOCUMENT_KEY, JSON.stringify(newDocument));
     this.autosave();
   }
 
@@ -43,6 +39,64 @@ class EditorStoreClass {
     this.autosaveTimeout = setTimeout(() => {
       dontWait(this.save.bind(this));
     }, AUTOSAVE_DEBOUNCE);
+  }
+
+  get saved(): boolean {
+    return (
+      this.document !== null &&
+      this.document.blocks.length > 0 &&
+      (this.document.blocks[0].type !== "paragraph" ||
+        this.document.blocks[0].data.text !== "") &&
+      this.file !== null
+    );
+  }
+
+  async checkIfCanSaveOver(
+    providerId: ProviderId,
+    path: Path,
+    fileName: FileName
+  ): Promise<{ ok: boolean; meta?: any }> {
+    try {
+      const result = await AppStore.fileSystem.access(
+        providerId,
+        path,
+        fileName
+      );
+      if (!result.ok) throw new Error("Could not access storage");
+      if (result.found) return { ok: false };
+      return { ok: true, meta: result.meta };
+    } catch (e) {
+      console.log(e);
+      return { ok: false };
+    }
+  }
+
+  async saveAs(
+    providerId: ProviderId,
+    path: Path,
+    fileName: FileName,
+    meta?: any
+  ): Promise<boolean> {
+    if (this.document === null) return false;
+
+    const result = await AppStore.fileSystem.write(
+      providerId,
+      path,
+      fileName,
+      this.getBlob(),
+      meta
+    );
+    if (!result.ok) {
+      console.error(result);
+      throw new Error("Could not save file");
+    }
+    this.setFile({
+      providerId,
+      path: path.slice(),
+      fileName: result.fileName || fileName,
+      meta: result.meta ?? undefined,
+    });
+    return true;
   }
 
   async save(): Promise<void> {
@@ -54,21 +108,17 @@ class EditorStoreClass {
       this.file.providerId,
       this.file.path,
       this.file.fileName,
-      Promise.resolve(
-        new Blob([toMarkdown(this.document.blocks)], {
-          type: "text/markdown",
-        })
-      ),
+      this.getBlob(),
       this.file.meta ?? undefined
     );
 
     if (!result.ok) {
       console.error(result);
-      return;
+      throw new Error("Could not save file");
     }
 
     this.file.fileName = result.fileName || this.file.fileName;
-    this.file.meta = result.meta || null;
+    this.file.meta = result.meta ?? undefined;
   }
 
   setOpenSaveFileDialog(open: boolean) {
@@ -77,6 +127,18 @@ class EditorStoreClass {
 
   setOpenOpenFileDialog(open: boolean) {
     this.isOpenFileDialogOpen = open;
+  }
+
+  private async getBlob(): Promise<Blob> {
+    if (!this.document) throw new Error("Document not created");
+
+    return new Blob([toMarkdown(this.document.blocks)], {
+      type: "text/markdown",
+    });
+  }
+
+  private setFile(file: FileHandle | null): void {
+    this.file = file;
   }
 }
 

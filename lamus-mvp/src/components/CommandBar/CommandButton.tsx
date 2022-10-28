@@ -4,9 +4,10 @@ import * as React from "react";
 import { AltDown, CtrlDown, MetaDown, ShiftDown } from "./CommandBar";
 import { EnterIcon } from "./EnterIcon";
 
-const COMBO_SHORTHAND: Record<string, string | JSX.Element> = {
+const COMBO_SHORTHAND: Record<string, React.ReactNode> = {
   Escape: "Esc",
   Enter: <EnterIcon />,
+  AnyEnter: <EnterIcon />,
 };
 
 interface IProps {

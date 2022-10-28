@@ -15,8 +15,9 @@ import {
 import { AppStore } from "./stores/AppStore";
 import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
 import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
-import { AdminCode } from "./AdminCode/AdminCode";
 import { SoundEffectsContextProvider } from "./helpers/SoundEffects";
+import { ModalDialogContextProvider } from "./helpers/useModalDialog";
+import { AdminCode } from "./AdminCode/AdminCode";
 import { autorun } from "mobx";
 import Home from "./Home";
 import TextEditor from "./TextEditor";
@@ -112,15 +113,17 @@ export function App() {
       <MotionConfig reducedMotion="user">
         <SoundEffectsContextProvider>
           <KeyboardHandler.Provider value={keyboardHandler}>
-            <AnimatePresence>
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Home />} />
-                <Route path="/text" element={<TextEditor />} />
-                <Route path="/code" element={<CodeEditor />} />
-                <Route path="*" element={<Navigate to={"/"} />} />
-              </Routes>
-            </AnimatePresence>
-            <AdminCode />
+            <ModalDialogContextProvider>
+              <AnimatePresence>
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/text" element={<TextEditor />} />
+                  <Route path="/code" element={<CodeEditor />} />
+                  <Route path="*" element={<Navigate to={"/"} />} />
+                </Routes>
+              </AnimatePresence>
+              <AdminCode />
+            </ModalDialogContextProvider>
           </KeyboardHandler.Provider>
         </SoundEffectsContextProvider>
       </MotionConfig>

@@ -1,4 +1,5 @@
 import {
+  IAccessResult,
   IFileSystemProvider,
   IListResult,
   IMkDirResult,
@@ -18,10 +19,20 @@ export class LocalProvider implements IFileSystemProvider {
   init(): Promise<void> {
     throw new Error("Method not implemented.");
   }
+  access(path: Path, name: string): Promise<IAccessResult> {
+    throw new Error("Method not implemented.");
+  }
   list(path: Path): Promise<IListResult> {
     throw new Error("Method not implemented.");
   }
   mkdir(path: Path, name: string): Promise<IMkDirResult> {
+    throw new Error("Method not implemented.");
+  }
+  rename(
+    path: Path,
+    oldFileName: string,
+    newFileName: string
+  ): Promise<IMkDirResult> {
     throw new Error("Method not implemented.");
   }
   unlink(path: Path, fileName: string): Promise<IMkDirResult> {
