@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
+import ReactMarkdown from "react-markdown";
 import { Dialog } from "../../components/Dialog";
+import { parseCombo } from "../combos";
 import { IDialogChoice } from "../useModalDialog";
 
 export function ModalDialog({
@@ -11,7 +13,6 @@ export function ModalDialog({
   onUserChoice?: (result: string) => void;
 }>) {
   function onButton(e: React.MouseEvent<HTMLButtonElement>) {
-    console.log(e);
     if (!onUserChoice) return;
     if (!(e.target instanceof HTMLButtonElement)) return;
     if (!e.target.dataset["value"]) return;
@@ -19,47 +20,74 @@ export function ModalDialog({
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLElement>) {
-    e.preventDefault();
+    if (
+      e.target instanceof HTMLElement &&
+      ["INPUT", "TEXTAREA"].includes(e.target.nodeName)
+    )
+      return;
+
+    let key = e.key;
+    if (key.length === 1) {
+      key = key.toUpperCase();
+    }
+
+    let found = false;
+
+    const allComboButtons = document.querySelectorAll(
+      "dialog[open] .buttons > button[data-combo]"
+    ) as NodeListOf<HTMLButtonElement>;
+    allComboButtons.forEach((button) => {
+      if (!button.dataset["combo"]) return;
+      const combo = JSON.parse(button.dataset["combo"]);
+      const { lastKey, hasAlt, hasCtrl, hasShift, hasMeta } = parseCombo(combo);
+
+      if (
+        key === lastKey &&
+        e.ctrlKey === hasCtrl &&
+        e.altKey === hasAlt &&
+        e.shiftKey === hasShift &&
+        e.metaKey === hasMeta
+      ) {
+        button.focus();
+        found = true;
+      }
+    });
+
     e.stopPropagation();
-    console.log(e, e.target);
+
+    if (found) {
+      e.preventDefault();
+    }
   }
 
-  function onKeyUp(e: React.KeyboardEvent<HTMLElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log(e, e.target);
-  }
+  const renderMessage = useMemo(() => {
+    if (typeof children !== "string") return children;
+    return <ReactMarkdown>{children}</ReactMarkdown>;
+  }, [children]);
 
-  let renderChildren = children;
-  if (typeof renderChildren === "string") {
-    renderChildren = (
-      <>
-        {renderChildren.split(/\n+/).map((line) => (
-          <p key={line}>{line}</p>
-        ))}
-      </>
+  const renderButtons = choices.map((choice, index) => {
+    const lastKey = choice.combo?.[choice.combo.length - 1];
+    return (
+      <button
+        key={`${choice.value}_${index}`}
+        tabIndex={choice.default ? 1 : 2}
+        data-accept={choice.default}
+        data-focus={choice.default}
+        type={choice.default ? "submit" : "button"}
+        onClick={onButton}
+        data-value={choice.value}
+        data-combo={choice.combo ? JSON.stringify(choice.combo) : undefined}
+      >
+        {lastKey && <span className="DialogButtonHotkey">{lastKey}</span>}
+        {choice.label}
+      </button>
     );
-  }
+  });
 
   return (
-    <Dialog onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
-      {renderChildren}
-      <div className="buttons">
-        {choices.map((choice, index) => (
-          <button
-            key={`${choice.value}_${index}`}
-            tabIndex={choice.default ? 1 : 2}
-            data-accept={choice.default}
-            data-focus={choice.default}
-            data-own-focus
-            type={choice.default ? "submit" : "button"}
-            onClick={onButton}
-            data-value={choice.value}
-          >
-            {choice.label}
-          </button>
-        ))}
-      </div>
+    <Dialog onKeyDown={onKeyDown}>
+      {renderMessage}
+      <div className="buttons">{renderButtons}</div>
     </Dialog>
   );
 }

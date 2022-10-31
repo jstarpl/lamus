@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { FocusIndicator } from "../helpers/FocusIndicator";
+import { useCursorNavigation } from "../helpers/useCursorNavigation";
 import { useFocusTrap } from "../helpers/useFocusTrap";
 import "./Dialog.css";
 
@@ -71,13 +72,21 @@ export const Dialog: React.FC<
     };
   }, [focusButton]);
 
+  useCursorNavigation(dialogRef);
   const { FocusTrapStart, FocusTrapEnd } = useFocusTrap(dialogRef);
 
   return (
     <>
       <FocusIndicator />
       <div className="dialog__backdrop"></div>
-      <dialog open ref={dialogRef} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
+      <dialog
+        open
+        ref={dialogRef}
+        onKeyDown={onKeyDown}
+        onKeyUp={onKeyUp}
+        tabIndex={0}
+        data-own-focus
+      >
         <FocusTrapStart />
         {children}
         <FocusTrapEnd />

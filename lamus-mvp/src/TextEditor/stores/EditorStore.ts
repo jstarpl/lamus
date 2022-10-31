@@ -24,7 +24,10 @@ class EditorStoreClass {
     });
 
     this.document = JSON.parse(
-      sessionStorage.getItem(ACTIVE_DOCUMENT_KEY) || JSON.stringify([])
+      sessionStorage.getItem(ACTIVE_DOCUMENT_KEY) ||
+        JSON.stringify({
+          blocks: [],
+        })
     );
   }
 
@@ -42,6 +45,12 @@ class EditorStoreClass {
   }
 
   get saved(): boolean {
+    if (
+      this.file === null &&
+      (this.document === null || this.document?.blocks.length === 0)
+    ) {
+      return true;
+    }
     return (
       this.document !== null &&
       this.document.blocks.length > 0 &&
@@ -51,7 +60,7 @@ class EditorStoreClass {
     );
   }
 
-  async checkIfCanSaveOver(
+  async checkIfCanSave(
     providerId: ProviderId,
     path: Path,
     fileName: FileName
@@ -63,10 +72,9 @@ class EditorStoreClass {
         fileName
       );
       if (!result.ok) throw new Error("Could not access storage");
-      if (result.found) return { ok: false };
+      if (result.found) return { ok: false, meta: result.meta };
       return { ok: true, meta: result.meta };
     } catch (e) {
-      console.log(e);
       return { ok: false };
     }
   }

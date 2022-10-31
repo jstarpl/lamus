@@ -4,6 +4,9 @@ import * as React from "react";
 import { AltDown, CtrlDown, MetaDown, ShiftDown } from "./CommandBar";
 import { EnterIcon } from "./EnterIcon";
 
+import "./CommandButton.css";
+import { parseCombo } from "../../helpers/combos";
+
 const COMBO_SHORTHAND: Record<string, React.ReactNode> = {
   Escape: "Esc",
   Enter: <EnterIcon />,
@@ -32,12 +35,7 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
     showOnlyWhenModifiersActive,
     onClick,
   }) {
-    const lastKey =
-      (combo && combo.length > 0 && combo[combo.length - 1]) ?? undefined;
-    const hasShift = (combo && combo.includes("Shift")) || false;
-    const hasAlt = (combo && combo.includes("Alt")) || false;
-    const hasCtrl = (combo && combo.includes("Control")) || false;
-    const hasMeta = (combo && combo.includes("Meta")) || false;
+    const { lastKey, hasShift, hasCtrl, hasAlt, hasMeta } = parseCombo(combo);
     const [isActive, setActive] = useState(false);
 
     const isShiftDown = useContext(ShiftDown);

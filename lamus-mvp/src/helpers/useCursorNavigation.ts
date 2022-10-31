@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 const CURSOR_KEYS = ["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"];
 
@@ -55,7 +55,7 @@ function findClosestElementInDirection(
   switch (direction) {
     case Direction.Up:
       sortedOptions = list
-        .filter((item) => item.rect.top < rect.top)
+        .filter((item) => Math.floor(item.rect.top) <= Math.floor(rect.top))
         .map((item) => ({
           element: item.element,
           distance: Math.sqrt(
@@ -73,7 +73,7 @@ function findClosestElementInDirection(
       break;
     case Direction.Down:
       sortedOptions = list
-        .filter((item) => item.rect.top >= rect.bottom)
+        .filter((item) => Math.floor(item.rect.top) >= Math.floor(rect.bottom))
         .map((item) => ({
           element: item.element,
           distance: Math.sqrt(
@@ -91,7 +91,7 @@ function findClosestElementInDirection(
       break;
     case Direction.Left:
       sortedOptions = list
-        .filter((item) => item.rect.right < rect.left)
+        .filter((item) => Math.floor(item.rect.right) <= Math.floor(rect.left))
         .map((item) => ({
           element: item.element,
           distance: Math.sqrt(
@@ -109,7 +109,7 @@ function findClosestElementInDirection(
       break;
     case Direction.Right:
       sortedOptions = list
-        .filter((item) => item.rect.left >= rect.right)
+        .filter((item) => Math.floor(item.rect.left) >= Math.floor(rect.right))
         .map((item) => ({
           element: item.element,
           distance: Math.sqrt(
@@ -129,8 +129,10 @@ function findClosestElementInDirection(
   return sortedOptions?.[0]?.element ?? null;
 }
 
-export function useCursorNavigation() {
-  useEffect(() => {
+export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>) {
+  useLayoutEffect(() => {
+    const target = parentEl?.current ?? window;
+
     function onKeyDown(e: KeyboardEvent) {
       const focusedElement = document.querySelector(":focus") as HTMLElement;
 
@@ -166,7 +168,9 @@ export function useCursorNavigation() {
       e.preventDefault();
       e.stopPropagation();
 
-      const isDialogOpen = !!document.querySelector(
+      const root = parentEl?.current ?? document;
+
+      const isDialogOpen = !!root.querySelector(
         "dialog[open], .Dialog[data-open]"
       );
       const focusableSelector = isDialogOpen
@@ -175,7 +179,8 @@ export function useCursorNavigation() {
           '.Dialog[data-open] button:not([tabindex="-1"]), .Dialog[data-open] input:not([tabindex="-1"]), .Dialog[data-open] [tabindex]:not([tabindex="-1"])'
         : // no Dialog open, we can look at all the elements
           'button:not([tabindex="-1"]), input:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
-      const focusableElements = document.querySelectorAll(
+
+      const focusableElements = root.querySelectorAll(
         focusableSelector
       ) as NodeListOf<HTMLElement>;
 
@@ -201,15 +206,15 @@ export function useCursorNavigation() {
       targetElement.focus();
     }
 
-    window.addEventListener("keydown", onKeyDown, {
+    target.addEventListener("keydown", onKeyDown as EventListener, {
       passive: false,
       capture: false,
     });
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown, {
+      target.removeEventListener("keydown", onKeyDown as EventListener, {
         capture: false,
       });
     };
-  }, []);
+  }, [parentEl]);
 }

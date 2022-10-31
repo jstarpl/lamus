@@ -90,10 +90,11 @@ const TextEditor = observer(function TextEditor() {
       let element = path.find(
         (el) =>
           el instanceof HTMLElement &&
-          (el.classList.contains("codex-editor") ||
+          (el.nodeName === "DIALOG" ||
+            el.nodeName === "EM-EMOJI-PICKER" ||
+            el.classList.contains("codex-editor") ||
             el.classList.contains("Dialog") ||
-            el.nodeName === "DIALOG" ||
-            el.nodeName === "EM-EMOJI-PICKER")
+            el.classList.contains("dialog__backdrop"))
       );
 
       if (element) return;
@@ -118,7 +119,7 @@ const TextEditor = observer(function TextEditor() {
   }: IAcceptEventProps) {
     if (!fileName) return;
 
-    EditorStore.checkIfCanSaveOver(providerId, path, fileName)
+    EditorStore.checkIfCanSave(providerId, path, fileName)
       .then(async ({ ok, meta }) => {
         if (!ok) {
           // file will be overwriten, ask

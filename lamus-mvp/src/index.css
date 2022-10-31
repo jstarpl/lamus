@@ -103,6 +103,9 @@
   --color-selection: #d5e7ff;
   --color-hightlight: #ff96a0;
   --color-list-selection: #fcf9e9;
+
+  --dialog-button-bkg-accept: linear-gradient(to bottom, #9aab94, #bcd1b4 50%);
+  --dialog-button-bkg-reject: linear-gradient(to bottom, #c7aea9, #f0d2cc 50%);
 }
 
 @media screen and (max-width: 750px), screen and (max-height: 640px) {

@@ -180,7 +180,7 @@ interface IDialogResult<Choice extends string> {
 
 interface IDialog<Choice extends string> {
   type: DialogType;
-  message: React.ReactNode;
+  message: React.ReactNode | string;
   choices: IDialogChoice<Choice>[];
 }
 
@@ -198,6 +198,7 @@ export enum DialogType {
 export interface IDialogChoice<Value extends string = string> {
   label: React.ReactNode;
   value: Value;
+  role?: DialogButtonRole;
   default?: boolean;
   combo?: string[];
 }
@@ -209,6 +210,12 @@ export enum DialogButtonResult {
   NO = "no",
   RETRY = "retry",
   CONTINUE = "continue",
+}
+
+export enum DialogButtonRole {
+  ACCEPT = "accept",
+  REJECT = "reject",
+  OTHER = "other",
 }
 
 const DialogButtonsImpl = {
@@ -307,14 +314,26 @@ const DialogTemplatesImpl = {
   overwriteExistingFile: (
     fileName: string
   ): IDialog<DialogButtonResult.NO | DialogButtonResult.YES> => ({
-    message: `File "${fileName}" already exists in this directory.\nAre you sure you want to overwrite it?`,
-    choices: DialogButtons.NO_YES,
+    message: `File "${fileName}" already exists in this directory.\n\nAre you sure you want to overwrite it?`,
+    choices: [
+      {
+        label: "No",
+        value: DialogButtonResult.NO,
+        default: true,
+        combo: ["N"],
+      },
+      {
+        label: "Yes",
+        value: DialogButtonResult.YES,
+        combo: ["Y"],
+      },
+    ],
     type: DialogType.WARNING,
   }),
   saveBeforeExit: (): IDialog<
     DialogButtonResult.NO | DialogButtonResult.CANCEL | DialogButtonResult.YES
   > => ({
-    message: `This file has not been saved.\nDo you want to save it before exiting?`,
+    message: `This file has not been saved.\n\nDo you want to save it before exiting?`,
     choices: DialogButtons.NO_CANCEL_YES,
     type: DialogType.WARNING,
   }),

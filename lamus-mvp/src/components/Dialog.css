@@ -54,10 +54,48 @@ dialog .buttons {
 
 dialog .buttons > button {
   flex: 1 1;
-  background: linear-gradient(to bottom, #9aab94, #bcd1b4 50%);
+  background: var(--dialog-button-bkg-accept);
   border: none;
   border-radius: 0;
   font-size: 1em;
   padding: 0.44em 0.88em;
   text-align: left;
+}
+
+dialog .buttons > button.reject {
+  background: var(--dialog-button-bkg-reject);
+}
+
+dialog .buttons > button > .DialogButtonHotkey {
+  display: inline-block;
+  font-size: 0.7em;
+  vertical-align: top;
+  margin-top: 0.2em;
+  background: linear-gradient(
+    to bottom,
+    var(--color-dark-3),
+    var(--color-dark-2)
+  );
+  color: var(--color-light);
+  border: 1px solid var(--color-dark-4);
+  border-radius: var(--command-bar-radius);
+  font-weight: 600;
+  margin-right: 0.25em;
+  width: 1.6em;
+  text-align: center;
+}
+
+dialog .buttons > button > .DialogButtonHotkey > svg {
+  height: 1em;
+  width: auto;
+  color: inherit;
+  vertical-align: top;
+  margin-top: 0.1em;
+}
+
+dialog .buttons > button:active > .DialogButtonHotkey,
+dialog .buttons > button.active > .DialogButtonHotkey {
+  color: var(--color-black);
+  border-color: var(--color-white);
+  background: var(--color-white);
 }
