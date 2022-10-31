@@ -258,6 +258,10 @@ export class Console extends EventTarget implements IConsole {
 			this.hasFocus = false
 		})
 
+		this.inputElement.addEventListener('input', () => {
+			this.onInput()
+		})
+
 		window.requestAnimationFrame(this.animationFrame)
 
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
@@ -865,6 +869,17 @@ export class Console extends EventTarget implements IConsole {
 		this.handleTrappedKey(this.keyBuffer[this.keyBuffer.length - 1])
 	}
 
+	public onInput() {
+		if (this.inputMode) {
+			this.backup(this.inputStr.length)
+			this.print(''.padEnd(this.inputStr.length, ' '))
+			this.backup(this.inputStr.length)
+			this.inputStr = this.inputElement.value
+			this.print(this.inputStr)
+			this.inputElement.style.top = `${this.y * this.charHeight * this.inputPixelAspect}px`
+		}
+	}
+
 	public onKeyDown(event: KeyboardEvent) {
 		if (this.inputMode) {
 			// if input position is at least 1,
@@ -929,6 +944,7 @@ export class Console extends EventTarget implements IConsole {
 
 	public enableCursor(enabled: boolean) {
 		if (enabled && !this.cursorEnabled) {
+			this.inputElement.value = '';
 			this.inputElement.style.visibility = 'visible';
 			this.interval = window.setInterval(() => this.toggleCursor(), 500)
 			this.cursor(true)
