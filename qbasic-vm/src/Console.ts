@@ -303,6 +303,7 @@ export class Console extends EventTarget implements IConsole {
 		this.clearAllSprites()
 		this.recording = testMode || false
 		this.recorded = ''
+		this.enableCursor(false)
 
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
 	}
