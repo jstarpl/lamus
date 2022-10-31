@@ -224,6 +224,7 @@ const DialogButtonsImpl = {
       label: "OK",
       value: DialogButtonResult.OK,
       default: true,
+      role: DialogButtonRole.ACCEPT,
       combo: ["Enter"],
     },
   ] as IDialogChoice<DialogButtonResult.OK>[],
@@ -232,12 +233,14 @@ const DialogButtonsImpl = {
       label: "Cancel",
       value: DialogButtonResult.CANCEL,
       default: true,
+      role: DialogButtonRole.REJECT,
       combo: ["Escape"],
     },
     {
       label: "OK",
       value: DialogButtonResult.OK,
       default: true,
+      role: DialogButtonRole.ACCEPT,
       combo: ["Enter"],
     },
   ] as IDialogChoice<DialogButtonResult.OK | DialogButtonResult.CANCEL>[],
@@ -245,11 +248,13 @@ const DialogButtonsImpl = {
     {
       label: "Cancel",
       value: DialogButtonResult.CANCEL,
+      role: DialogButtonRole.REJECT,
       combo: ["Escape"],
     },
     {
       label: "Retry",
       value: DialogButtonResult.RETRY,
+      role: DialogButtonRole.ACCEPT,
       default: true,
       combo: ["Enter"],
     },
@@ -263,12 +268,14 @@ const DialogButtonsImpl = {
     {
       label: "Cancel",
       value: DialogButtonResult.CANCEL,
+      role: DialogButtonRole.REJECT,
       combo: ["Escape"],
     },
     {
       label: "Retry",
       value: DialogButtonResult.RETRY,
       default: true,
+      role: DialogButtonRole.ACCEPT,
       combo: ["Enter"],
     },
   ] as IDialogChoice<
@@ -295,7 +302,12 @@ const DialogButtonsImpl = {
       value: DialogButtonResult.NO,
       combo: ["N"],
     },
-    { label: "Cancel", value: DialogButtonResult.CANCEL, combo: ["Escape"] },
+    {
+      label: "Cancel",
+      value: DialogButtonResult.CANCEL,
+      role: DialogButtonRole.REJECT,
+      combo: ["Escape"],
+    },
     {
       label: "Yes",
       value: DialogButtonResult.YES,
@@ -320,6 +332,7 @@ const DialogTemplatesImpl = {
         label: "No",
         value: DialogButtonResult.NO,
         default: true,
+        role: DialogButtonRole.REJECT,
         combo: ["N"],
       },
       {

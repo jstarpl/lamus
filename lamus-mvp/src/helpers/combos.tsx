@@ -1,3 +1,5 @@
+import { EnterIcon } from "../components/CommandBar/EnterIcon";
+
 export function parseCombo(combo: string[] | undefined): {
   lastKey: string | undefined;
   hasShift: boolean;
@@ -30,3 +32,9 @@ export function parseCombo(combo: string[] | undefined): {
     hasMeta,
   };
 }
+
+export const COMBO_SHORTHAND: Record<string, React.ReactNode> = {
+  Escape: "Esc",
+  Enter: <EnterIcon />,
+  AnyEnter: <EnterIcon />,
+};

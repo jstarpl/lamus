@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Dialog } from "../../components/Dialog";
-import { parseCombo } from "../combos";
+import { COMBO_SHORTHAND, parseCombo } from "../combos";
 import { IDialogChoice } from "../useModalDialog";
 
 export function ModalDialog({
@@ -67,6 +67,9 @@ export function ModalDialog({
 
   const renderButtons = choices.map((choice, index) => {
     const lastKey = choice.combo?.[choice.combo.length - 1];
+
+    const displayLastKey = (lastKey && COMBO_SHORTHAND[lastKey]) ?? lastKey;
+
     return (
       <button
         key={`${choice.value}_${index}`}
@@ -78,7 +81,9 @@ export function ModalDialog({
         data-value={choice.value}
         data-combo={choice.combo ? JSON.stringify(choice.combo) : undefined}
       >
-        {lastKey && <span className="DialogButtonHotkey">{lastKey}</span>}
+        {displayLastKey && (
+          <span className="DialogButtonHotkey">{displayLastKey}</span>
+        )}
         {choice.label}
       </button>
     );

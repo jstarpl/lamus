@@ -2,16 +2,9 @@ import classNames from "classnames";
 import { useEffect, useState, useContext } from "react";
 import * as React from "react";
 import { AltDown, CtrlDown, MetaDown, ShiftDown } from "./CommandBar";
-import { EnterIcon } from "./EnterIcon";
 
 import "./CommandButton.css";
-import { parseCombo } from "../../helpers/combos";
-
-const COMBO_SHORTHAND: Record<string, React.ReactNode> = {
-  Escape: "Esc",
-  Enter: <EnterIcon />,
-  AnyEnter: <EnterIcon />,
-};
+import { COMBO_SHORTHAND, parseCombo } from "../../helpers/combos";
 
 interface IProps {
   combo?: string[];
