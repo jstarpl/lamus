@@ -8,16 +8,16 @@ module.exports = {
 		path: path.join(__dirname, 'dist'),
 		filename: 'qbasic-vm.js',
 		library: 'qbasic-vm',
-		libraryTarget: 'umd'
+		libraryTarget: 'umd',
 	},
 	devtool: 'source-map',
 	resolve: {
-		modules: [path.resolve('./node_modules'), path.resolve('./src')],
+		modules: [path.resolve('./../node_modules'), path.resolve('./node_modules'), path.resolve('./src')],
 		extensions: ['.js', '.ts', '.json'],
 		fallback: {
-			"assert": require.resolve("assert-browserify"),
-			"process": false,
-		}
+			assert: require.resolve('assert-browserify'),
+			process: false,
+		},
 	},
 	module: {
 		rules: [
@@ -27,32 +27,32 @@ module.exports = {
 				use: {
 					loader: 'ts-loader',
 					options: {
-						transpileOnly: false
-					}
-				}
-			}
-		]
+						transpileOnly: false,
+					},
+				},
+			},
+		],
 	},
 	devServer: {
 		static: [
 			{
-				directory: path.join(__dirname, 'demo')
+				directory: path.join(__dirname, 'demo'),
 			},
 			{
-				directory: path.join(__dirname, 'assets')
+				directory: path.join(__dirname, 'assets'),
 			},
 			{
-				directory: path.join(__dirname, 'dist')
-			}
+				directory: path.join(__dirname, 'dist'),
+			},
 		],
 		compress: true,
 		port: 9000,
 		open: ['index.html'],
-		watchFiles: ['dist/qbasic-vm.js', 'demo/**/*']
+		watchFiles: ['dist/qbasic-vm.js', 'demo/**/*'],
 	},
 	plugins: [
 		new webpack.ProvidePlugin({
 			process: 'process/browser',
 		}),
-	]
+	],
 }
