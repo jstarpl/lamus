@@ -108,6 +108,7 @@ const SCREEN_BORDER_VARIABLE = '--qbasic-interpreter-screen-border-color'
 export class Console extends EventTarget implements IConsole {
 	private container: HTMLDivElement
 	private canvas: HTMLCanvasElement
+	private inputElement: HTMLInputElement
 	private ctx: CanvasRenderingContext2D
 	private charImg: HTMLImageElement
 	private interval: number | undefined = undefined
@@ -146,6 +147,7 @@ export class Console extends EventTarget implements IConsole {
 	private keyDown: string[] = []
 	private inputMode: boolean = false
 	private inputNewLineAfterEnter: boolean = false
+	private inputPixelAspect: number = 1;
 	private onInputDone: ((str: string) => void) | null = null
 	private onTrappedKey: {
 		[key: number]: (num?: number) => void
@@ -170,8 +172,11 @@ export class Console extends EventTarget implements IConsole {
 
 		this.canvas = document.createElement('canvas')
 		this.container = document.createElement('div')
+		this.inputElement = document.createElement('input')
+		this.inputElement.type = 'text';
 		parentElement.append(this.container)
 		this.container.append(this.canvas)
+		this.container.append(this.inputElement)
 
 		this.rows = VIDEO_MODES[DEFAULT_VIDEO_MODE].rows
 		this.cols = VIDEO_MODES[DEFAULT_VIDEO_MODE].cols
@@ -202,6 +207,16 @@ export class Console extends EventTarget implements IConsole {
 		this.canvas.style.width = '100%'
 		this.canvas.style.height = '100%'
 
+		this.inputElement.style.position = 'absolute'
+		this.inputElement.style.top = '0'
+		this.inputElement.style.left = '0'
+		this.inputElement.style.width = '100%'
+		this.inputElement.style.padding = '0'
+		this.inputElement.style.margin = '0'
+		this.inputElement.style.border = 'none'
+		this.inputElement.style.opacity = '0'
+		this.inputElement.style.visibility = 'hidden'
+
 		this.canvas.className = className || ''
 		this.container.tabIndex = 0
 		const context = this.canvas.getContext('2d')
@@ -221,28 +236,26 @@ export class Console extends EventTarget implements IConsole {
 
 		this.reset(false)
 
-		window.addEventListener('keydown', (event) => {
+		this.container.addEventListener('keydown', (event) => {
 			if (this.hasFocus) {
 				this.onKeyDown(event)
 				event.preventDefault()
 			}
 		})
 
-		window.addEventListener('keyup', (event) => {
+		this.container.addEventListener('keyup', (event) => {
 			this.onKeyUp(event)
 			if (this.hasFocus) {
 				event.preventDefault()
 			}
 		})
 
-		this.container.addEventListener('focus', (event) => {
+		this.container.addEventListener('focusin', () => {
 			this.hasFocus = true
-			event.stopPropagation()
 		})
 
-		this.container.addEventListener('blur', (event) => {
+		this.container.addEventListener('focusout', () => {
 			this.hasFocus = false
-			event.stopPropagation()
 		})
 
 		window.requestAnimationFrame(this.animationFrame)
@@ -791,6 +804,9 @@ export class Console extends EventTarget implements IConsole {
 				this.inputStr = ''
 				this.inputPos = 0
 				this.inputNewLineAfterEnter = newLineAfterEnter || false
+				const targetContainerHeight = this.containerHeight || this._height
+				this.inputPixelAspect = targetContainerHeight / this._height
+				this.inputElement.style.top = `${this.y * this.charHeight * this.inputPixelAspect}px`
 			}
 		})
 	}
@@ -881,6 +897,8 @@ export class Console extends EventTarget implements IConsole {
 				this.inputPos += 1
 				this.print(ch)
 			}
+
+			this.inputElement.style.top = `${this.y * this.charHeight * this.inputPixelAspect}px`
 		} else {
 			if (!event.repeat) {
 				if (this.keyDown.indexOf(event.key) < 0) {
@@ -911,9 +929,11 @@ export class Console extends EventTarget implements IConsole {
 
 	public enableCursor(enabled: boolean) {
 		if (enabled && !this.cursorEnabled) {
+			this.inputElement.style.visibility = 'visible';
 			this.interval = window.setInterval(() => this.toggleCursor(), 500)
 			this.cursor(true)
 		} else {
+			this.inputElement.style.visibility = 'hidden';
 			window.clearInterval(this.interval)
 			this.cursor(false)
 		}
