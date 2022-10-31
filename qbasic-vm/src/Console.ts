@@ -262,6 +262,11 @@ export class Console extends EventTarget implements IConsole {
 			this.onInput()
 		})
 
+		this.inputElement.addEventListener('select', () => {
+			this.inputElement.selectionStart = this.inputElement.value.length
+			this.inputElement.selectionEnd = this.inputElement.value.length
+		})
+
 		window.requestAnimationFrame(this.animationFrame)
 
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
