@@ -70,15 +70,14 @@ const CodeEditor = observer(function CodeEditor() {
 
   const onError = useCallback((error: any) => {
     console.error(error);
+    EditorStore.vm.setRunState(VMRunState.SUSPENDED);
   }, []);
 
   const onFinished = useCallback(() => {
-    console.log("finished");
     EditorStore.vm.setRunState(VMRunState.STOPPED);
   }, []);
 
   const onInput = useCallback(() => {
-    console.log("VM is waiting for input");
     EditorStore.setDisplayFocus("output");
   }, []);
 
@@ -166,6 +165,12 @@ const CodeEditor = observer(function CodeEditor() {
     cons.addEventListener("input", onInput);
     cons.addEventListener("orientationchange", onOrientationChange);
 
+    const dispose = autorun(() => {
+      if (EditorStore.vm.runState === VMRunState.STOPPED) {
+        cons.print(`\nREADY.`);
+      }
+    });
+
     setTimeout(() => {
       cons.print("\nREADY.");
     }, 1000);
@@ -177,6 +182,7 @@ const CodeEditor = observer(function CodeEditor() {
 
       vm.reset();
       viewParent.replaceChildren();
+      dispose();
     };
   }, [onError, onFinished, onOrientationChange, onInput]);
 
@@ -213,6 +219,11 @@ const CodeEditor = observer(function CodeEditor() {
     }
   }, [virtualMachine]);
 
+  const onOutputClick = useCallback(() => {
+    if (EditorStore.vm.runState !== VMRunState.STOPPED) return;
+    EditorStore.setDisplayFocus("editor");
+  }, []);
+
   return (
     <div className="CodeEditor sdi-app">
       <div
@@ -221,7 +232,7 @@ const CodeEditor = observer(function CodeEditor() {
         )} ${orientationToClassName(EditorStore.vm.outputOrientation)}`}
       >
         <div className="Document" ref={editorViewParent}></div>
-        <div className="Output">
+        <div className="Output" onClick={onOutputClick}>
           <div className="Output__Canvas" ref={consoleViewParent} />
         </div>
       </div>
