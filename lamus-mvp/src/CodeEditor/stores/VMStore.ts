@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable } from "mobx";
+import { action, makeAutoObservable, observable } from "mobx";
 import {
   AudioDevice,
   Console,
@@ -36,13 +36,19 @@ export class VMStoreClass {
   _destructors: (() => void)[] = [];
 
   constructor(viewParent: HTMLElement) {
-    makeAutoObservable(this, {
-      _viewParent: false,
-      _vm: false,
-      _console: false,
-      _program: false,
-      _destructors: false,
-    });
+    makeAutoObservable(
+      this,
+      {
+        _viewParent: false,
+        _vm: false,
+        _console: false,
+        _program: false,
+        _destructors: false,
+      },
+      {
+        autoBind: true,
+      }
+    );
 
     this._viewParent = viewParent;
 
@@ -73,10 +79,13 @@ export class VMStoreClass {
       cons.print("\nREADY.");
     }, 1000);
 
-    vm.addListener("error", this._onError);
-    vm.addListener("finished", this._onFinished);
-    cons.addEventListener("input", this._onInput);
-    cons.addEventListener("orientationchange", this._onOrientationChange);
+    vm.addListener("error", action(this._onError));
+    vm.addListener("finished", action(this._onFinished));
+    cons.addEventListener("input", action(this._onInput));
+    cons.addEventListener(
+      "orientationchange",
+      action(this._onOrientationChange)
+    );
 
     this._vm = vm;
     this._console = cons;

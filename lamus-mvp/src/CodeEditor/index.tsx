@@ -59,6 +59,10 @@ const CodeEditor = observer(function CodeEditor() {
 
   const onInput = useCallback(() => {
     EditorStore.setDisplayFocus("output");
+    if (!consoleViewParent.current) return;
+    const firstChild = consoleViewParent.current.querySelector("[tabindex]");
+    if (!firstChild || !(firstChild instanceof HTMLElement)) return;
+    firstChild.focus();
   }, []);
 
   useEffect(
