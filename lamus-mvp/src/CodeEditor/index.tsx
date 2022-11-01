@@ -57,7 +57,8 @@ const CodeEditor = observer(function CodeEditor() {
     };
   }, []);
 
-  const onInput = useCallback(() => {
+  const onInput = useCallback((e: Event) => {
+    if (!(e instanceof CustomEvent)) return;
     EditorStore.setDisplayFocus("output");
     if (!consoleViewParent.current) return;
     const firstChild = consoleViewParent.current.querySelector("[tabindex]");
