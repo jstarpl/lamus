@@ -1,19 +1,10 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { observer } from "mobx-react-lite";
+import { autorun } from "mobx";
 import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { basicSetup } from "@codemirror/basic-setup";
 import { indentWithTab } from "@codemirror/commands";
-import {
-  Console,
-  AudioDevice,
-  NetworkAdapter,
-  LocalStorageFileSystem,
-  GeneralIORouter,
-  VirtualMachine,
-  QBasicProgram,
-  Cryptography,
-} from "@lamus/qbasic-vm";
 import { AppStore } from "../stores/AppStore";
 import { EditorStore } from "./stores/EditorStore";
 import { updateModel } from "./extensions/updateStore";
@@ -26,10 +17,9 @@ import {
   SAVE_AS_COMBO,
   SAVE_COMBO,
 } from "../lib/commonHotkeys";
+import { VMRunState } from "./stores/VMStore";
 
 import "./CodeEditor.css";
-import { VMRunState } from "./stores/VMStore";
-import { autorun } from "mobx";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -50,7 +40,6 @@ function orientationToClassName(orientation: "landscape" | "portrait") {
 const CodeEditor = observer(function CodeEditor() {
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
-  const virtualMachine = useRef<VirtualMachine | null>(null);
   const consoleViewParent = useRef<HTMLDivElement | null>(null);
 
   const hasDialogOpen = false;
@@ -66,15 +55,6 @@ const CodeEditor = observer(function CodeEditor() {
     return () => {
       clearTimeout(focusEditor);
     };
-  }, []);
-
-  const onError = useCallback((error: any) => {
-    console.error(error);
-    EditorStore.vm.setRunState(VMRunState.SUSPENDED);
-  }, []);
-
-  const onFinished = useCallback(() => {
-    EditorStore.vm.setRunState(VMRunState.STOPPED);
   }, []);
 
   const onInput = useCallback(() => {
@@ -103,11 +83,6 @@ const CodeEditor = observer(function CodeEditor() {
     []
   );
 
-  const onOrientationChange = useCallback((event: Event) => {
-    if (!(event instanceof CustomEvent)) return;
-    console.log(event.detail);
-  }, []);
-
   useEffect(() => {
     if (!editorViewParent.current) return;
 
@@ -131,96 +106,36 @@ const CodeEditor = observer(function CodeEditor() {
     };
   }, [onInitialize]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!consoleViewParent.current) return;
 
     const viewParent = consoleViewParent.current;
+    const dispose = EditorStore.mountVirtualMachine(viewParent);
 
-    const cons = new Console(
-      viewParent,
-      undefined,
-      320,
-      600,
-      process.env.PUBLIC_URL + "/CodeEditor/"
-    );
-    const audio = new AudioDevice();
-    const network = new NetworkAdapter();
-    const fileSystem = new LocalStorageFileSystem();
-    const generalIORouter = new GeneralIORouter();
-    const crypto = new Cryptography();
-    const vm = new VirtualMachine(
-      cons,
-      audio,
-      network,
-      fileSystem,
-      generalIORouter,
-      crypto
-    );
-
-    virtualMachine.current = vm;
-    // const dbg = new DebugConsole(document.getElementById('debug'))
-
-    vm.addListener("error", onError);
-    vm.addListener("finished", onFinished);
-    cons.addEventListener("input", onInput);
-    cons.addEventListener("orientationchange", onOrientationChange);
-
-    const dispose = autorun(() => {
-      if (EditorStore.vm.runState === VMRunState.STOPPED) {
-        cons.print(`\nREADY.`);
-      }
-    });
-
-    setTimeout(() => {
-      cons.print("\nREADY.");
-    }, 1000);
+    viewParent.addEventListener("input", onInput);
 
     return () => {
-      vm.removeListener("error", onError);
-      vm.removeListener("finished", onFinished);
-      cons.removeEventListener("orientationchange", onOrientationChange);
-
-      vm.reset();
-      viewParent.replaceChildren();
+      viewParent.removeEventListener("input", onInput);
       dispose();
     };
-  }, [onError, onFinished, onOrientationChange, onInput]);
+  }, [onInput]);
 
   const onQuit = useCallback(() => {
     navigate("/");
   }, [navigate]);
 
   const onRun = useCallback(() => {
-    const vm = virtualMachine.current;
-    if (!vm) return;
+    if (!EditorStore.vm) return;
 
     const code = EditorStore.document ?? "";
 
-    vm.reset();
-    const program = new QBasicProgram(code, false);
-    if (program.errors.length === 0) {
-      vm.cwd = "";
-
-      vm.run(program, false);
-      vm.once("running", () => {
-        if (virtualMachine.current) {
-          EditorStore.run();
-        }
-      });
-      // vm.on("error", (error) => {
-      //   // dbg.print('Runtime error: ' + error + ' at ' + error.locus + '\n')
-      // });
-    } else {
-      vm.reset();
-      console.error(program.errors);
-      // for (let i = 0; i < program.errors.length; i++) {
-      //   dbg.print(program.errors[i].message + '\n')
-      // }
-    }
-  }, [virtualMachine]);
+    EditorStore.vm.reset();
+    EditorStore.vm.setCode(code);
+    EditorStore.vm.run();
+  }, []);
 
   const onOutputClick = useCallback(() => {
-    if (EditorStore.vm.runState !== VMRunState.STOPPED) return;
+    if (EditorStore.vm?.runState !== VMRunState.STOPPED) return;
     EditorStore.setDisplayFocus("editor");
   }, []);
 
@@ -229,7 +144,9 @@ const CodeEditor = observer(function CodeEditor() {
       <div
         className={`sdi-app-workspace bg-general ${displayFocusToClassName(
           EditorStore.displayFocus
-        )} ${orientationToClassName(EditorStore.vm.outputOrientation)}`}
+        )} ${orientationToClassName(
+          EditorStore.vm?.outputOrientation ?? "portrait"
+        )}`}
       >
         <div className="Document" ref={editorViewParent}></div>
         <div className="Output" onClick={onOutputClick}>

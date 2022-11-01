@@ -26,7 +26,7 @@ export type InOutRequest = {
 	data?: string
 	path: string
 }
-export type InOutRouteHandler = (req: InOutRequest) => Promise<string>
+export type InOutRouteHandler = (req: InOutRequest) => Promise<string | void>
 export type EventRouteHandler = (data: string) => void
 
 export class GeneralIORouter implements IGeneralIO {
@@ -40,20 +40,27 @@ export class GeneralIORouter implements IGeneralIO {
 		const route = this.inOutRouter.lookup(path)
 		
 		if (route) {
-			await route.handler({
-				...route,
-				method: 'out',
-				data: data
-			})
+			try {
+				await route.handler({
+					...route,
+					method: 'out',
+					data: data
+				})
+			} catch (e) {
+			}
 		}
 	}
 	async input(path: string): Promise<string> {
 		const route = this.inOutRouter.lookup(path)
 		if (route) {
-			return route.handler({
-				...route,
-				method: 'in',
-			}) || ''
+			try {
+				return (await route.handler({
+					...route,
+					method: 'in',
+				})) || ''
+			} catch (e) {
+				return ''
+			}
 		}
 		return ''
 	}

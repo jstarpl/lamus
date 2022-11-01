@@ -1,8 +1,8 @@
-import { makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
 import { FileHandle } from "../../stores/FileSystemStore";
-import { VMStoreClass } from "./VMStore";
+import { VMRunState, VMStoreClass } from "./VMStore";
 
 const ACTIVE_DOCUMENT_KEY = "codeEditor:activeDocument";
 
@@ -23,7 +23,7 @@ class EditorStoreClass {
 
   displayFocus: "editor" | "output" = "editor";
 
-  vm = new VMStoreClass();
+  vm: VMStoreClass | null = null;
 
   private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
@@ -41,6 +41,21 @@ class EditorStoreClass {
     this.document = newDocument;
     localStorage.setItem(ACTIVE_DOCUMENT_KEY, JSON.stringify(newDocument));
     this.autosave();
+  }
+
+  mountVirtualMachine(consoleParent: HTMLElement) {
+    this.vm = new VMStoreClass(consoleParent);
+
+    const dispose = autorun(() => {
+      if (this.vm?.runState === VMRunState.RUNNING) {
+        this.setDisplayFocus("output");
+      }
+    });
+
+    return () => {
+      this.vm?.dispose();
+      dispose();
+    };
   }
 
   autosave() {
@@ -86,11 +101,6 @@ class EditorStoreClass {
 
   setDisplayFocus(focus: "editor" | "output") {
     this.displayFocus = focus;
-  }
-
-  run() {
-    this.setDisplayFocus("output");
-    this.vm.run();
   }
 }
 

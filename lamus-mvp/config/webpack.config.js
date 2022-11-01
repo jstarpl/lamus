@@ -319,6 +319,7 @@ module.exports = function (webpackEnv) {
           'scheduler/tracing': 'scheduler/tracing-profiling',
         }),
         ...(modules.webpackAliases || {}),
+        'node-poweredup$': 'node-poweredup/dist/browser/poweredup.js',
       },
       fallback: {
         "crypto": false,
