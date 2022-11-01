@@ -88,6 +88,25 @@ const CodeEditor = observer(function CodeEditor() {
     []
   );
 
+  useEffect(
+    () =>
+      autorun(() => {
+        if (
+          !EditorStore.vm?.parsingErrors ||
+          EditorStore.vm.parsingErrors.length === 0
+        )
+          return;
+        EditorStore.vm.parsingErrors.forEach((error) => {
+          console.error(
+            `${(error.line ?? 0) + 1}:${(error.column ?? 0) + 1} ${
+              error.message
+            }`
+          );
+        });
+      }),
+    []
+  );
+
   useEffect(() => {
     if (!editorViewParent.current) return;
 

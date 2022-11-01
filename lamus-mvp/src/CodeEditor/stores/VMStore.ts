@@ -23,11 +23,17 @@ export enum VMOutputOrientation {
   PORTRAIT = "portrait",
 }
 
+export interface IError {
+  message: string;
+  line?: number;
+  column?: number;
+}
+
 export class VMStoreClass {
   code: string = "";
   runState: VMRunState = VMRunState.IDLE;
   outputOrientation: VMOutputOrientation = VMOutputOrientation.PORTRAIT;
-  parsingErrors = observable.array<string>([]);
+  parsingErrors = observable.array<IError>([]);
   runtimeErrors = observable.array<string>([]);
   _viewParent: HTMLElement;
   _vm: VirtualMachine;
@@ -79,13 +85,10 @@ export class VMStoreClass {
       cons.print("\nREADY.");
     }, 1000);
 
-    vm.addListener("error", action(this._onError));
-    vm.addListener("finished", action(this._onFinished));
-    cons.addEventListener("input", action(this._onInput));
-    cons.addEventListener(
-      "orientationchange",
-      action(this._onOrientationChange)
-    );
+    vm.addListener("error", this._onError);
+    vm.addListener("finished", this._onFinished);
+    cons.addEventListener("input", this._onInput);
+    cons.addEventListener("orientationchange", this._onOrientationChange);
 
     this._vm = vm;
     this._console = cons;
@@ -131,7 +134,13 @@ export class VMStoreClass {
     this.parsingErrors.replace([]);
     const program = new QBasicProgram(code, false);
     if (program.errors.length > 0) {
-      this.parsingErrors.replace(program.errors.map((error) => error.message));
+      this.parsingErrors.replace(
+        program.errors.map((error) => ({
+          message: error.message,
+          line: error.locus?.line,
+          column: error.locus?.position,
+        }))
+      );
       return;
     }
     this._program = program;
@@ -143,9 +152,12 @@ export class VMStoreClass {
 
     this.runtimeErrors.replace([]);
     this._vm.run(this._program, false);
-    this._vm.once("running", () => {
-      this.runState = VMRunState.RUNNING;
-    });
+    this._vm.once(
+      "running",
+      action(() => {
+        this.runState = VMRunState.RUNNING;
+      })
+    );
   }
 
   reset() {

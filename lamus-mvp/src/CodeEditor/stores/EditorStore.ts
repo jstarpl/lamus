@@ -28,9 +28,15 @@ class EditorStoreClass {
   private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
   constructor() {
-    makeAutoObservable(this, {
-      autosave: false,
-    });
+    makeAutoObservable(
+      this,
+      {
+        autosave: false,
+      },
+      {
+        autoBind: true,
+      }
+    );
 
     this.document = JSON.parse(
       localStorage.getItem(ACTIVE_DOCUMENT_KEY) || JSON.stringify("")

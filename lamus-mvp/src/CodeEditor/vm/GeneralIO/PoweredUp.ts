@@ -11,12 +11,17 @@ export default function setup(generalIORouter: GeneralIORouter) {
 
   poweredUp.on("discover", (hub: Hub) => {
     console.log("discover", hub);
-    hub.connect().catch((e) => {
-      console.error(e);
-    });
+    hub
+      .connect()
+      .then(() => {
+        console.log("connected");
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   });
   generalIORouter.insertRoute("/poweredUp/scan", async (req) => {
-    if (req.method !== "in") return "";
+    if (req.method !== "in") return;
     try {
       const result = await poweredUp.scan();
       if (result === true) return "1";
@@ -27,7 +32,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
     }
   });
   generalIORouter.insertRoute("/poweredUp/list", async (req) => {
-    if (req.method !== "in") return "";
+    if (req.method !== "in") return;
     const result = poweredUp.getHubs();
     return JSON.stringify(
       result.map((hub) => ({
@@ -48,24 +53,22 @@ export default function setup(generalIORouter: GeneralIORouter) {
     "/poweredUp/:uuid/:port/setPower",
     async (req) => {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = getDeviceInHub(
+      const device = await getDeviceInHub<BasicMotor>(
         poweredUp,
         req.params["uuid"],
         req.params["port"]
       );
-      if (!(device instanceof BasicMotor)) return;
       await device.setPower(Number(req.data));
       return;
     }
   );
   generalIORouter.insertRoute("/poweredUp/:uuid/:port/brake", async (req) => {
     if (req.method !== "out" || !req.params) return;
-    const device = getDeviceInHub(
+    const device = await getDeviceInHub<BasicMotor>(
       poweredUp,
       req.params["uuid"],
       req.params["port"]
     );
-    if (!(device instanceof BasicMotor)) return;
     await device.brake();
     return;
   });
@@ -73,12 +76,11 @@ export default function setup(generalIORouter: GeneralIORouter) {
     "/poweredUp/:uuid/:port/rampPower",
     async (req) => {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = getDeviceInHub(
+      const device = await getDeviceInHub<BasicMotor>(
         poweredUp,
         req.params["uuid"],
         req.params["port"]
       );
-      if (!(device instanceof BasicMotor)) return;
       const [from, to, time] = req.data.split(",");
       await device.rampPower(Number(from), Number(to), Number(time));
       return;
@@ -88,12 +90,11 @@ export default function setup(generalIORouter: GeneralIORouter) {
     "/poweredUp/:uuid/:port/playSound",
     async (req) => {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = getDeviceInHub(
+      const device = await getDeviceInHub<DuploTrainBaseSpeaker>(
         poweredUp,
         req.params["uuid"],
         req.params["port"]
       );
-      if (!(device instanceof DuploTrainBaseSpeaker)) return;
       await device.playSound(Number(req.data));
       return;
     }
@@ -102,7 +103,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
     "/poweredUp/:uuid/:port/playTone",
     async (req) => {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = getDeviceInHub(
+      const device = await getDeviceInHub<DuploTrainBaseSpeaker>(
         poweredUp,
         req.params["uuid"],
         req.params["port"]
@@ -121,15 +122,15 @@ export default function setup(generalIORouter: GeneralIORouter) {
   };
 }
 
-async function getDeviceInHub(
+async function getDeviceInHub<T = unknown>(
   poweredUp: PoweredUP,
   uuid: string,
   port: string
-): Promise<unknown> {
+): Promise<T> {
   const hub = poweredUp.getHubByUUID(uuid);
   const device = await hub.waitForDeviceAtPort(port);
   if (!device || typeof device !== "object")
     throw new Error("Device not found");
 
-  return device;
+  return device as T;
 }
