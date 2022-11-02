@@ -128,6 +128,7 @@ const CodeEditor = observer(function CodeEditor() {
         for (const error of parsingErrors) {
           const line = editor.state.doc.line((error.line ?? 0) + 1);
           if (firstErrorPos === null) firstErrorPos = line.from;
+          if (!error.message) continue;
           errorMessages.push({
             message: error.message,
             from: line.from,
