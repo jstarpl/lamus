@@ -73,6 +73,40 @@
   max-height: 100%;
 }
 
+.CodeEditor .cm-editor .cm-line-error {
+  background: var(--color-danger-3);
+  border-top: 1px solid var(--color-danger-2);
+  border-bottom: 1px solid var(--color-danger-2);
+  padding: 0 2px 0 4px;
+  font-family: var(--system-font-family);
+}
+
+.CodeEditor .cm-editor .cm-line-error .cm-line-error-counter {
+  color: var(--color-danger-1);
+  margin-right: 0.25em;
+  user-select: none;
+}
+
+.CodeEditor .cm-editor .cm-line-error .cm-line-error-icon {
+  color: var(--color-danger-1);
+  vertical-align: top;
+  display: inline-block;
+  margin-top: 0.2em;
+  margin-right: 0.5em;
+  line-height: 0;
+  user-select: none;
+}
+
+.CodeEditor .cm-editor .cm-line-error .cm-line-error-icon > svg {
+  width: auto;
+  height: 1em;
+  display: inline-block;
+}
+
+.CodeEditor .cm-editor .cm-line-error .cm-line-error-message {
+  font-weight: bold;
+}
+
 @media screen and ((max-width: 750px) or (max-height: 500px)) and (orientation: landscape) {
   .CodeEditor {
     --editor-font-size: 0.75em;

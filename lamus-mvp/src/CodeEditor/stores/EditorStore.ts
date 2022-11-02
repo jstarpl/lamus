@@ -25,13 +25,14 @@ class EditorStoreClass {
 
   vm: VMStoreClass | null = null;
 
-  private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
+  _autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
   constructor() {
     makeAutoObservable(
       this,
       {
         autosave: false,
+        _autosaveTimeout: false,
       },
       {
         autoBind: true,
@@ -65,8 +66,8 @@ class EditorStoreClass {
   }
 
   autosave() {
-    clearTimeout(this.autosaveTimeout);
-    this.autosaveTimeout = setTimeout(() => {
+    clearTimeout(this._autosaveTimeout);
+    this._autosaveTimeout = setTimeout(() => {
       dontWait(this.save.bind(this));
     }, AUTOSAVE_DEBOUNCE);
   }

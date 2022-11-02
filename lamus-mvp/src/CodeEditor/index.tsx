@@ -1,8 +1,14 @@
-import React, { useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import { observer } from "mobx-react-lite";
 import { autorun } from "mobx";
 import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
+import { EditorState, StateEffect } from "@codemirror/state";
 import { basicSetup } from "@codemirror/basic-setup";
 import { indentWithTab } from "@codemirror/commands";
 import { AppStore } from "../stores/AppStore";
@@ -20,6 +26,7 @@ import {
 import { VMRunState } from "./stores/VMStore";
 
 import "./CodeEditor.css";
+import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -41,6 +48,10 @@ const CodeEditor = observer(function CodeEditor() {
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
   const consoleViewParent = useRef<HTMLDivElement | null>(null);
+  const { errorDecorations, update: updateSyntaxErrorDecorations } = useMemo(
+    () => syntaxErrorDecorations(),
+    []
+  );
 
   const hasDialogOpen = false;
 
@@ -91,20 +102,55 @@ const CodeEditor = observer(function CodeEditor() {
   useEffect(
     () =>
       autorun(() => {
-        if (
-          !EditorStore.vm?.parsingErrors ||
-          EditorStore.vm.parsingErrors.length === 0
-        )
-          return;
-        EditorStore.vm.parsingErrors.forEach((error) => {
+        const parsingErrors = EditorStore.vm?.parsingErrors ?? [];
+
+        for (const error of parsingErrors) {
           console.error(
             `${(error.line ?? 0) + 1}:${(error.column ?? 0) + 1} ${
               error.message
             }`
           );
+        }
+
+        if (!editorView.current) return;
+
+        const errorMessages: {
+          message: string;
+          from: number;
+          to: number;
+          column: number;
+        }[] = [];
+
+        const editor = editorView.current;
+
+        let firstErrorPos: number | null = null;
+
+        for (const error of parsingErrors) {
+          const line = editor.state.doc.line((error.line ?? 0) + 1);
+          if (firstErrorPos === null) firstErrorPos = line.from;
+          errorMessages.push({
+            message: error.message,
+            from: line.from,
+            to: line.to,
+            column: error.column ?? 0,
+          });
+        }
+
+        const effects: StateEffect<any>[] = [
+          updateSyntaxErrorDecorations(errorMessages),
+        ];
+
+        if (firstErrorPos !== null) {
+          console.log(`Scroll into view: ${firstErrorPos}`);
+          effects.push(EditorView.scrollIntoView(firstErrorPos));
+        }
+
+        const transaction = editorView.current.state.update({
+          effects,
         });
+        editorView.current.dispatch(transaction);
       }),
-    []
+    [updateSyntaxErrorDecorations]
   );
 
   useEffect(() => {
@@ -119,6 +165,7 @@ const CodeEditor = observer(function CodeEditor() {
           keymap.of([indentWithTab]),
           scrollPastEnd(),
           updateModel,
+          errorDecorations,
         ],
       }),
     });
@@ -128,7 +175,7 @@ const CodeEditor = observer(function CodeEditor() {
     return () => {
       newEditorView.destroy();
     };
-  }, [onInitialize]);
+  }, [onInitialize, errorDecorations]);
 
   useLayoutEffect(() => {
     if (!consoleViewParent.current) return;
@@ -153,7 +200,6 @@ const CodeEditor = observer(function CodeEditor() {
 
     const code = EditorStore.document ?? "";
 
-    EditorStore.vm.reset();
     EditorStore.vm.setCode(code);
     EditorStore.vm.run();
   }, []);

@@ -127,7 +127,6 @@ export class VMStoreClass {
   }
 
   setCode(code: string) {
-    this._vm.reset();
     this.code = code;
     this._program = null;
     this.runtimeErrors.replace([]);
@@ -143,6 +142,7 @@ export class VMStoreClass {
       );
       return;
     }
+    this._vm.reset();
     this._program = program;
   }
 
