@@ -1,4 +1,4 @@
-import { action, makeAutoObservable, observable } from "mobx";
+import { makeAutoObservable, observable } from "mobx";
 import {
   AudioDevice,
   Console,
@@ -171,13 +171,11 @@ export class VMStoreClass {
     this._vm.cwd = "";
 
     this.runtimeErrors.replace([]);
-    this._vm.run(this._program, false);
-    this._vm.once(
-      "running",
-      action(() => {
-        this.runState = VMRunState.RUNNING;
-      })
-    );
+    this.runState = VMRunState.RUNNING;
+    const program = this._program;
+    setImmediate(() => {
+      this._vm.run(program, false);
+    });
   }
 
   pause() {

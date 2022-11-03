@@ -216,7 +216,7 @@ export class Token {
 	}
 
 	public toString() {
-		return 'Token(' + this.text + ')'
+		return 'Token(' + this.text.replace(/\n/, "\\n") + ')'
 	}
 }
 
