@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useLayoutEffect,
   useMemo,
+  useContext,
 } from "react";
 import { observer } from "mobx-react-lite";
 import { autorun } from "mobx";
@@ -18,15 +19,18 @@ import { CommandBar } from "../components/CommandBar";
 import { useNavigate } from "react-router-dom";
 import {
   OPEN_COMBO,
+  PAUSE_COMBO,
   QUIT_COMBO,
   RUN_COMBO,
   SAVE_AS_COMBO,
   SAVE_COMBO,
+  STOP_COMBO,
 } from "../lib/commonHotkeys";
 import { VMRunState } from "./stores/VMStore";
 
 import "./CodeEditor.css";
 import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
+import { SoundEffectsContext } from "../helpers/SoundEffects";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -45,6 +49,7 @@ function orientationToClassName(orientation: "landscape" | "portrait") {
 }
 
 const CodeEditor = observer(function CodeEditor() {
+  const soundEffectsContext = useContext(SoundEffectsContext);
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
   const consoleViewParent = useRef<HTMLDivElement | null>(null);
@@ -87,12 +92,13 @@ const CodeEditor = observer(function CodeEditor() {
           const firstChild =
             consoleViewParent.current.querySelector("[tabindex]");
           if (!firstChild || !(firstChild instanceof HTMLElement)) return;
+          console.log("Focusing Output");
           firstChild.focus();
         } else if (
           EditorStore.displayFocus === "editor" &&
           editorView.current
         ) {
-          console.log("Focusing");
+          console.log("Focusing Editor");
           editorView.current.focus();
         }
       }),
@@ -182,7 +188,10 @@ const CodeEditor = observer(function CodeEditor() {
     if (!consoleViewParent.current) return;
 
     const viewParent = consoleViewParent.current;
-    const dispose = EditorStore.mountVirtualMachine(viewParent);
+    const dispose = EditorStore.mountVirtualMachine(
+      viewParent,
+      soundEffectsContext.getAllAudioElements()
+    );
 
     viewParent.addEventListener("input", onInput);
 
@@ -190,7 +199,7 @@ const CodeEditor = observer(function CodeEditor() {
       viewParent.removeEventListener("input", onInput);
       dispose();
     };
-  }, [onInput]);
+  }, [onInput, soundEffectsContext]);
 
   const onQuit = useCallback(() => {
     navigate("/");
@@ -203,6 +212,24 @@ const CodeEditor = observer(function CodeEditor() {
 
     EditorStore.vm.setCode(code);
     EditorStore.vm.run();
+  }, []);
+
+  const onResume = useCallback(() => {
+    if (!EditorStore.vm) return;
+
+    EditorStore.vm.resume();
+  }, []);
+
+  const onStop = useCallback(() => {
+    if (!EditorStore.vm) return;
+
+    EditorStore.vm.reset();
+  }, []);
+
+  const onPause = useCallback(() => {
+    if (!EditorStore.vm) return;
+
+    EditorStore.vm.pause();
   }, []);
 
   const onOutputClick = useCallback(() => {
@@ -246,12 +273,51 @@ const CodeEditor = observer(function CodeEditor() {
             combo={OPEN_COMBO}
             position={3}
             onClick={console.log}
+            showOnlyWhenModifiersActive
           >
             Open
           </CommandBar.Button>
-          <CommandBar.Button combo={RUN_COMBO} position={5} onClick={onRun}>
-            Run
-          </CommandBar.Button>
+          {EditorStore.vm?.runState !== VMRunState.SUSPENDED && (
+            <CommandBar.Button
+              combo={RUN_COMBO}
+              position={5}
+              onClick={onRun}
+              showOnlyWhenModifiersActive
+            >
+              Run
+            </CommandBar.Button>
+          )}
+          {EditorStore.vm?.runState === VMRunState.SUSPENDED && (
+            <CommandBar.Button
+              combo={RUN_COMBO}
+              position={5}
+              onClick={onResume}
+              showOnlyWhenModifiersActive
+            >
+              Run
+            </CommandBar.Button>
+          )}
+          {EditorStore.vm?.runState !== VMRunState.IDLE &&
+            EditorStore.vm?.runState !== VMRunState.STOPPED && (
+              <CommandBar.Button
+                combo={STOP_COMBO}
+                position={5}
+                onClick={onStop}
+                showOnlyWhenModifiersActive
+              >
+                Stop
+              </CommandBar.Button>
+            )}
+          {EditorStore.vm?.runState === VMRunState.RUNNING && (
+            <CommandBar.Button
+              combo={PAUSE_COMBO}
+              position={6}
+              onClick={onPause}
+              showOnlyWhenModifiersActive
+            >
+              Pause
+            </CommandBar.Button>
+          )}
           <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
             Quit
           </CommandBar.Button>

@@ -118,7 +118,7 @@ const DEBUG = false
  some instructions and then stop. That way, the program appears to run while
  letting the user use the browser window.
  */
-export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'running' | 'finished'> {
+export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'running' | 'finished' | 'reset'> {
 	// Stack
 	stack: any[] = []
 
@@ -251,6 +251,8 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.networkAdapter?.reset()
 		this.generalIo?.reset()
 		this.cryptography?.reset()
+
+		this.emit('reset')
 	}
 
 	/**

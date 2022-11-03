@@ -50,8 +50,11 @@ class EditorStoreClass {
     this.autosave();
   }
 
-  mountVirtualMachine(consoleParent: HTMLElement) {
-    this.vm = new VMStoreClass(consoleParent);
+  mountVirtualMachine(
+    consoleParent: HTMLElement,
+    soundEffects: HTMLAudioElement[]
+  ) {
+    this.vm = new VMStoreClass(consoleParent, soundEffects);
 
     const dispose = autorun(() => {
       if (this.vm?.runState === VMRunState.RUNNING) {

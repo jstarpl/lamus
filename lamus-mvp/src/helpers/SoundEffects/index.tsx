@@ -26,8 +26,10 @@ interface ISoundEffectsContext {
   getAllAudioElements: GetAllAudioElementsHandler;
 }
 
-export const SoundEffectsContext =
-  React.createContext<ISoundEffectsContext | null>(null);
+export const SoundEffectsContext = React.createContext<ISoundEffectsContext>({
+  playEffect: () => {},
+  getAllAudioElements: () => [],
+});
 
 const NO_DISPLAY: React.CSSProperties = {
   display: "none",
