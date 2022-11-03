@@ -12,7 +12,7 @@ const KONAMI_CODE =
 const ADMIN_URL_BASE = "https://setup.lamus.cloud/d";
 
 function generateAdminUrl(deviceId: string) {
-  return `${ADMIN_URL_BASE}/${deviceId}`;
+  return `${ADMIN_URL_BASE}#${deviceId}`;
 }
 
 export const AdminCode = observer(function AdminCode() {
