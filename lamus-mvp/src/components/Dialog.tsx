@@ -2,16 +2,8 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { FocusIndicator } from "../helpers/FocusIndicator";
 import { useCursorNavigation } from "../helpers/useCursorNavigation";
 import { useFocusTrap } from "../helpers/useFocusTrap";
+import { isElementChildOf } from "../lib/lib";
 import "./Dialog.css";
-
-function isElementChildOf(element: HTMLElement, parent: HTMLElement) {
-  let elementParent = element.parentElement;
-  do {
-    if (elementParent === parent) return true;
-    elementParent = elementParent?.parentElement ?? null;
-  } while (elementParent !== null);
-  return false;
-}
 
 export const Dialog: React.FC<
   React.PropsWithChildren<{

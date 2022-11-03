@@ -38,9 +38,12 @@ export function useGlobalKeyboardHandler(): typeof sorensen | null {
 
   useEffect(() => {
     if (!sorensenInitialized()) {
-      sorensen.init().then(() => setInitialized(true));
+      sorensen.init().then(() => {
+        document.body.dataset["sorensen"] = "initialized";
+        setInitialized(true);
+      });
     } else {
-      document.body.dataset.sorensen = "initialized";
+      document.body.dataset["sorensen"] = "initialized";
       setInitialized(true);
     }
 

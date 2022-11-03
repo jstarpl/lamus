@@ -12,7 +12,6 @@
   },
   "workspaces": [
     "lamus-mvp",
-    "setup",
     "qbasic-vm",
     "codemirror-lang-qbasic-vm"
   ],

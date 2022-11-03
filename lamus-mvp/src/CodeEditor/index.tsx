@@ -31,6 +31,8 @@ import { VMRunState } from "./stores/VMStore";
 import "./CodeEditor.css";
 import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
+import { useGlobalKeyboardHandler } from "../helpers/useKeyboardHandler";
+import { isElementChildOf } from "../lib/lib";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -48,7 +50,10 @@ function orientationToClassName(orientation: "landscape" | "portrait") {
   }
 }
 
+const CODE_EDITOR_SWITCH_CONTEXT = "Escape Escape Tab";
+
 const CodeEditor = observer(function CodeEditor() {
+  const keyboard = useGlobalKeyboardHandler();
   const soundEffectsContext = useContext(SoundEffectsContext);
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
@@ -73,36 +78,78 @@ const CodeEditor = observer(function CodeEditor() {
     };
   }, []);
 
-  const onInput = useCallback((e: Event) => {
-    if (!(e instanceof CustomEvent)) return;
-    EditorStore.setDisplayFocus("output");
+  const focusOutput = useCallback(() => {
     if (!consoleViewParent.current) return;
     const firstChild = consoleViewParent.current.querySelector("[tabindex]");
     if (!firstChild || !(firstChild instanceof HTMLElement)) return;
     firstChild.focus();
   }, []);
 
+  const focusEditor = useCallback(() => {
+    if (!editorView.current) return;
+    editorView.current.focus();
+  }, []);
+
+  const onInput = useCallback(
+    (e: Event) => {
+      if (!(e instanceof CustomEvent)) return;
+      EditorStore.setDisplayFocus("output");
+      focusOutput();
+    },
+    [focusOutput]
+  );
+
+  useEffect(() => {
+    if (!keyboard) return;
+
+    function onTabEditorOutput(e: KeyboardEvent) {
+      e.preventDefault();
+      e.stopPropagation();
+      // this should actually respond to actual focused elements
+      const activeElement = document.activeElement;
+      if (!activeElement || !(activeElement instanceof HTMLElement)) {
+        editorView.current?.focus();
+        return;
+      }
+
+      if (
+        editorViewParent.current &&
+        (activeElement === editorViewParent.current ||
+          isElementChildOf(activeElement, editorViewParent.current))
+      ) {
+        EditorStore.setDisplayFocus("output");
+        focusOutput();
+      } else if (
+        consoleViewParent.current &&
+        (activeElement === consoleViewParent.current ||
+          isElementChildOf(activeElement, consoleViewParent.current))
+      ) {
+        EditorStore.setDisplayFocus("editor");
+        focusEditor();
+      }
+    }
+
+    keyboard.bind(CODE_EDITOR_SWITCH_CONTEXT, onTabEditorOutput, {
+      preventDefaultPartials: false,
+    });
+
+    return () => {
+      keyboard.unbind(CODE_EDITOR_SWITCH_CONTEXT, onTabEditorOutput);
+    };
+  }, [keyboard, focusEditor, focusOutput]);
+
   useEffect(
     () =>
       autorun(() => {
-        if (
-          EditorStore.displayFocus === "output" &&
-          consoleViewParent.current
-        ) {
-          const firstChild =
-            consoleViewParent.current.querySelector("[tabindex]");
-          if (!firstChild || !(firstChild instanceof HTMLElement)) return;
+        if (EditorStore.displayFocus === "output") {
           console.log("Focusing Output");
-          firstChild.focus();
-        } else if (
-          EditorStore.displayFocus === "editor" &&
-          editorView.current
-        ) {
+          focusOutput();
+        } else if (EditorStore.displayFocus === "editor") {
           console.log("Focusing Editor");
-          editorView.current.focus();
+          focusEditor();
         }
       }),
-    []
+    [focusOutput, focusEditor]
   );
 
   useEffect(
