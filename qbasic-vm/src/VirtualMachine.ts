@@ -77,12 +77,12 @@ export class TraceBuffer {
 	lines: string[] = []
 	constructor() {}
 
-	public toString() {
+	public toString(): string {
 		return this.lines.join('')
 	}
 
 	public printf(...args: any[]) {
-		let str = sprintf(args)
+		const str = sprintf(args)
 		this.lines.push(str)
 		if (this.lines.length > this.MAX_LINES) {
 			this.lines.shift()
@@ -161,17 +161,17 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	trace: TraceBuffer = new TraceBuffer()
 
 	// Index of next data statement to be read.
-	dataPtr: number = 0
+	dataPtr = 0
 
 	// Array of strings or numbers from the data statements.
 	data: any[] = []
 
 	// True if we are running asynchronously.
-	asynchronous: boolean = false
+	asynchronous = false
 
 	// True if the virtual machine is suspended for some reason (for example,
 	// waiting for user input)
-	suspended: boolean = false // eg. for INPUT statement.
+	suspended = false // eg. for INPUT statement.
 
 	// The javascript interval used for running asynchronously.
 	interval: number | undefined = undefined
@@ -190,7 +190,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 
 	frame: StackFrame
 
-	cwd: string = ''
+	cwd = ''
 
 	/**
 	 * @param console A Console object that will be used as the screen.
@@ -212,14 +212,18 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.cryptography = cryptography
 
 		if (!DEBUG) {
-			this.trace = { printf: function () {} } as TraceBuffer
+			this.trace = {
+				printf: function () {
+					// a noop
+				},
+			} as TraceBuffer
 		}
 	}
 
 	/**
 	 Resets the virtual machine, halting any running program.
 	*/
-	public reset(program?: QBasicProgram) {
+	public reset(program?: QBasicProgram): void {
 		if (program) {
 			this.instructions = program.instructions
 			this.types = program.types
@@ -247,10 +251,10 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		} else {
 			this.cons.reset()
 		}
-		this.audio?.reset()
-		this.networkAdapter?.reset()
+		this.audio?.reset().catch(console.error)
+		this.networkAdapter?.reset().catch(console.error)
 		this.generalIo?.reset()
-		this.cryptography?.reset()
+		this.cryptography?.reset().catch(console.error)
 
 		this.emit('reset')
 	}
@@ -261,7 +265,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 
 	In asynchronous mode, it returns immediately.
 	*/
-	public run(program: QBasicProgram, synchronous: boolean) {
+	public run(program: QBasicProgram, synchronous: boolean): void {
 		this.reset(program)
 		this.asynchronous = !synchronous
 
@@ -285,7 +289,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	 Suspend the CPU, maintaining all state. This happens when the program
 	is waiting for user input.
 	*/
-	public suspend() {
+	public suspend(): void {
 		this.suspended = true
 		this.emit('suspended')
 		if (this.asynchronous) {
@@ -296,7 +300,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	/**
 	 Resume the CPU, after previously being suspended.
 	*/
-	public resume() {
+	public resume(): void {
 		this.suspended = false
 		this.emit('running')
 		if (this.asynchronous) {
@@ -308,9 +312,13 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	/**
 	 Runs some instructions during asynchronous mode.
 	*/
-	public runSome() {
+	public runSome(): void {
 		try {
-			for (let i = 0; i < this.instructionsPerInterval && this.pc < this.instructions.length && !this.suspended; i++) {
+			for (
+				let i = 0;
+				i < this.instructionsPerInterval && this.pc < this.instructions.length && !this.suspended;
+				i++
+			) {
 				this.runOneInstruction()
 			}
 		} catch (e) {
@@ -328,8 +336,8 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		}
 	}
 
-	public runOneInstruction() {
-		let instr = this.instructions[this.pc++]
+	public runOneInstruction(): void {
+		const instr = this.instructions[this.pc++]
 		try {
 			if (DEBUG) {
 				this.trace.printf('Execute [%s] %s\n', this.pc - 1, instr)
@@ -347,7 +355,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	/**
 	 * Run all instructions on the current line of the program
 	 */
-	public runOneLine() {
+	public runOneLine(): void {
 		const currentLocus = this.instructions[this.pc].locus
 		let i = 0
 		do {
@@ -383,16 +391,16 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 				type = this.types[typeName] as SomeScalarType
 			}
 
-			let scalar = new ScalarVariable<any>(type, type.createInstance())
+			const scalar = new ScalarVariable<any>(type, type.createInstance())
 			frame.variables[name] = scalar
 			return scalar
 		}
 	}
 
-	public printStack() {
+	public printStack(): void {
 		if (DEBUG) {
 			for (let i = 0; i < this.stack.length; i++) {
-				let item = this.stack[i]
+				const item = this.stack[i]
 				let name = /*getObjectClass*/ item
 				if (name === 'ScalarVariable') {
 					name += ' ' + item.value
@@ -402,7 +410,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		}
 	}
 
-	public pushScalar(value, typeName) {
+	public pushScalar(value, typeName): void {
 		this.stack.push(new ScalarVariable<any>(this.types[typeName] as SomeScalarType, value))
 	}
 }
@@ -491,7 +499,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: [],
 		minArgs: 0,
 		action: function (vm) {
-			let code = vm.cons.getKeyFromBuffer()
+			const code = vm.cons.getKeyFromBuffer()
 			let result = ''
 
 			if (code !== -1) {
@@ -531,13 +539,13 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: ['STRING', 'INTEGER', 'INTEGER'],
 		minArgs: 2,
 		action: function (vm) {
-			let numArgs = vm.stack.pop()
+			const numArgs = vm.stack.pop()
 			let len
 			if (numArgs === 3) {
 				len = vm.stack.pop()
 			}
-			let start = vm.stack.pop()
-			let str = vm.stack.pop()
+			const start = vm.stack.pop()
+			const str = vm.stack.pop()
 			vm.stack.push(str.substr(start - 1, len))
 		},
 	},
@@ -547,8 +555,8 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: ['STRING', 'INTEGER'],
 		minArgs: 2,
 		action: function (vm) {
-			let num = vm.stack.pop()
-			let str = vm.stack.pop()
+			const num = vm.stack.pop()
+			const str = vm.stack.pop()
 			vm.stack.push(str.substr(0, num))
 		},
 	},
@@ -558,8 +566,8 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: ['STRING', 'INTEGER'],
 		minArgs: 2,
 		action: function (vm) {
-			let num = vm.stack.pop()
-			let str = vm.stack.pop()
+			const num = vm.stack.pop()
+			const str = vm.stack.pop()
 			vm.stack.push(str.substr(str.length - num))
 		},
 	},
@@ -638,9 +646,9 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 			// floating point value rather than an integer, so that nibbles
 			// will work properly when its timing loop returns a value less
 			// than one second.
-			let date = new Date()
+			const date = new Date()
 
-			let result =
+			const result =
 				date.getMilliseconds() / 1000 + date.getSeconds() + date.getMinutes() * 60 + date.getHours() * 60 * 60
 
 			vm.stack.push(result)
@@ -716,7 +724,9 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 
 			const num = vm.stack.pop()
 			const result = Number(num).toString(10)
-			vm.stack.push('0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result)
+			vm.stack.push(
+				'0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result
+			)
 		},
 	},
 
@@ -733,7 +743,9 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 
 			const num = vm.stack.pop()
 			const result = Number(num).toString(16)
-			vm.stack.push('0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result)
+			vm.stack.push(
+				'0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result
+			)
 		},
 	},
 
@@ -742,7 +754,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: ['INTEGER'],
 		minArgs: 1,
 		action: function (vm) {
-			let numSpaces = vm.stack.pop()
+			const numSpaces = vm.stack.pop()
 			let str = ''
 			for (let i = 0; i < numSpaces; i++) {
 				str += ' '
@@ -756,8 +768,8 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: ['INTEGER', 'ANY'],
 		minArgs: 2,
 		action: function (vm) {
-			let input = vm.stack.pop()
-			let numChars = vm.stack.pop()
+			const input = vm.stack.pop()
+			const numChars = vm.stack.pop()
 			let pattern = String(input)
 			if (typeof input === 'number') {
 				pattern = String.fromCodePoint(input)
@@ -1101,7 +1113,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: ['INTEGER'],
 		minArgs: 1,
 		action: function (vm) {
-			let fileNum = vm.stack.pop()
+			const fileNum = vm.stack.pop()
 
 			if (vm.fileSystem) {
 				vm.suspend()
@@ -1301,7 +1313,9 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 				if (numArgs > 0) {
 					obj = JSON.parse(vm.stack.pop())
 				}
-			} catch (e) {}
+			} catch (e) {
+				// could not parse JSON, we output an empty object
+			}
 			vm.stack.push(obj)
 		},
 	},
@@ -1309,13 +1323,34 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 	JSONSTR$: {
 		// dataJ
 		type: 'STRING',
-		args: ['JSON'],
+		args: ['ANY'],
 		minArgs: 1,
 		action: function (vm) {
 			const obj = vm.stack.pop()
 
 			if (typeof obj !== 'object') {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Invalid argument for JSONSTR$')
+			}
+
+			if (obj instanceof ArrayVariable) {
+				if (
+					obj.type.name !== 'JSON' &&
+					obj.type.name !== 'INTEGER' &&
+					obj.type.name !== 'DOUBLE' &&
+					obj.type.name !== 'SINGLE' &&
+					obj.type.name !== 'STRING'
+				) {
+					throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Invalid argument for JSONSTR$')
+				}
+
+				vm.stack.push(
+					JSON.stringify(
+						obj.values.map((value) => value.value),
+						undefined,
+						1
+					)
+				)
+				return
 			}
 
 			vm.stack.push(JSON.stringify(obj, undefined, 1))
@@ -1370,7 +1405,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 			input = input.replace(/-/g, '+').replace(/_/g, '/')
 
 			// Pad out with standard base64 required padding characters
-			let pad = input.length % 4
+			const pad = input.length % 4
 			if (pad) {
 				if (pad === 1) {
 					throw new RuntimeError(
@@ -1853,6 +1888,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 0,
 		action: function (vm) {
 			// this is here on purpose, to allow setting traps from inside BASIC
+			// eslint-disable-next-line no-debugger
 			debugger
 
 			// remove passed in arguments
@@ -1987,6 +2023,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			if (argCount === 1) {
 				// if an argument is provided, wait X seconds
 				const sleep = getArgValue(vm.stack.pop())
+				// eslint-disable-next-line prefer-const
 				let cancelSleep: () => void
 
 				const timeout = setTimeout(() => {
@@ -2000,6 +2037,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.once('suspended', cancelSleep)
 			} else {
 				// if no argument is provided, use a global trapped key to resume
+				// eslint-disable-next-line prefer-const
 				let cancelSleep: () => void
 
 				vm.cons.onKey(-1, () => {
@@ -2026,17 +2064,17 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	print_using: {
 		action: function (vm) {
 			// pop # args
-			let argCount = vm.stack.pop()
+			const argCount = vm.stack.pop()
 
 			// pop terminator
-			let terminator = vm.stack.pop()
+			const terminator = vm.stack.pop()
 
-			let args: any[] = []
+			const args: any[] = []
 			for (let i = 0; i < argCount - 1; i++) {
 				args.unshift(vm.stack.pop())
 			}
 
-			let formatString = args.shift().value
+			const formatString = args.shift().value
 
 			let curArg = 0
 			let output = ''
@@ -2055,7 +2093,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					}
 
 					// store character position
-					let backupPos = pos
+					const backupPos = pos
 					let digitCount = 0
 					// for each character of the string,
 					for (; pos < formatString.length; pos++) {
@@ -2138,7 +2176,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			if (argCount > 1) {
 				col = getArgValue(vm.stack.pop())
 			}
-			let row = getArgValue(vm.stack.pop())
+			const row = getArgValue(vm.stack.pop())
 			vm.cons.locate(row, col)
 		},
 	},
@@ -2157,7 +2195,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			if (argCount > 1) {
 				bg = Math.round(getArgValue(vm.stack.pop())) || 0
 			}
-			let fg = Math.round(getArgValue(vm.stack.pop())) || 0
+			const fg = Math.round(getArgValue(vm.stack.pop())) || 0
 			vm.cons.color(fg, bg, bo)
 		},
 	},
@@ -2169,7 +2207,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 1,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
-			let args: any[] = []
+			const args: any[] = []
 			let i
 
 			for (i = 0; i < argCount; i++) {
@@ -2215,7 +2253,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			let currentArg = 0
 			let pastResult = ''
 
-			function handleFileInput(val: number | string | object): Promise<void> {
+			async function handleFileInput(val: number | string | object): Promise<void> {
 				const arg = args[currentArg]
 				if (IsStringType(arg.type) && typeof val === 'string') {
 					arg.value = String(val)
@@ -2230,13 +2268,13 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				if (currentArg >= argCount) {
 					return Promise.resolve()
 				} else if (vm.fileSystem) {
-					return vm.fileSystem.read(fileHandle).then((result) => handleFileInput(result))
+					return vm.fileSystem.read(fileHandle).then(async (result) => handleFileInput(result))
 				} else {
 					return Promise.reject()
 				}
 			}
 
-			function handleInput(result: string): Promise<void> {
+			async function handleInput(result: string): Promise<void> {
 				result = pastResult + result
 				const csvMatch = new RegExp(STRUCTURED_INPUT_MATCH)
 				let m: RegExpExecArray | null = null
@@ -2286,7 +2324,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				} else {
 					vm.cons
 						.input(newLineAfterEnter)
-						.then((result) => handleInput(result))
+						.then(async (result) => handleInput(result))
 						.then(() => vm.resume())
 						.catch((e) => {
 							dbg().printf('Error when reading input: %s', e)
@@ -2313,9 +2351,9 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 	SWAP: {
 		action: function (vm) {
-			let lhs = vm.stack.pop()
-			let rhs = vm.stack.pop()
-			let temp = lhs.value
+			const lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const temp = lhs.value
 			lhs.value = rhs.value
 			rhs.value = temp
 			// TODO: Type checking.
@@ -2406,7 +2444,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
 		minArgs: 3,
 		action: function (vm) {
-			let argCount = vm.stack.pop()
+			const argCount = vm.stack.pop()
 			let dw = undefined
 			let dh = undefined
 			let sx = undefined
@@ -2470,7 +2508,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 2,
 		action: function (vm) {
 			vm.suspend()
-			let argCount = vm.stack.pop()
+			const argCount = vm.stack.pop()
 			let frames = 1
 			if (argCount > 2) {
 				frames = getArgValue(vm.stack.pop())
@@ -2590,8 +2628,6 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 2,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
-			let x1: number
-			let y1: number
 			let x2: number | undefined = undefined
 			let y2: number | undefined = undefined
 			let color: number | undefined = undefined
@@ -2602,8 +2638,8 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				y2 = Math.round(getArgValue(vm.stack.pop()))
 				x2 = Math.round(getArgValue(vm.stack.pop()))
 			}
-			y1 = Math.round(getArgValue(vm.stack.pop()))
-			x1 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
 
 			if (x2 !== undefined && y2 !== undefined) {
 				vm.cons.line(x1, y1, x2, y2, color)
@@ -2619,19 +2655,15 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 4,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
-			let x1: number
-			let y1: number
-			let x2: number
-			let y2: number
 			let color: number | undefined
 
 			if (argCount > 4) {
 				color = Math.round(getArgValue(vm.stack.pop()))
 			}
-			y2 = Math.round(getArgValue(vm.stack.pop()))
-			x2 = Math.round(getArgValue(vm.stack.pop()))
-			y1 = Math.round(getArgValue(vm.stack.pop()))
-			x1 = Math.round(getArgValue(vm.stack.pop()))
+			const y2 = Math.round(getArgValue(vm.stack.pop()))
+			const x2 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
 
 			vm.cons.box(x1, y1, x2, y2, color)
 		},
@@ -2643,19 +2675,15 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 4,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
-			let x1: number
-			let y1: number
-			let x2: number
-			let y2: number
 			let color: number | undefined
 
 			if (argCount > 4) {
 				color = Math.round(getArgValue(vm.stack.pop()))
 			}
-			y2 = Math.round(getArgValue(vm.stack.pop()))
-			x2 = Math.round(getArgValue(vm.stack.pop()))
-			y1 = Math.round(getArgValue(vm.stack.pop()))
-			x1 = Math.round(getArgValue(vm.stack.pop()))
+			const y2 = Math.round(getArgValue(vm.stack.pop()))
+			const x2 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
 
 			vm.cons.fill(x1, y1, x2, y2, color)
 		},
@@ -2667,23 +2695,17 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 6,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
-			let x1: number
-			let y1: number
-			let x2: number
-			let y2: number
-			let x3: number
-			let y3: number
 			let color: number | undefined
 
 			if (argCount > 6) {
 				color = Math.round(getArgValue(vm.stack.pop()))
 			}
-			y3 = Math.round(getArgValue(vm.stack.pop()))
-			x3 = Math.round(getArgValue(vm.stack.pop()))
-			y2 = Math.round(getArgValue(vm.stack.pop()))
-			x2 = Math.round(getArgValue(vm.stack.pop()))
-			y1 = Math.round(getArgValue(vm.stack.pop()))
-			x1 = Math.round(getArgValue(vm.stack.pop()))
+			const y3 = Math.round(getArgValue(vm.stack.pop()))
+			const x3 = Math.round(getArgValue(vm.stack.pop()))
+			const y2 = Math.round(getArgValue(vm.stack.pop()))
+			const x2 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
 
 			vm.cons.triangleFill(x1, y1, x2, y2, x3, y3, color)
 		},
@@ -2695,9 +2717,6 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 3,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
-			let x1: number
-			let y1: number
-			let radius: number
 			let startAngle: number | undefined
 			let endAngle: number | undefined
 			let color: number | undefined
@@ -2717,9 +2736,9 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				startAngle = Number(getArgValue(vm.stack.pop()))
 				endAngle = Number(getArgValue(vm.stack.pop()))
 			}
-			radius = Number(getArgValue(vm.stack.pop()))
-			y1 = Math.round(getArgValue(vm.stack.pop()))
-			x1 = Math.round(getArgValue(vm.stack.pop()))
+			const radius = Number(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
 
 			vm.cons.circle(x1, y1, radius, color, startAngle, endAngle, aspect, fill, false)
 		},
@@ -2756,14 +2775,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		// X%, Y%, OUT RED%, OUT GREEN%, OUT BLUE%
 		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
 		action: function (vm) {
-			let x1: number
-			let y1: number
-
 			const blueVar = vm.stack.pop() as ScalarVariable<number>
 			const greenVar = vm.stack.pop() as ScalarVariable<number>
 			const redVar = vm.stack.pop() as ScalarVariable<number>
-			y1 = Math.round(getArgValue(vm.stack.pop()))
-			x1 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
 
 			const [red, green, blue] = vm.cons.getPixel(x1, y1)
 
@@ -2809,7 +2825,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			const path = getArgValue(vm.stack.pop()) as string
 			const obj = vm.stack.pop() as ScalarVariable<object>
 
-			const explodedPath = path.split(/[\.\[\]]/).filter((element) => element !== '')
+			const explodedPath = path.split(/[.[\]]/).filter((element) => element !== '')
 			if (explodedPath.shift() !== '$') {
 				throw new RuntimeError(
 					RuntimeErrorCodes.INVALID_ARGUMENT,
@@ -2852,7 +2868,8 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				}
 			}
 
-			target[explodedPath.shift()!] = typeof value === 'number' && convertToBool ? (value === 0 ? false : true) : value
+			target[explodedPath.shift()!] =
+				typeof value === 'number' && convertToBool ? (value === 0 ? false : true) : value
 		},
 	},
 
@@ -3129,7 +3146,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					fileHandles = vm.fileSystem.getUsedFileHandles()
 				}
 
-				Promise.all(fileHandles.map((fileHandle) => fileSystem.close(fileHandle)))
+				Promise.all(fileHandles.map(async (fileHandle) => fileSystem.close(fileHandle)))
 					.then(() => vm.resume())
 					.catch((reason) => {
 						vm.trace.printf('Error while closing file: %s\n', reason)
@@ -3228,12 +3245,18 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					.then((files) => {
 						target.resize([new Dimension(1, files.length)])
 						for (let i = 0; i < files.length; i++) {
-							target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'] as StringType, files[i]))
+							target.assign(
+								[i + 1],
+								new ScalarVariable<string>(vm.types['STRING'] as StringType, files[i])
+							)
 						}
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while listing directory contents: ${error}`)
+						throw new RuntimeError(
+							RuntimeErrorCodes.IO_ERROR,
+							`Error while listing directory contents: ${error}`
+						)
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
@@ -3460,9 +3483,9 @@ export const Instructions: InstructionDefinition = {
 			// popped off the stack, and we jump to the end address. Otherwise,
 			// only the loop variable is popped and no branch is performed.
 
-			let counter = vm.stack[vm.stack.length - 1]
-			let step = vm.stack[vm.stack.length - 2]
-			let end = vm.stack[vm.stack.length - 3]
+			const counter = vm.stack[vm.stack.length - 1]
+			const step = vm.stack[vm.stack.length - 2]
+			const end = vm.stack[vm.stack.length - 3]
 
 			if ((step < 0 && counter < end) || (step > 0 && counter > end)) {
 				vm.stack.length -= 3
@@ -3553,7 +3576,7 @@ export const Instructions: InstructionDefinition = {
 		execute: function (vm, arg) {
 			// The argument is a typename. Replace the top of the stack with a
 			// reference to that value, with the given type.
-			let type = vm.types[arg]
+			const type = vm.types[arg]
 			vm.stack.push(new ScalarVariable(type, type.copy(vm.stack.pop())))
 		},
 	},
@@ -3572,7 +3595,7 @@ export const Instructions: InstructionDefinition = {
 	UNARY_OP: {
 		name: 'unary_op',
 		execute: function (vm, arg) {
-			let rhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
 			let value
 			if (arg === 'NOT') {
 				value = ~rhs
@@ -3596,8 +3619,8 @@ export const Instructions: InstructionDefinition = {
 		name: '<',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs < rhs ? -1 : 0)
 		},
 	},
@@ -3606,8 +3629,8 @@ export const Instructions: InstructionDefinition = {
 		name: '<=',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs <= rhs ? -1 : 0)
 		},
 	},
@@ -3616,8 +3639,8 @@ export const Instructions: InstructionDefinition = {
 		name: '>',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs > rhs ? -1 : 0)
 		},
 	},
@@ -3626,8 +3649,8 @@ export const Instructions: InstructionDefinition = {
 		name: '>=',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs >= rhs ? -1 : 0)
 		},
 	},
@@ -3688,8 +3711,8 @@ export const Instructions: InstructionDefinition = {
 		name: '^',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(Math.pow(lhs, rhs))
 		},
 	},
@@ -3698,8 +3721,8 @@ export const Instructions: InstructionDefinition = {
 		name: '+',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs + rhs)
 		},
 	},
@@ -3708,8 +3731,8 @@ export const Instructions: InstructionDefinition = {
 		name: '-',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs - rhs)
 		},
 	},
@@ -3726,8 +3749,8 @@ export const Instructions: InstructionDefinition = {
 		name: '>>',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs >> rhs)
 		},
 	},
@@ -3736,8 +3759,8 @@ export const Instructions: InstructionDefinition = {
 		name: '<<',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
-			let lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs << rhs)
 		},
 	},
@@ -3747,9 +3770,9 @@ export const Instructions: InstructionDefinition = {
 		numArgs: 0,
 		execute: function (vm) {
 			// TODO: \ operator.
-			let rhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
 			if (rhs === 0) throw new RuntimeError(RuntimeErrorCodes.DIVISION_BY_ZERO, 'Division by zero')
-			let lhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs / rhs)
 		},
 	},
@@ -3758,9 +3781,9 @@ export const Instructions: InstructionDefinition = {
 		name: 'mod',
 		numArgs: 0,
 		execute: function (vm) {
-			let rhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
 			if (rhs === 0) throw new RuntimeError(RuntimeErrorCodes.DIVISION_BY_ZERO, 'Division by zero')
-			let lhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
 			vm.stack.push(lhs % rhs)
 		},
 	},
@@ -3771,7 +3794,7 @@ export const Instructions: InstructionDefinition = {
 		execute: function (vm, arg) {
 			// Branch on zero. Pop the top of the stack. If zero, jump to
 			// the given address.
-			let expr = vm.stack.pop()
+			const expr = vm.stack.pop()
 			if (!expr) {
 				vm.pc = arg
 			}
@@ -3784,7 +3807,7 @@ export const Instructions: InstructionDefinition = {
 		execute: function (vm, arg) {
 			// Branch on non-zero. Pop the top of the stack. If non-zero, jump
 			// to the given address.
-			let expr = vm.stack.pop()
+			const expr = vm.stack.pop()
 			if (expr) {
 				vm.pc = arg
 			}
@@ -3818,7 +3841,7 @@ export const Instructions: InstructionDefinition = {
 		execute: function (vm, arg) {
 			// like call, but stack frame shares all variables from the old
 			// stack frame.
-			let oldvariables = vm.frame.variables
+			const oldvariables = vm.frame.variables
 			vm.frame = new StackFrame(vm.pc)
 			vm.frame.variables = oldvariables
 			vm.callstack.push(vm.frame)
@@ -3858,9 +3881,9 @@ export const Instructions: InstructionDefinition = {
 			// Argument is whether we want the reference or value.
 
 			// get the variable
-			let variable = vm.stack.pop()
+			const variable = vm.stack.pop()
 
-			let indexes: number[] = []
+			const indexes: number[] = []
 
 			// for each dimension,
 			for (let i = 0; i < variable.dimensions.length; i++) {
@@ -3887,8 +3910,8 @@ export const Instructions: InstructionDefinition = {
 			// member. The top of the stack is a reference to the user
 			// variable.
 
-			let userVariable = vm.stack.pop()
-			let deref = userVariable[arg]
+			const userVariable = vm.stack.pop()
+			const deref = userVariable[arg]
 
 			vm.stack.push(deref)
 		},
@@ -3902,8 +3925,8 @@ export const Instructions: InstructionDefinition = {
 			// member. The top of the stack is a reference to the user
 			// variable.
 
-			let userVariable = vm.stack.pop()
-			let deref = userVariable[arg]
+			const userVariable = vm.stack.pop()
+			const deref = userVariable[arg]
 
 			vm.stack.push(deref.value)
 		},
@@ -3917,8 +3940,8 @@ export const Instructions: InstructionDefinition = {
 			// Stack: left hand side: variable reference
 			// right hand side: value to assign.
 
-			let lhs = vm.stack.pop()
-			let rhs = vm.stack.pop()
+			const lhs = vm.stack.pop()
+			const rhs = vm.stack.pop()
 
 			lhs.value = lhs.type.copy(rhs)
 		},
@@ -3961,9 +3984,9 @@ export const Instructions: InstructionDefinition = {
 				vm.trace.printf('Execute syscall %s\n', arg)
 			}
 			if (arg === 'print') {
-				let num = 1
+				const num = 1
 				for (i = 0; i < num; i++) {
-					let what = vm.stack.pop()
+					const what = vm.stack.pop()
 					if (vm.debug) {
 						vm.trace.printf('printing %s\n', what)
 					}
@@ -3971,11 +3994,11 @@ export const Instructions: InstructionDefinition = {
 				}
 			} else if (arg === 'alloc_array') {
 				type = vm.stack.pop()
-				let numDimensions = vm.stack.pop()
-				let dimensions: Dimension[] = []
+				const numDimensions = vm.stack.pop()
+				const dimensions: Dimension[] = []
 				for (i = 0; i < numDimensions; i++) {
-					let upper = vm.stack.pop()
-					let lower = vm.stack.pop()
+					const upper = vm.stack.pop()
+					const lower = vm.stack.pop()
 					dimensions.unshift(new Dimension(lower, upper))
 				}
 
@@ -3989,7 +4012,7 @@ export const Instructions: InstructionDefinition = {
 				}
 				vm.cons.print(spaces)
 			} else if (arg === 'print_tab') {
-				let col = vm.stack.pop() - 1
+				const col = vm.stack.pop() - 1
 				x = vm.cons.x
 				spaces = ''
 				while (++x < col) {
