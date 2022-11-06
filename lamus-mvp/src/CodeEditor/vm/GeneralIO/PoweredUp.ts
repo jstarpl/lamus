@@ -10,7 +10,12 @@ export default function setup(generalIORouter: GeneralIORouter) {
   const poweredUp = new window.PoweredUP.PoweredUP();
 
   poweredUp.on("discover", (hub: Hub) => {
-    console.log("discover", hub);
+    console.log("discover", poweredUp, hub);
+    if (hub.connected) {
+      console.log("already connected");
+      return;
+    }
+
     hub
       .connect()
       .then(() => {

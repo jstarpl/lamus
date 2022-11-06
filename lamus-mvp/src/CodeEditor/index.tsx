@@ -26,7 +26,7 @@ import {
   SAVE_COMBO,
   STOP_COMBO,
 } from "../lib/commonHotkeys";
-import { VMRunState } from "./stores/VMStore";
+import { IError, VMRunState } from "./stores/VMStore";
 
 import "./CodeEditor.css";
 import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
@@ -165,29 +165,52 @@ const CodeEditor = observer(function CodeEditor() {
           );
         }
 
+        const runtimeErrors = EditorStore.vm?.runtimeErrors ?? [];
+
+        for (const error of runtimeErrors) {
+          console.error(
+            `${(error.line ?? 0) + 1}:${(error.column ?? 0) + 1} ${
+              error.message
+            }`
+          );
+        }
+
         if (!editorView.current) return;
 
-        const errorMessages: {
+        type IErrorMessage = {
           message: string;
           from: number;
           to: number;
           column: number;
-        }[] = [];
+        };
 
-        const editor = editorView.current;
-
-        let firstErrorPos: number | null = null;
-
-        for (const error of parsingErrors) {
+        function insertErrorIntoErrorMessages(
+          error: IError,
+          errorMessages: IErrorMessage[]
+        ) {
           const line = editor.state.doc.line((error.line ?? 0) + 1);
           if (firstErrorPos === null) firstErrorPos = line.from;
-          if (!error.message) continue;
+          if (!error.message) return;
           errorMessages.push({
             message: error.message,
             from: line.from,
             to: line.to,
             column: error.column ?? 0,
           });
+        }
+
+        const errorMessages: IErrorMessage[] = [];
+
+        const editor = editorView.current;
+
+        let firstErrorPos: number | null = null;
+
+        for (const error of parsingErrors) {
+          insertErrorIntoErrorMessages(error, errorMessages);
+        }
+
+        for (const error of runtimeErrors) {
+          insertErrorIntoErrorMessages(error, errorMessages);
         }
 
         const effects: StateEffect<any>[] = [

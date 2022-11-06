@@ -7,6 +7,7 @@ import {
   LocalStorageFileSystem,
   NetworkAdapter,
   QBasicProgram,
+  RuntimeError,
   VirtualMachine,
 } from "@lamus/qbasic-vm";
 import setupGeneralIO from "./../vm/GeneralIO";
@@ -34,7 +35,7 @@ export class VMStoreClass {
   runState: VMRunState = VMRunState.IDLE;
   outputOrientation: VMOutputOrientation = VMOutputOrientation.PORTRAIT;
   parsingErrors = observable.array<IError>([]);
-  runtimeErrors = observable.array<string>([]);
+  runtimeErrors = observable.array<IError>([]);
   _viewParent: HTMLElement;
   _vm: VirtualMachine;
   _console: Console;
@@ -108,9 +109,14 @@ export class VMStoreClass {
     this.outputOrientation = newOrientation;
   }
 
-  _onError(error: any) {
-    console.error(error);
-    this.runtimeErrors.push(String(error));
+  _onError(error: Error) {
+    if (error instanceof RuntimeError) {
+      this.runtimeErrors.push({
+        message: `Runtime Error: ${error.message}`,
+        column: error.locus?.position,
+        line: error.locus?.line,
+      });
+    }
     this.runState = VMRunState.SUSPENDED;
   }
 

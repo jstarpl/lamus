@@ -363,7 +363,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		} while (this.instructions[this.pc].locus.line === currentLocus.line && i++ < this.instructionsPerInterval) // don't get stuck in infinite loops
 	}
 
-	public setVariable(name: string, value: any) {
+	public setVariable(name: string, value: ScalarVariable<any> | ArrayVariable<any>): void {
 		if (this.shared[name]) {
 			this.callstack[0].variables[name] = value
 		} else {
@@ -371,7 +371,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		}
 	}
 
-	public getVariable(name: string) {
+	public getVariable(name: string): ScalarVariable<any> | ArrayVariable<any> {
 		let frame: StackFrame
 		if (this.shared[name]) {
 			frame = this.callstack[0]
@@ -410,7 +410,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		}
 	}
 
-	public pushScalar(value, typeName): void {
+	public pushScalar(value: string | number | object, typeName: string): void {
 		this.stack.push(new ScalarVariable<any>(this.types[typeName] as SomeScalarType, value))
 	}
 }

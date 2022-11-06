@@ -121,6 +121,12 @@
   }
 }
 
+@media screen and (min-width: 750px) and (max-width: 1279px) and (min-height: 500px) and (orientation: landscape) {
+  .CodeEditor {
+    --output-zoom: 0.75;
+  }
+}
+
 @media screen and (min-width: 1400px) and (min-height: 950px) and (orientation: landscape) {
   .CodeEditor {
     --output-zoom: 1.5;

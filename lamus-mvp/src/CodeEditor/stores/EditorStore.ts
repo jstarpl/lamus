@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
 import { FileHandle } from "../../stores/FileSystemStore";
@@ -110,7 +110,9 @@ class EditorStoreClass {
   }
 
   setDisplayFocus(focus: "editor" | "output") {
-    this.displayFocus = focus;
+    runInAction(() => {
+      this.displayFocus = focus;
+    });
   }
 }
 
