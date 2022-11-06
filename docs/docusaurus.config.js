@@ -6,9 +6,9 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-	title: 'Lamus BASIC',
-	tagline: 'The BASIC Interpreter for Lamus computers',
-	url: 'https://your-docusaurus-test-site.com',
+	title: 'Lamus',
+	tagline: 'Web-based Toy computer OS with a BASIC interpreter',
+	url: 'https://about.lamus.cloud',
 	baseUrl: '/',
 	onBrokenLinks: 'throw',
 	onBrokenMarkdownLinks: 'warn',
@@ -55,9 +55,9 @@ const config = {
 		/** @type {import('@docusaurus/preset-classic').ThemeConfig} */
 		({
 			navbar: {
-				title: 'Lamus BASIC',
+				title: 'Lamus',
 				logo: {
-					alt: 'Lamus BASIC',
+					alt: 'Lamus',
 					src: 'img/logo.svg',
 				},
 				items: [

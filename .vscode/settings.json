@@ -1,16 +1,14 @@
 {
-	"eslint.workingDirectories": [
-		"api",
-		"codemirror-lang-qbasic-vm",
-		"lamus-mvp",
-		"qbasic-vm",
-		"setup"
-	],
-	"editor.formatOnSave": false,
-	"editor.codeActionsOnSave": [
-		"source.formatDocument",
-		"source.fixAll.eslint"
-	],
-	"editor.insertSpaces": true,
-	"editor.tabSize": 2
+  "eslint.workingDirectories": [
+    "api",
+    "codemirror-lang-qbasic-vm",
+    "lamus-mvp",
+    "qbasic-vm",
+    "setup",
+    "docs"
+  ],
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2
 }
