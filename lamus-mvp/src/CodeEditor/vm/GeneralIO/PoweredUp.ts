@@ -4,9 +4,20 @@ import {
   BasicMotor,
   DuploTrainBaseSpeaker,
   Hub,
+  HubLED,
+  isWebBluetooth,
 } from "node-poweredup";
 
+export enum DeviceType {
+  HUB_LED = 23,
+  DUPLO_TRAIN_BASE_MOTOR = 41,
+  DUPLO_TRAIN_BASE_SPEAKER = 42,
+  DUPLO_TRAIN_BASE_COLOR_SENSOR = 43,
+  DUPLO_TRAIN_BASE_SPEEDOMETER = 44,
+}
+
 export default function setup(generalIORouter: GeneralIORouter) {
+  console.log(typeof isWebBluetooth);
   const poweredUp = new window.PoweredUP.PoweredUP();
 
   poweredUp.on("discover", (hub: Hub) => {
@@ -16,6 +27,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
       return;
     }
 
+    console.log("connecting");
     hub
       .connect()
       .then(() => {
@@ -58,7 +70,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
     "/poweredUp/:uuid/:port/setPower",
     async (req) => {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = await getDeviceInHub<BasicMotor>(
+      const device = await getDeviceInHubByPort<BasicMotor>(
         poweredUp,
         req.params["uuid"],
         req.params["port"]
@@ -69,7 +81,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
   );
   generalIORouter.insertRoute("/poweredUp/:uuid/:port/brake", async (req) => {
     if (req.method !== "out" || !req.params) return;
-    const device = await getDeviceInHub<BasicMotor>(
+    const device = await getDeviceInHubByPort<BasicMotor>(
       poweredUp,
       req.params["uuid"],
       req.params["port"]
@@ -81,7 +93,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
     "/poweredUp/:uuid/:port/rampPower",
     async (req) => {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = await getDeviceInHub<BasicMotor>(
+      const device = await getDeviceInHubByPort<BasicMotor>(
         poweredUp,
         req.params["uuid"],
         req.params["port"]
@@ -91,33 +103,76 @@ export default function setup(generalIORouter: GeneralIORouter) {
       return;
     }
   );
-  generalIORouter.insertRoute(
-    "/poweredUp/:uuid/:port/playSound",
-    async (req) => {
+  /**
+   * BRAKE = 3,
+    STATION_DEPARTURE = 5,
+    WATER_REFILL = 7,
+    HORN = 9,
+    STEAM = 10
+   */
+  generalIORouter.insertRoute("/poweredUp/:uuid/playSound", async (req) => {
+    try {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = await getDeviceInHub<DuploTrainBaseSpeaker>(
+      const device = await getDeviceInHubByType<DuploTrainBaseSpeaker>(
         poweredUp,
         req.params["uuid"],
-        req.params["port"]
+        DeviceType.DUPLO_TRAIN_BASE_SPEAKER
       );
       await device.playSound(Number(req.data));
-      return;
+      console.log(req.data, device);
+    } catch (e) {
+      console.error(e);
+      debugger;
     }
-  );
-  generalIORouter.insertRoute(
-    "/poweredUp/:uuid/:port/playTone",
-    async (req) => {
+    return;
+  });
+  generalIORouter.insertRoute("/poweredUp/:uuid/playTone", async (req) => {
+    try {
       if (req.method !== "out" || !req.params || !req.data) return;
-      const device = await getDeviceInHub<DuploTrainBaseSpeaker>(
+      const device = await getDeviceInHubByType<DuploTrainBaseSpeaker>(
         poweredUp,
         req.params["uuid"],
-        req.params["port"]
+        DeviceType.DUPLO_TRAIN_BASE_SPEAKER
       );
-      if (!(device instanceof DuploTrainBaseSpeaker)) return;
       device.playTone(Number(req.data));
-      return;
+      console.log(req.data, device);
+    } catch (e) {
+      console.error(e);
+      debugger;
     }
-  );
+    return;
+  });
+  /**
+   *
+    BLACK = 0,
+    PINK = 1,
+    PURPLE = 2,
+    BLUE = 3,
+    LIGHT_BLUE = 4,
+    CYAN = 5,
+    GREEN = 6,
+    YELLOW = 7,
+    ORANGE = 8,
+    RED = 9,
+    WHITE = 10,
+    NONE = 255
+   */
+  generalIORouter.insertRoute("/poweredUp/:uuid/setLight", async (req) => {
+    try {
+      if (req.method !== "out" || !req.params || !req.data) return;
+      const device = await getDeviceInHubByType<HubLED>(
+        poweredUp,
+        req.params["uuid"],
+        DeviceType.HUB_LED
+      );
+      console.log(req.data, device);
+      await device.setColor(Number(req.data));
+    } catch (e) {
+      console.error(e);
+      debugger;
+    }
+    return;
+  });
 
   return () => {
     poweredUp.getHubs().forEach((hub) => {
@@ -127,13 +182,26 @@ export default function setup(generalIORouter: GeneralIORouter) {
   };
 }
 
-async function getDeviceInHub<T = unknown>(
+async function getDeviceInHubByPort<T = unknown>(
   poweredUp: PoweredUP,
   uuid: string,
   port: string
 ): Promise<T> {
   const hub = poweredUp.getHubByUUID(uuid);
   const device = await hub.waitForDeviceAtPort(port);
+  if (!device || typeof device !== "object")
+    throw new Error("Device not found");
+
+  return device as T;
+}
+
+async function getDeviceInHubByType<T = unknown>(
+  poweredUp: PoweredUP,
+  uuid: string,
+  type: number
+): Promise<T> {
+  const hub = poweredUp.getHubByUUID(uuid);
+  const device = await hub.waitForDeviceByType(type);
   if (!device || typeof device !== "object")
     throw new Error("Device not found");
 
