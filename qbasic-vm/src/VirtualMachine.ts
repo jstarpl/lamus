@@ -81,7 +81,7 @@ export class TraceBuffer {
 		return this.lines.join('')
 	}
 
-	public printf(...args: any[]) {
+	public printf(...args: any[]): void {
 		const str = sprintf(args)
 		this.lines.push(str)
 		if (this.lines.length > this.MAX_LINES) {
@@ -661,6 +661,15 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		minArgs: 0,
 		action: function (vm) {
 			vm.stack.push(new Date().toISOString().substr(11, 8))
+		},
+	},
+
+	TIME: {
+		type: 'INTEGER',
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.stack.push(performance?.now() || Date.now())
 		},
 	},
 
@@ -2423,11 +2432,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 						vm.off('suspended', cancelWait)
 						vm.resume()
 					} else {
-						frameRequest = window.requestAnimationFrame(waitFrame)
+						frameRequest = vm.cons.onNextFrame(waitFrame)
 					}
 				}
-				frameRequest = window.requestAnimationFrame(waitFrame)
-				cancelWait = () => window.cancelAnimationFrame(frameRequest)
+				frameRequest = vm.cons.onNextFrame(waitFrame)
+				cancelWait = () => vm.cons.cancelOnNextFrame(frameRequest)
 			} else {
 				const timeout = setTimeout(() => {
 					vm.off('suspended', cancelWait)

@@ -26,6 +26,8 @@ export interface IConsole {
 	printError(str: string): void
 	setKeyBuffer(str: string): void
 	screen(num: number): boolean
+	onNextFrame(clb: () => void): number
+	cancelOnNextFrame(handle: number): void
 	line(x1: number, y1: number, x2: number, y2: number, color?: number): void
 	lineTo(x: number, y: number, color?: number): void
 	circle(
@@ -96,6 +98,4 @@ export interface IConsole {
 	)
 }
 
-export const STRUCTURED_INPUT_MATCH = new RegExp(
-	/(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g
-)
+export const STRUCTURED_INPUT_MATCH = new RegExp(/(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g)

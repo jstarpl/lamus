@@ -30,11 +30,11 @@ export class ImageManipulator {
 		this.image = imageData
 	}
 
-	public get(x: number, y: number) {
+	public get(x: number, y: number): number {
 		return this.image.data[this.image.width * y + x]
 	}
 
-	public put(x: number, y: number, color: number) {
+	public put(x: number, y: number, color: number): void {
 		this.image.data[this.image.width * y + x] = color
 	}
 }
@@ -115,15 +115,15 @@ export class Console extends EventTarget implements IConsole {
 	private images: Array<HTMLImageElement | undefined> = []
 	private sprites: Array<Sprite | undefined> = []
 
-	private cursorEnabled: boolean = false
-	private cursorShown: boolean = false
+	private cursorEnabled = false
+	private cursorShown = false
 
 	private keyBuffer: number[] = []
 
-	private hasFocus: boolean = false
+	private hasFocus = false
 
 	private recording: boolean
-	private recorded: string = ''
+	private recorded = ''
 
 	private fgcolorNum = 0
 	private bgcolorNum = 15
@@ -131,30 +131,29 @@ export class Console extends EventTarget implements IConsole {
 	private bgcolor = VIDEO_COLORS[this.bgcolorNum]
 	private fgcolor = VIDEO_COLORS[this.fgcolorNum]
 	private bocolor = VIDEO_COLORS[this.bocolorNum]
-	private curX: number = 0
-	private curY: number = 0
-	x: number = 0
-	y: number = 0
-	private rows: number = 75
-	private cols: number = 40
-	private _landscape: boolean = false
+	private curX = 0
+	private curY = 0
+	x = 0
+	y = 0
+	private rows = 75
+	private cols = 40
+	private _landscape = false
 	get landscape(): boolean {
 		return this._landscape
 	}
-	private charWidth: number = 8
-	private charHeight: number = 8
+	private charWidth = 8
+	private charHeight = 8
 
 	private keyDown: string[] = []
-	private inputMode: boolean = false
-	private inputNewLineAfterEnter: boolean = false
-	private inputPixelAspect: number = 1;
+	private inputMode = false
+	private inputNewLineAfterEnter = false
+	private inputPixelAspect = 1
 	private onInputDone: ((str: string) => void) | null = null
 	private onTrappedKey: {
 		[key: number]: (num?: number) => void
 	} = {}
-	private inputStr: string = ''
-	// @ts-ignore
-	private inputPos: number = 0
+	private inputStr = ''
+
 	private _width: number = this.cols * this.charWidth
 	get width(): number {
 		return this._width
@@ -167,13 +166,19 @@ export class Console extends EventTarget implements IConsole {
 	private containerWidth: number | undefined
 	private containerHeight: number | undefined
 
-	constructor(parentElement: HTMLElement, className?: string, width?: number, height?: number, assetPath = 'assets/') {
+	constructor(
+		parentElement: HTMLElement,
+		className?: string,
+		width?: number,
+		height?: number,
+		assetPath = 'assets/'
+	) {
 		super()
 
 		this.canvas = document.createElement('canvas')
 		this.container = document.createElement('div')
 		this.inputElement = document.createElement('input')
-		this.inputElement.type = 'text';
+		this.inputElement.type = 'text'
 		parentElement.append(this.container)
 		this.container.append(this.canvas)
 		this.container.append(this.inputElement)
@@ -268,14 +273,20 @@ export class Console extends EventTarget implements IConsole {
 
 		this.cls()
 	}
+	onNextFrame(clb: () => void): number {
+		return window.requestAnimationFrame(clb)
+	}
+	cancelOnNextFrame(handle: number): void {
+		window.cancelAnimationFrame(handle)
+	}
 
-	public animationFrame = () => {
+	public animationFrame = (): void => {
 		this.sprites.forEach((sprite) => sprite && sprite.update())
 		this.repeatKeyboard()
 		window.requestAnimationFrame(this.animationFrame)
 	}
 
-	public reset(testMode?: boolean) {
+	public reset(testMode?: boolean): void {
 		this.fgcolorNum = 0
 		this.bgcolorNum = 15
 		this.bocolorNum = 11
@@ -293,7 +304,6 @@ export class Console extends EventTarget implements IConsole {
 		this.inputMode = false
 		this.onInputDone = null
 		this.inputStr = ''
-		this.inputPos = 0
 		this.rows = VIDEO_MODES[DEFAULT_VIDEO_MODE].rows
 		this.cols = VIDEO_MODES[DEFAULT_VIDEO_MODE].cols
 		this._height = VIDEO_MODES[DEFAULT_VIDEO_MODE].height
@@ -308,7 +318,7 @@ export class Console extends EventTarget implements IConsole {
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
 	}
 
-	public record(str: string) {
+	public record(str: string): void {
 		if (this.recording) {
 			this.recorded += str
 		}
@@ -318,22 +328,22 @@ export class Console extends EventTarget implements IConsole {
 		return this.recorded
 	}
 
-	public printError(str: string) {
+	public printError(str: string): void {
 		if (this.recording) {
 			return
 		}
 		this.print(str)
 	}
 
-	public setKeyBuffer(str: string) {
+	public setKeyBuffer(str: string): void {
 		this.keyBuffer.length = 0
 		for (let i = 0; i < str.length; i++) {
 			this.keyBuffer.push(str.charCodeAt(i))
 		}
 	}
 
-	public screen(num: number) {
-		let dimensions = VIDEO_MODES[num] as IVideoMode | undefined
+	public screen(num: number): boolean {
+		const dimensions = VIDEO_MODES[num] as IVideoMode | undefined
 		if (dimensions === undefined) {
 			return false
 		}
@@ -398,7 +408,7 @@ export class Console extends EventTarget implements IConsole {
 		return true
 	}
 
-	public line(x1: number, y1: number, x2: number, y2: number, color?: number) {
+	public line(x1: number, y1: number, x2: number, y2: number, color?: number): void {
 		const strokeBuf = this.ctx.strokeStyle
 		this.ctx.beginPath()
 		this.ctx.strokeStyle =
@@ -412,7 +422,7 @@ export class Console extends EventTarget implements IConsole {
 		this.ctx.strokeStyle = strokeBuf
 	}
 
-	public lineTo(x: number, y: number, color?: number) {
+	public lineTo(x: number, y: number, color?: number): void {
 		this.line(this.curX, this.curY, x, y, color)
 	}
 
@@ -426,7 +436,7 @@ export class Console extends EventTarget implements IConsole {
 		aspect?: number,
 		fill?: boolean,
 		step?: boolean
-	) {
+	): void {
 		// all parameters are optional except for x, y, radius.
 		if (step) {
 			x = this.curX + x
@@ -527,9 +537,9 @@ export class Console extends EventTarget implements IConsole {
 		return [image.data[0], image.data[1], image.data[2]]
 	}
 
-	public putPixel(x: number, y: number, color: number)
-	public putPixel(x: number, y: number, color: [number, number, number])
-	public putPixel(x: number, y: number, color: [number, number, number] | number) {
+	public putPixel(x: number, y: number, color: number): void
+	public putPixel(x: number, y: number, color: [number, number, number]): void
+	public putPixel(x: number, y: number, color: [number, number, number] | number): void {
 		const fillBuf = this.ctx.fillStyle
 		if (typeof color === 'number') {
 			if (color < 0) {
@@ -546,7 +556,7 @@ export class Console extends EventTarget implements IConsole {
 		this.ctx.fillStyle = fillBuf
 	}
 
-	public get(x1, y1, x2, y2, step1?: boolean, step2?: boolean): ImageData {
+	public get(x1: number, y1: number, x2: number, y2: number, step1?: boolean, step2?: boolean): ImageData {
 		let temp: number
 
 		if (step1) {
@@ -574,12 +584,12 @@ export class Console extends EventTarget implements IConsole {
 		return this.ctx.getImageData(x1, y1, x2 - x1, y2 - y1)
 	}
 
-	public put(data: ImageData, x: number, y: number) {
+	public put(data: ImageData, x: number, y: number): void {
 		this.ctx.putImageData(data, x, y)
 	}
 
-	public paint(_x: number, _y: number, _colour: number, _borderColour: number, _step?: number) {
-		let image = new ImageManipulator(this.ctx.getImageData(0, 0, this._width, this._height))
+	public paint(_x: number, _y: number, _colour: number, _borderColour: number, _step?: number): void {
+		const image = new ImageManipulator(this.ctx.getImageData(0, 0, this._width, this._height))
 
 		dbg().printf('%s\n', image.get(10, 10))
 	}
@@ -591,8 +601,7 @@ export class Console extends EventTarget implements IConsole {
 		reject: (reason?: any) => void
 	) {
 		img.src = url
-		img
-			.decode()
+		img.decode()
 			.then(() => {
 				const idx = this.images.findIndex((i) => i === undefined)
 				if (idx >= 0) {
@@ -605,7 +614,7 @@ export class Console extends EventTarget implements IConsole {
 			.catch(reject)
 	}
 
-	public loadImage(urlOrData: string | Blob): Promise<number> {
+	public async loadImage(urlOrData: string | Blob): Promise<number> {
 		return new Promise((resolve, reject) => {
 			const img = document.createElement('img')
 			img.addEventListener('error', (e) => {
@@ -627,7 +636,7 @@ export class Console extends EventTarget implements IConsole {
 		return image
 	}
 
-	public clearImage(handle: number) {
+	public clearImage(handle: number): void {
 		this.images[handle] = undefined
 	}
 
@@ -661,8 +670,8 @@ export class Console extends EventTarget implements IConsole {
 		let curSH = sh
 
 		while (curDY < dy + dh) {
-			let clampedSH = Math.min(image.naturalHeight, curSY + curSH) - curSY
-			let curDH = Math.max(1, (clampedSH / sh) * dh)
+			const clampedSH = Math.min(image.naturalHeight, curSY + curSH) - curSY
+			const curDH = Math.max(1, (clampedSH / sh) * dh)
 			// skip drawing if outside of the canvas
 			if (curDY + curDH > 0 && curDY < screenHeight) {
 				while (curDX < dx + dw) {
@@ -671,7 +680,7 @@ export class Console extends EventTarget implements IConsole {
 						curSW = sw
 						clampedSW = Math.min(image.naturalWidth, curSX + curSW) - curSX
 					}
-					let curDW = (clampedSW / sw) * dw
+					const curDW = (clampedSW / sw) * dw
 					// skip drawing if outside of the canvas
 					if (curDX + curDW > 0 && curDX < screenWidth) {
 						ctx.drawImage(image, curSX, curSY, clampedSW, clampedSH, curDX, curDY, curDW, curDH)
@@ -725,7 +734,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public cls() {
+	public cls(): void {
 		this.record('[CLS]')
 		this.cursor(false)
 		this.x = 0
@@ -734,7 +743,7 @@ export class Console extends EventTarget implements IConsole {
 		this.ctx.fillRect(0, 0, this._width, this._height)
 	}
 
-	public locate(row: number, col: number) {
+	public locate(row: number, col: number): void {
 		this.record('[L' + row + ',' + col + ']')
 		this.cursor(false)
 		this.x = Math.floor(col) - 1
@@ -749,7 +758,7 @@ export class Console extends EventTarget implements IConsole {
 		return `rgb(${red}, ${green}, ${blue})`
 	}
 
-	public color(fg: number | null, bg: number | null, bo: number | null) {
+	public color(fg: number | null, bg: number | null, bo: number | null): void {
 		if (fg === null) {
 			fg = this.fgcolorNum
 		}
@@ -774,7 +783,7 @@ export class Console extends EventTarget implements IConsole {
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
 	}
 
-	public scroll() {
+	public scroll(): void {
 		this.cursor(false)
 		this.ctx.drawImage(
 			this.canvas,
@@ -792,7 +801,7 @@ export class Console extends EventTarget implements IConsole {
 		this.y -= 1
 	}
 
-	public input(newLineAfterEnter: boolean): Promise<string> {
+	public async input(newLineAfterEnter: boolean): Promise<string> {
 		return new Promise<string>((resolve) => {
 			if (this.recording) {
 				let str = ''
@@ -807,7 +816,6 @@ export class Console extends EventTarget implements IConsole {
 				this.onInputDone = resolve
 				this.inputMode = true
 				this.inputStr = ''
-				this.inputPos = 0
 				this.inputNewLineAfterEnter = newLineAfterEnter || false
 				const targetContainerHeight = this.containerHeight || this._height
 				this.inputPixelAspect = targetContainerHeight / this._height
@@ -816,7 +824,7 @@ export class Console extends EventTarget implements IConsole {
 		})
 	}
 
-	public onKey(num: number, handler: (() => void) | undefined) {
+	public onKey(num: number, handler: (() => void) | undefined): void {
 		if (handler) {
 			this.onTrappedKey[num] = handler
 		} else {
@@ -824,7 +832,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public backup(num: number) {
+	public backup(num: number): void {
 		this.cursor(false)
 
 		this.x -= num
@@ -838,7 +846,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	private keyRepeatThrottle: number = 0
+	private keyRepeatThrottle = 0
 	private repeatKeyboard() {
 		// do not repeat keys if a global key trap is set
 		if (!this.onTrappedKey[-1]) {
@@ -861,7 +869,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public onKeyUp(event: KeyboardEvent) {
+	public onKeyUp(event: KeyboardEvent): void {
 		const idx = this.keyDown.indexOf(event.key)
 		if (idx >= 0) {
 			this.keyDown.splice(idx, 1)
@@ -870,7 +878,7 @@ export class Console extends EventTarget implements IConsole {
 		this.handleTrappedKey(this.keyBuffer[this.keyBuffer.length - 1])
 	}
 
-	public onInput() {
+	public onInput(): void {
 		if (this.inputMode) {
 			this.backup(this.inputStr.length)
 			this.print(''.padEnd(this.inputStr.length, ' '))
@@ -881,7 +889,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public onKeyDown(event: KeyboardEvent) {
+	public onKeyDown(event: KeyboardEvent): void {
 		if (this.inputMode) {
 			// if input position is at least 1,
 			if (this.inputStr.length > 0) {
@@ -910,7 +918,6 @@ export class Console extends EventTarget implements IConsole {
 				let ch = event.key
 				if (event.shiftKey) ch = ch.toUpperCase()
 				this.inputStr += ch
-				this.inputPos += 1
 				this.print(ch)
 			}
 
@@ -935,7 +942,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public getKeyFromBuffer() {
+	public getKeyFromBuffer(): number {
 		if (this.keyBuffer.length > 0) {
 			return this.keyBuffer.shift()!
 		} else {
@@ -943,14 +950,14 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public enableCursor(enabled: boolean) {
+	public enableCursor(enabled: boolean): void {
 		if (enabled && !this.cursorEnabled) {
-			this.inputElement.value = '';
-			this.inputElement.style.visibility = 'visible';
+			this.inputElement.value = ''
+			this.inputElement.style.visibility = 'visible'
 			this.interval = window.setInterval(() => this.toggleCursor(), 500)
 			this.cursor(true)
 		} else {
-			this.inputElement.style.visibility = 'hidden';
+			this.inputElement.style.visibility = 'hidden'
 			window.clearInterval(this.interval)
 			this.cursor(false)
 		}
@@ -958,32 +965,42 @@ export class Console extends EventTarget implements IConsole {
 		this.cursorEnabled = enabled
 	}
 
-	public toggleCursor() {
+	public toggleCursor(): void {
 		this.cursor(!this.cursorShown)
 	}
 
-	public cursor(show: boolean) {
+	public cursor(show: boolean): void {
 		if (show === this.cursorShown) {
 			return
 		}
 
 		if (show) {
 			this.ctx.fillStyle = this.fgcolor
-			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
+			this.ctx.fillRect(
+				this.x * this.charWidth,
+				this.y * this.charHeight + this.charHeight - 2,
+				this.charWidth,
+				2
+			)
 		} else {
 			this.ctx.fillStyle = this.bgcolor
-			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
+			this.ctx.fillRect(
+				this.x * this.charWidth,
+				this.y * this.charHeight + this.charHeight - 2,
+				this.charWidth,
+				2
+			)
 		}
 
 		this.cursorShown = show
 	}
 
-	public newline() {
+	public newline(): void {
 		this.x = 0
 		this.y += 1
 	}
 
-	public print(str: string) {
+	public print(str: string): void {
 		if (this.recording) {
 			this.recorded += str
 		}
@@ -998,7 +1015,7 @@ export class Console extends EventTarget implements IConsole {
 			if (str[i] === '\n') {
 				this.newline()
 			} else {
-				let ch = str.charCodeAt(i)
+				const ch = str.charCodeAt(i)
 				// clear cell
 				this.ctx.save()
 				const charRegion = new Path2D()
@@ -1037,7 +1054,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public createSprite(spriteNumber: number, image: HTMLImageElement, frames: number = 1): Promise<void> {
+	public async createSprite(spriteNumber: number, image: HTMLImageElement, frames = 1): Promise<void> {
 		if (this.sprites[spriteNumber]) {
 			this.clearSprite(spriteNumber)
 		}
@@ -1057,7 +1074,7 @@ export class Console extends EventTarget implements IConsole {
 		return sprite.loaded
 	}
 
-	public clearSprite(spriteNumber: number) {
+	public clearSprite(spriteNumber: number): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			this.container.removeChild(sprite.getElement())
@@ -1065,7 +1082,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public clearAllSprites() {
+	public clearAllSprites(): void {
 		this.sprites.forEach((sprite) => {
 			if (sprite) {
 				this.container.removeChild(sprite.getElement())
@@ -1074,35 +1091,35 @@ export class Console extends EventTarget implements IConsole {
 		this.sprites.length = 0
 	}
 
-	public offsetSprite(spriteNumber: number, x: number, y: number) {
+	public offsetSprite(spriteNumber: number, x: number, y: number): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			sprite.setPosition(x, y)
 		}
 	}
 
-	public scaleSprite(spriteNumber: number, scaleX: number, scaleY: number) {
+	public scaleSprite(spriteNumber: number, scaleX: number, scaleY: number): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			sprite.setScale(scaleX, scaleY)
 		}
 	}
 
-	public homeSprite(spriteNumber: number, homeX: number, homeY: number) {
+	public homeSprite(spriteNumber: number, homeX: number, homeY: number): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			sprite.setAnchor(homeX, homeY)
 		}
 	}
 
-	public displaySprite(spriteNumber: number, display: boolean) {
+	public displaySprite(spriteNumber: number, display: boolean): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			sprite.setDisplay(display)
 		}
 	}
 
-	public rotateSprite(spriteNumber: number, angle: number) {
+	public rotateSprite(spriteNumber: number, angle: number): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			sprite.setRotate(angle)
@@ -1117,7 +1134,7 @@ export class Console extends EventTarget implements IConsole {
 		loop?: boolean,
 		pingPong?: boolean,
 		pingPongFlip?: number
-	) {
+	): void {
 		const sprite = this.sprites[spriteNumber]
 		if (sprite) {
 			sprite.setAnimate(startFrame, endFrame, speed, loop ?? true, pingPong ?? false, pingPongFlip ?? 0)
