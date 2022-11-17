@@ -8,6 +8,7 @@ import {
   Transaction,
   TransactionSpec,
 } from "@codemirror/state";
+import { diff } from "semver";
 
 class LineErrorWidget extends WidgetType {
   constructor(
@@ -65,14 +66,34 @@ export function syntaxErrorDecorations() {
       transaction: Transaction
     ): Pick<TransactionSpec, "effects" | "annotations"> | null => {
       if (transaction.changes.empty) return null;
+      let positionsModified = false;
 
       const errorsToRemove: IError[] = [];
       for (const error of globalErrors) {
-        if (!transaction.changes.touchesRange(error.from, error.to)) continue;
-        errorsToRemove.push(error);
+        // eslint-disable-next-line no-loop-func
+        transaction.changes.iterChangedRanges((fromA, toA, fromB, toB) => {
+          /** Check if the intial or final range touches the error */
+          if (
+            (fromA >= error.from && fromA <= error.to) ||
+            (toA > error.from && toA <= error.to) ||
+            (fromB >= error.from && fromB <= error.to) ||
+            (toB > error.from && toB <= error.to) ||
+            (fromA < error.from && toA > error.to) ||
+            (fromB < error.from && toB > error.to)
+          ) {
+            errorsToRemove.push(error);
+          }
+          /** If the range modified was before the error, move the error */
+          if (fromA < error.from || toA < error.to) {
+            const diff = toB - fromB - (toA - fromA);
+            error.to = error.to + diff;
+            error.from = error.from + diff;
+            positionsModified = true;
+          }
+        });
       }
 
-      if (errorsToRemove.length === 0) return null;
+      if (errorsToRemove.length === 0 && !positionsModified) return null;
       globalErrors = globalErrors.filter(
         (error) => !errorsToRemove.includes(error)
       );
@@ -87,6 +108,8 @@ export function syntaxErrorDecorations() {
 
   function update(errors: IError[]): StateEffect<unknown> {
     const rangeSet = new RangeSetBuilder<Decoration>();
+
+    errors = errors.sort((a, b) => a.from - b.from || a.to - b.to);
 
     for (let i = 0; i < errors.length; i++) {
       const error = errors[i];

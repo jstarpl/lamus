@@ -4,7 +4,8 @@
   "description": "EXAMPLE language support for CodeMirror",
   "scripts": {
     "test": "mocha test/test.js",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "build2": "lezer-generator ./src/syntax.grammar -o lang.js"
   },
   "type": "module",
   "main": "dist/index.cjs",
@@ -17,7 +18,7 @@
   "sideEffects": false,
   "dependencies": {
     "@codemirror/language": "^6.0.0",
-    "@lezer/highlight": "^1.0.0",
+    "@lezer/highlight": "^1.1.2",
     "@lezer/lr": "^1.0.0"
   },
   "devDependencies": {
@@ -27,7 +28,7 @@
     "rollup": "^2.60.2",
     "rollup-plugin-dts": "^4.0.1",
     "rollup-plugin-ts": "^3.0.2",
-    "typescript": "^4.5.5"
+    "typescript": "^4.3.4"
   },
   "license": "MIT"
 }
