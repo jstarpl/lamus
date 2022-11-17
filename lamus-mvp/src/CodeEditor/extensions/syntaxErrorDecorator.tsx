@@ -8,7 +8,6 @@ import {
   Transaction,
   TransactionSpec,
 } from "@codemirror/state";
-import { diff } from "semver";
 
 class LineErrorWidget extends WidgetType {
   constructor(
