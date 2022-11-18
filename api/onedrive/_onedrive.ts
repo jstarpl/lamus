@@ -18,7 +18,7 @@ export const SCOPES = [
 
 export const REDIRECT_URI = `${apiUri}/onedrive/auth`;
 
-function base64URLEncode(str) {
+function base64URLEncode(str: string | Buffer) {
   return str
     .toString("base64")
     .replace(/\+/g, "-")
@@ -38,7 +38,7 @@ export function generateVerifierAndChallange() {
   };
 }
 
-function sha256(buffer) {
+function sha256(buffer: string | Buffer) {
   return crypto.createHash("sha256").update(buffer).digest();
 }
 
