@@ -16,6 +16,7 @@ import {
   DropboxResponse,
   DropboxResponseError,
   files,
+  check,
 } from "dropbox";
 import { CustomDropboxAuth } from "./CustomDropboxAuth";
 
@@ -48,7 +49,7 @@ export class DropboxProvider implements IFileSystemProvider {
     const reply = await this.dropbox.checkUser({
       query: "hello",
     });
-    if (isError(reply) && reply.result !== "hello")
+    if (isError(reply) || reply.result.result !== "hello")
       throw new Error("Unable to initialize Dropbox FileSystem provider");
   }
   private static referenceToFileEntry(
