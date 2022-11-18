@@ -16,7 +16,6 @@ import {
   DropboxResponse,
   DropboxResponseError,
   files,
-  check,
 } from "dropbox";
 import { CustomDropboxAuth } from "./CustomDropboxAuth";
 
