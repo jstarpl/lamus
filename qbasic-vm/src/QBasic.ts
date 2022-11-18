@@ -50,12 +50,7 @@ export class AstArgument implements AstStatement {
 	type: SomeType
 	wantRef: boolean
 
-	constructor(
-		locus: ILocus,
-		name: string,
-		typeName: string | null,
-		isArray?: boolean
-	) {
+	constructor(locus: ILocus, name: string, typeName: string | null, isArray?: boolean) {
 		this.locus = locus
 		// name of declared subroutine argument.
 		this.name = name
@@ -110,12 +105,7 @@ export class AstDeclareFunction implements AstStatement {
 	hasBody: boolean
 	used: boolean
 
-	constructor(
-		locus: ILocus,
-		name: string,
-		args: AstArgument[],
-		isFunction?: boolean
-	) {
+	constructor(locus: ILocus, name: string, args: AstArgument[], isFunction?: boolean) {
 		this.locus = locus
 		this.name = name
 		this.args = args // array of AstArgument
@@ -163,7 +153,7 @@ export class AstPrintStatement implements AstStatement {
 
 export enum AstPrintItemType {
 	EXPR = 0,
-	TAB = 1
+	TAB = 1,
 }
 
 export class AstPrintItem implements AstStatement {
@@ -172,12 +162,7 @@ export class AstPrintItem implements AstStatement {
 	expr: any
 	terminator: string | null | undefined
 
-	constructor(
-		locus: ILocus,
-		type: AstPrintItemType,
-		expr: any,
-		terminator: string | null | undefined
-	) {
+	constructor(locus: ILocus, type: AstPrintItemType, expr: any, terminator: string | null | undefined) {
 		this.locus = locus
 		// Type: 0 for expr, 1 for tab, in which case expr is the argument.
 		this.type = type
@@ -197,12 +182,7 @@ export class AstOpenStatement implements AstStatement {
 	mode: string
 	fileHandle: AstVariableReference | AstConstantExpr
 
-	constructor(
-		locus: ILocus,
-		fileNameExpr: any,
-		mode: string,
-		fileHandle: AstVariableReference | AstConstantExpr
-	) {
+	constructor(locus: ILocus, fileNameExpr: any, mode: string, fileHandle: AstVariableReference | AstConstantExpr) {
 		this.locus = locus
 		this.fileNameExpr = fileNameExpr
 		this.mode = (mode || '').toUpperCase()
@@ -218,10 +198,7 @@ export class AstCloseStatement implements AstStatement {
 	locus: ILocus
 	fileHandles: (AstVariableReference | AstConstantExpr)[]
 
-	constructor(
-		locus: ILocus,
-		fileHandles: (AstVariableReference | AstConstantExpr)[]
-	) {
+	constructor(locus: ILocus, fileHandles: (AstVariableReference | AstConstantExpr)[]) {
 		this.locus = locus
 		this.fileHandles = fileHandles
 	}
@@ -236,11 +213,7 @@ export class AstWriteStatement implements AstStatement {
 	fileHandle: AstVariableReference | AstConstantExpr
 	writeItems: AstPrintItem[]
 
-	constructor(
-		locus: ILocus,
-		fileHandle: AstVariableReference | AstConstantExpr,
-		writeItems: AstPrintItem[]
-	) {
+	constructor(locus: ILocus, fileHandle: AstVariableReference | AstConstantExpr, writeItems: AstPrintItem[]) {
 		this.locus = locus
 		this.writeItems = writeItems
 		this.fileHandle = fileHandle
@@ -428,12 +401,7 @@ export class AstDimStatement implements AstStatement {
 	typeName: string | null
 	shared: boolean
 
-	constructor(
-		locus: ILocus,
-		name: string,
-		ranges: AstRange[],
-		typeName: string | null
-	) {
+	constructor(locus: ILocus, name: string, ranges: AstRange[], typeName: string | null) {
 		this.locus = locus
 		this.name = name
 		this.ranges = ranges // list of AstRange
@@ -479,7 +447,7 @@ export class AstConstStatement implements AstStatement {
 export enum AstDoStatementType {
 	INFINITE = 1,
 	UNTIL = 2,
-	WHILE_AT_END = 3
+	WHILE_AT_END = 3,
 }
 
 export class AstDoStatement implements AstStatement {
@@ -488,12 +456,7 @@ export class AstDoStatement implements AstStatement {
 	expr: any
 	type: AstDoStatementType
 
-	constructor(
-		locus: ILocus,
-		statements: any[],
-		expr: any,
-		type: AstDoStatementType
-	) {
+	constructor(locus: ILocus, statements: any[], expr: any, type: AstDoStatementType) {
 		this.locus = locus
 		this.statements = statements
 		this.expr = expr
@@ -542,13 +505,7 @@ export class AstForLoop implements AstStatement {
 	endExpr: any
 	stepExpr: any
 
-	constructor(
-		locus: ILocus,
-		identifier: string,
-		startExpr: any,
-		endExpr: any,
-		stepExpr: any
-	) {
+	constructor(locus: ILocus, identifier: string, startExpr: any, endExpr: any, stepExpr: any) {
 		this.locus = locus
 		this.identifier = identifier
 		this.startExpr = startExpr
@@ -826,7 +783,7 @@ export enum ErrorType {
 	UnknownToken = 'unknownToken',
 	SyntaxError = 'syntaxError',
 	InternalRuleError = 'internalRuleError',
-	TypeMismatch = 'typeMismatch'
+	TypeMismatch = 'typeMismatch',
 }
 
 export interface IError {
@@ -940,7 +897,7 @@ export class QBasicProgram {
 			rules.addToken('minus', '\\-')
 			rules.addToken('endl', '\\n')
 			rules.addToken('comment', "'.*$")
-			rules.addToken('hexconstant', '\\&H\\d+')
+			rules.addToken('hexconstant', '\\&H[0-9A-Fa-f]+')
 			rules.addToken('floatconstant', '\\d*\\.\\d+')
 			rules.addToken('intconstant', '-?\\d+')
 			rules.addToken('stringconstant', '"[^"]*"')
@@ -1378,14 +1335,8 @@ export class QBasicProgram {
 	}
 
 	private onProgram(symbols, locus) {
-		const program = new AstProgram(
-			locus,
-			new AstSubroutine(locus, '_main', [], symbols[0], false)
-		)
-		dbg().printf(
-			'Program successfully parsed. %d statements.\n',
-			program.subs[0].statements.length
-		)
+		const program = new AstProgram(locus, new AstSubroutine(locus, '_main', [], symbols[0], false))
+		dbg().printf('Program successfully parsed. %d statements.\n', program.subs[0].statements.length)
 		return program
 	}
 
@@ -1394,10 +1345,7 @@ export class QBasicProgram {
 	}
 
 	private onString(symbols, locus) {
-		return new AstConstantExpr(
-			locus,
-			symbols[0].substr(1, symbols[0].length - 2)
-		)
+		return new AstConstantExpr(locus, symbols[0].substr(1, symbols[0].length - 2))
 	}
 
 	private onFileNumber(symbols, locus) {
