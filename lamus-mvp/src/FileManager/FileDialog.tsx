@@ -10,7 +10,6 @@ import { AppStore } from "../stores/AppStore";
 import { PulseLoader } from "react-spinners";
 import "./FileDialog.css";
 import { useFocusTrap } from "../helpers/useFocusTrap";
-import { AnimationDefinition } from "framer-motion/types/render/utils/animation";
 import { FileListItem } from "./FileListItem";
 import { IFileEntryEx } from "./FileList";
 import { v4 as uuidv4 } from "uuid";
@@ -104,8 +103,7 @@ export const FileDialog = observer(function FileDialog({
   useCursorNavigation();
   usePreventTabHijack();
 
-  function onAnimationComplete(definition: AnimationDefinition) {
-    const def = definition as TargetAndTransition;
+  function onAnimationComplete(def: TargetAndTransition) {
     if (def.y !== 0) return;
     setAnimationFinished(true);
 
