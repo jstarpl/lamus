@@ -13,7 +13,13 @@
   },
   "workspaces": {
     "nohoist": [
-      "lamus-mvp/**", "**/react-icons", "**/react-markdown", "**/react-router-dom", "**/framer-motion", "**/react-editor-js", "docs/**"
+      "lamus-mvp/**",
+      "**/react-icons",
+      "**/react-markdown",
+      "**/react-router-dom",
+      "**/framer-motion",
+      "**/react-editor-js",
+      "docs/**"
     ],
     "packages": [
       "lamus-mvp",
@@ -29,5 +35,8 @@
     "jose": "^4.10.3",
     "node-fetch": "^2.6.1",
     "typescript": "^4.8.4"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2"
   }
 }
