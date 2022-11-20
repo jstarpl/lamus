@@ -3,18 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "": "",
   "scripts": {
     "start": "cd lamus-mvp && node scripts/start.js",
-    "build:qbasic": "cd qbasic-vm && npm run bundle",
-    "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && npm run build",
+    "build:qbasic": "cd qbasic-vm && yarn bundle",
+    "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && yarn build",
     "build:app": "cd lamus-mvp && node scripts/build.js",
-    "build": "npm run build:qbasic && npm run build:app"
+    "build": "yarn build:qbasic && yarn build:app"
   },
-  "workspaces": [
-    "lamus-mvp",
-    "qbasic-vm",
-    "codemirror-lang-qbasic-vm"
-  ],
+  "workspaces": {
+    "nohoist": [
+      "lamus-mvp/**", "**/react-icons", "**/react-markdown", "**/react-router-dom", "**/framer-motion", "**/react-editor-js", "docs/**"
+    ],
+    "packages": [
+      "lamus-mvp",
+      "qbasic-vm",
+      "codemirror-lang-qbasic-vm",
+      "docs"
+    ]
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.4",
     "@vercel/node": "^2.5.26",

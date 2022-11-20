@@ -26,12 +26,12 @@
     "lint-fix": "",
     "format": "prettier --write --config \"./.prettierrc.json\" \"src/**\"",
     "bundle": "rimraf ./dist && webpack",
-    "api-docs": "npm run api-docs:html && opn api-docs/index.html",
+    "api-docs": "yarn api-docs:html && opn api-docs/index.html",
     "api-docs:html": "typedoc",
     "api-docs:json": "typedoc --json api-docs/typedoc.json",
-    "docs": "cd docs && npm run start",
-    "docs:html": "cd docs && npm run build",
-    "docs:publish": "npm run docs:html && gh-pages -d docs"
+    "docs": "cd docs && yarn start",
+    "docs:html": "cd docs && yarn build",
+    "docs:publish": "yarn docs:html && gh-pages -d docs"
   },
   "devDependencies": {
     "@sofie-automation/code-standard-preset": "^2.0.0",
