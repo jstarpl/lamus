@@ -19,6 +19,8 @@
       "**/react-router-dom",
       "**/framer-motion",
       "**/react-editor-js",
+      "**/babel-preset-react-app",
+      "**/@babel/**",
       "docs/**"
     ],
     "packages": [
