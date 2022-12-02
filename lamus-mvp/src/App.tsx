@@ -22,6 +22,7 @@ import { autorun } from "mobx";
 import Home from "./Home";
 import TextEditor from "./TextEditor";
 import CodeEditor from "./CodeEditor";
+import { GlobalSpinner } from "./components/GlobalSpinner/GlobalSpinner";
 
 function removeSplashScreen() {
   const splashScreen = document.getElementById("splash");
@@ -123,6 +124,7 @@ export function App() {
                 </Routes>
               </AnimatePresence>
               <AdminCode />
+              <GlobalSpinner />
             </ModalDialogContextProvider>
           </KeyboardHandler.Provider>
         </SoundEffectsContextProvider>

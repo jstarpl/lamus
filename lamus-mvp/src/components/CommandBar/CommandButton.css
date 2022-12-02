@@ -55,6 +55,7 @@
   height: var(--command-bar-radius);
   background: var(--color-hightlight);
   border-radius: var(--command-bar-radius) var(--command-bar-radius) 0 0;
+  /** TODO: Add animation **/
 }
 
 .CommandButton > button:active > .CommandButtonHotkey,

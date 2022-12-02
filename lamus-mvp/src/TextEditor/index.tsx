@@ -65,7 +65,8 @@ const TextEditor = observer(function TextEditor() {
 
   useFocusSoundEffect("input,button,.list-view,.list-view-item");
 
-  const hasDialogOpen = EditorStore.isSaveFileDialogOpen;
+  const hasDialogOpen =
+    EditorStore.isSaveFileDialogOpen || EditorStore.isOpenFileDialogOpen;
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
@@ -81,7 +82,15 @@ const TextEditor = observer(function TextEditor() {
   }, [navigate]);
 
   const onSave = useCallback(() => {
-    EditorStore.setOpenSaveFileDialog(true);
+    EditorStore.setSaveFileDialogIsOpen(true);
+  }, []);
+
+  const onSaveAs = useCallback(() => {
+    EditorStore.setSaveFileDialogIsOpen(true);
+  }, []);
+
+  const onOpen = useCallback(() => {
+    EditorStore.setOpenFileDialogIsOpen(true);
   }, []);
 
   useEffect(() => {
@@ -109,7 +118,7 @@ const TextEditor = observer(function TextEditor() {
   }, []);
 
   function onSaveDialogCancel() {
-    EditorStore.setOpenSaveFileDialog(false);
+    EditorStore.setSaveFileDialogIsOpen(false);
   }
 
   function onSaveDialogAccept({
@@ -119,9 +128,11 @@ const TextEditor = observer(function TextEditor() {
   }: IAcceptEventProps) {
     if (!fileName) return;
 
+    AppStore.isBusy = true;
     EditorStore.checkIfCanSave(providerId, path, fileName)
       .then(async ({ ok, meta }) => {
         if (!ok) {
+          AppStore.isBusy = false;
           // file will be overwriten, ask
           const result = await showDialog(
             DialogTemplates.overwriteExistingFile(fileName)
@@ -133,12 +144,14 @@ const TextEditor = observer(function TextEditor() {
           }
         }
 
+        AppStore.isBusy = true;
         const saveAsOk = await EditorStore.saveAs(
           providerId,
           path,
           fileName,
           meta
         );
+        AppStore.isBusy = false;
         if (!saveAsOk) {
           await showDialog({
             message:
@@ -149,11 +162,24 @@ const TextEditor = observer(function TextEditor() {
           return;
         }
         // write file
-        EditorStore.setOpenSaveFileDialog(false);
+        EditorStore.setSaveFileDialogIsOpen(false);
       })
       .catch((e) => {
+        AppStore.isBusy = false;
         console.error(e);
       });
+  }
+
+  function onOpenDialogCancel() {
+    EditorStore.setOpenFileDialogIsOpen(false);
+  }
+
+  function onOpenDialogAccept({
+    providerId,
+    path,
+    fileName,
+  }: IAcceptEventProps) {
+    console.log(providerId, path, fileName);
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -204,14 +230,11 @@ const TextEditor = observer(function TextEditor() {
             combo={SAVE_AS_COMBO}
             position={2}
             showOnlyWhenModifiersActive
+            onClick={onSaveAs}
           >
             SaveAs
           </CommandBar.Button>
-          <CommandBar.Button
-            combo={OPEN_COMBO}
-            position={3}
-            onClick={console.log}
-          >
+          <CommandBar.Button combo={OPEN_COMBO} position={3} onClick={onOpen}>
             Open
           </CommandBar.Button>
           <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
@@ -231,6 +254,16 @@ const TextEditor = observer(function TextEditor() {
             defaultFileName={
               EditorStore.file?.fileName ?? DEFAULT_NEW_FILE_NAME
             }
+          />
+        )}
+        {EditorStore.isOpenFileDialogOpen && (
+          <FileDialog
+            key="save-file-dialog"
+            mode="openFile"
+            onAccept={onOpenDialogAccept}
+            onCancel={onOpenDialogCancel}
+            initialStorageProvider={EditorStore.file?.providerId}
+            initialPath={EditorStore.file?.path}
           />
         )}
       </AnimatePresence>

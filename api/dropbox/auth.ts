@@ -33,7 +33,7 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
         Buffer.from(redirectUrlEncoded, "base64").toString("utf-8")
       );
       if (ALLOWED_ORIGINS.includes(url.origin)) {
-        redirectUrl = url.toString();
+        redirectUrl = url;
       } else {
         console.error(`Illegal redirection after auth: "${url.toString()}"`);
       }
@@ -62,31 +62,50 @@ export default async function auth(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
-    dbxAuth.setCodeVerifier(codeVerifier);
-    const tokenRes = await dbxAuth.getAccessTokenFromCode(REDIRECT_URI, code);
+    try {
+      const dbxAuth = new DropboxAuth(DROPBOX_CONFIG);
+      dbxAuth.setCodeVerifier(codeVerifier);
+      const tokenRes = await dbxAuth.getAccessTokenFromCode(REDIRECT_URI, code);
 
-    // @ts-ignore
-    const { error } = await supabase
-      .from("device_settings")
-      .update({
-        cloud_mode: "dropbox",
-        dropbox_refresh_token: (tokenRes.result as any).refresh_token,
-      })
-      .eq("device_id", deviceId);
-    if (error) {
-      console.error(error);
-      sendStatus(res, 500, {
-        error: "Could not update dropbox_refresh_token.",
-      });
-      return;
-    }
-    if (redirectUrl) {
-      sendStatus(res, 302, { message: "Dropbox succesfully connected." }, [
-        ["location", redirectUrl],
-      ]);
-    } else {
-      sendStatus(res, 200, { message: "Dropbox succesfully connected." });
+      // @ts-ignore
+      const { error } = await supabase
+        .from("device_settings")
+        .update({
+          cloud_mode: "dropbox",
+          dropbox_refresh_token: (tokenRes.result as any).refresh_token,
+        })
+        .eq("device_id", deviceId);
+      if (error) {
+        console.error(error);
+        redirectUrl?.searchParams.set("error", "Internal error")
+        sendStatus(
+          res,
+          500,
+          {
+            error: "Could not update dropbox_refresh_token.",
+          },
+          redirectUrl ? [["location", redirectUrl.toString()]] : undefined
+        );
+        return;
+      }
+      redirectUrl?.searchParams.set("ok", "Success")
+      sendStatus(
+        res,
+        302,
+        { message: "Dropbox succesfully connected." },
+        redirectUrl ? [["location", redirectUrl.toString()]] : undefined
+      );
+    } catch (e) {
+      console.error(e);
+      redirectUrl?.searchParams.set("error", "Internal error")
+      sendStatus(
+        res,
+        500,
+        {
+          error: "Could not authorize with Dropbox.",
+        },
+        redirectUrl ? [["location", redirectUrl.toString()]] : undefined
+      );
     }
   }
 }

@@ -129,11 +129,11 @@ class EditorStoreClass {
     this.file.meta = result.meta ?? undefined;
   }
 
-  setOpenSaveFileDialog(open: boolean) {
+  setSaveFileDialogIsOpen(open: boolean) {
     this.isSaveFileDialogOpen = open;
   }
 
-  setOpenOpenFileDialog(open: boolean) {
+  setOpenFileDialogIsOpen(open: boolean) {
     this.isOpenFileDialogOpen = open;
   }
 

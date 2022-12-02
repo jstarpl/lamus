@@ -46,6 +46,8 @@ class MMLEmitter extends SeqEmitter {
 			.filter(source => !!source.trim())
 			// strip out MML header
 			.map(source => source.replace(/^MML@/, ''))
+			.map(source => source.replace(/\#/g, '+'))
+			.map(source => source.replace(/\&/g, '^'))
 			// MML songs available on the internet often assume the player is going
 			// to use the same tempo as in the previous track
 			.map(track => {
@@ -137,7 +139,7 @@ export class AudioDevice implements IAudioDevice {
 
 			const mmlEmitter = new MMLEmitter(mml, config)
 			mmlEmitter.on('note', (e) => {
-				// console.log('NOTE: ' + JSON.stringify(e))
+				// console.log('NOTE: ' + e)
 				this.playNote(e)
 			})
 			mmlEmitter.on('end:all', () => {

@@ -23,6 +23,7 @@ import { ProviderId } from "../stores/FileSystemStore";
 import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
+import { Spinner } from "../components/Spinner";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -245,7 +246,7 @@ export const FileDialog = observer(function FileDialog({
     const selectedGuid = selectedFiles?.[0];
     const item = fileList.find((item) => item.guid === selectedGuid);
     const fileName =
-      (isListFocused && !isDirSelected ? item?.fileName : localFileName) ??
+      (isListFocused && !isDirSelected ? item?.fileName : localFileName) ||
       defaultFileName;
 
     onAccept({
@@ -316,11 +317,7 @@ export const FileDialog = observer(function FileDialog({
             )}
           </div>
           <div className="FileDialog__pane">
-            {status === LoadStatus.LOADING && (
-              <div className="Spinner">
-                <PulseLoader size="1em" color="currentcolor" />
-              </div>
-            )}
+            {status === LoadStatus.LOADING && <Spinner />}
             {status === LoadStatus.OK && (
               <ListView.List
                 multiple

@@ -1,3 +1,4 @@
+import { uniqueId } from "lodash";
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from "uuid";
 import { parseToken } from "../helpers/util";
@@ -37,28 +38,43 @@ class AppStoreClass {
   settings: ISettings | null = null;
   fileSystem: FileSystemStoreClass = new FileSystemStoreClass();
   isUiReady: boolean = false;
+  _busyQueue: Set<string> = new Set();
+  _isBusy: boolean = false;
 
-  private agentSocket: WebSocket | undefined;
-  private agentReconnect: NodeJS.Timeout | undefined;
+  _agentSocket: WebSocket | undefined;
+  _agentReconnect: NodeJS.Timeout | undefined;
 
   constructor() {
     makeAutoObservable(this, {
       apiFetch: false,
       shouldRefreshToken: false,
+      _agentReconnect: false,
+      _agentSocket: false,
     });
     this.deviceId = localStorage.getItem(DEVICE_ID_KEY) || uuidv4();
     localStorage.setItem(DEVICE_ID_KEY, this.deviceId);
     this.fileSystem.init();
     (window as any)["FileSystem"] = this.fileSystem;
-    this.agentSocket = this.createAgentConnection();
+    this._agentSocket = this.createAgentConnection();
   }
 
-  setShowAdminCode(value: boolean) {
+  setShowAdminCode(value: boolean): void {
     this.showAdminCode = value;
   }
 
-  setUIReady() {
+  setUIReady(): void {
     this.isUiReady = true;
+  }
+
+  get isBusy(): boolean {
+    if (this._busyQueue.size > 0) {
+      return true;
+    }
+    return this._isBusy || false;
+  }
+
+  set isBusy(value: boolean) {
+    this._isBusy = value;
   }
 
   async login(): Promise<void> {
@@ -85,14 +101,14 @@ class AppStoreClass {
 
   private onDataFromAgent = (e: MessageEvent) => {
     const dataObj = JSON.parse(e.data);
-    if (!this.agentSocket) return;
-    this.agentSocket.send(JSON.stringify(dataObj));
+    if (!this._agentSocket) return;
+    this._agentSocket.send(JSON.stringify(dataObj));
   };
 
   private reconnectAgent = () => {
-    this.agentReconnect && clearInterval(this.agentReconnect);
-    this.agentReconnect = setTimeout(() => {
-      this.agentSocket = this.createAgentConnection();
+    this._agentReconnect && clearInterval(this._agentReconnect);
+    this._agentReconnect = setTimeout(() => {
+      this._agentSocket = this.createAgentConnection();
     }, AGENT_RECONNECT_PERIOD);
     AGENT_RECONNECT_PERIOD = Math.min(
       AGENT_RECONNECT_PERIOD_MAX,
@@ -175,6 +191,19 @@ class AppStoreClass {
       credentials: "include",
       headers: [["Authorization", `Bearer ${this.token}`]],
     });
+  }
+
+  async makeBusyWith<T>(promise: Promise<T>): Promise<T> {
+    const id = uniqueId();
+    try {
+      this._busyQueue.add(id);
+      const result = await promise;
+      this._busyQueue.delete(id);
+      return result;
+    } catch (e: unknown) {
+      this._busyQueue.delete(id);
+      throw e;
+    }
   }
 }
 
