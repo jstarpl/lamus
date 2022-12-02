@@ -7,7 +7,6 @@ import { EmojiPicker } from "../components/EmojiPicker";
 import { ListView } from "../components/ListView";
 import { useCursorNavigation } from "../helpers/useCursorNavigation";
 import { AppStore } from "../stores/AppStore";
-import { PulseLoader } from "react-spinners";
 import "./FileDialog.css";
 import { useFocusTrap } from "../helpers/useFocusTrap";
 import { FileListItem } from "./FileListItem";
