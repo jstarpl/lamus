@@ -13,7 +13,6 @@
   },
   "workspaces": {
     "nohoist": [
-      "lamus-mvp/**",
       "**/react-icons",
       "**/react-markdown",
       "**/react-router-dom",
