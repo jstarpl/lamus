@@ -1,10 +1,11 @@
 import { Document } from "@editorjs/editorjs";
+import { uniqueId } from "lodash";
 import { makeAutoObservable } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
 import { FileName, Path } from "../../stores/fileSystem/IFileSystemProvider";
 import { FileHandle, ProviderId } from "../../stores/FileSystemStore";
-import { toMarkdown } from "../markdown";
+import { fromMarkdown, toMarkdown } from "../markdown";
 
 const ACTIVE_DOCUMENT_KEY = "textEditor:activeDocument";
 
@@ -127,6 +128,30 @@ class EditorStoreClass {
 
     this.file.fileName = result.fileName || this.file.fileName;
     this.file.meta = result.meta ?? undefined;
+  }
+
+  async open(file: FileHandle): Promise<boolean> {
+    if (!AppStore.fileSystem.providers.get(file.providerId)) return false;
+
+    const result = await AppStore.fileSystem.read(
+      file.providerId,
+      file.path,
+      file.fileName
+    );
+
+    if (!result.ok) {
+      console.error(result.error);
+      return false;
+    }
+
+    const text = await (await result.data).text();
+    this.document = {
+      time: Date.now(),
+      blocks: fromMarkdown(text),
+      version: result.meta ?? uniqueId(),
+    };
+
+    return true;
   }
 
   setSaveFileDialogIsOpen(open: boolean) {

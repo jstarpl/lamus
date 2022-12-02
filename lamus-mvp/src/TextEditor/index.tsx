@@ -179,7 +179,26 @@ const TextEditor = observer(function TextEditor() {
     path,
     fileName,
   }: IAcceptEventProps) {
-    console.log(providerId, path, fileName);
+    if (!fileName) return;
+
+    AppStore.isBusy = true;
+    EditorStore.open({
+      providerId,
+      path,
+      fileName,
+    })
+      .then((isOk) => {
+        if (!editorCore.current || !EditorStore.document) return;
+        AppStore.isBusy = false;
+        EditorStore.setOpenFileDialogIsOpen(false);
+        console.log(isOk);
+        console.log(editorCore.current);
+        editorCore.current.render(EditorStore.document);
+      })
+      .catch((e) => {
+        AppStore.isBusy = false;
+        console.error(e);
+      });
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

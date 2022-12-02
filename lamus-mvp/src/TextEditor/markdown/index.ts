@@ -1,11 +1,18 @@
+import { remark } from "remark";
 import { SomeDocumentBlock } from "@editorjs/editorjs";
 import { parseCheckboxToMarkdown } from "./CheckboxTypeParser";
 import { parseCodeToMarkdown } from "./CodeTypeParser";
 import { parseDelimiterToMarkdown } from "./DelimiterTypeParser";
-import { parseHeaderToMarkdown } from "./HeaderTypeParser";
+import {
+  parseHeaderToMarkdown,
+  parseMarkdownToHeader,
+} from "./HeaderTypeParser";
 import { parseImageToMarkdown } from "./ImageTypeParser";
 import { parseListToMarkdown } from "./ListTypeParser";
-import { parseParagraphToMarkdown } from "./ParagraphTypeParser";
+import {
+  parseMarkdownToParagraph,
+  parseParagraphToMarkdown,
+} from "./ParagraphTypeParser";
 import { parseQuoteToMarkdown } from "./QuoteTypeParser";
 
 export function toMarkdown(document: SomeDocumentBlock[]): string {
@@ -36,4 +43,27 @@ export function toMarkdown(document: SomeDocumentBlock[]): string {
   });
 
   return parsedData.join("\n");
+}
+
+export function fromMarkdown(text: string): SomeDocumentBlock[] {
+  const parsedMarkdown = remark().parse(text);
+
+  console.log(parsedMarkdown.children);
+
+  const editorData: SomeDocumentBlock[] = [];
+
+  for (const child of parsedMarkdown.children) {
+    switch (child.type) {
+      case "heading":
+        editorData.push(...parseMarkdownToHeader(child));
+        break;
+      case "paragraph":
+        editorData.push(...parseMarkdownToParagraph(child));
+        break;
+    }
+  }
+
+  console.log(editorData);
+
+  return editorData;
 }

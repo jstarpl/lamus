@@ -199,7 +199,35 @@ export class DropboxProvider implements IFileSystemProvider {
     throw new Error("Method not implemented.");
   }
   async read(path: Path, fileName: string): Promise<IReadResult> {
-    throw new Error("Method not implemented.");
+    if (!this.dropbox) throw new Error("Not initialized");
+
+    try {
+      const result = (await this.dropbox.filesDownload({
+        path: DROPBOX_ROOT_FOLDER + [...path, fileName].join("/"),
+      })) as DropboxResponse<files.FileMetadata & { fileBlob: Blob }>;
+
+      if (isError(result)) {
+        console.error(result);
+        return {
+          ok: false,
+          error: String(result.status),
+        };
+      }
+
+      console.log(result);
+
+      return {
+        ok: true,
+        data: Promise.resolve(result.result.fileBlob),
+        meta: result.result.rev,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
   async rename(
     path: Path,

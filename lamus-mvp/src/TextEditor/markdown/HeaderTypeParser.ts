@@ -1,4 +1,4 @@
-import { Parent, Literal } from "unist";
+import { Heading } from "mdast";
 import { DocumentBlockHeader } from "@editorjs/editorjs";
 
 export function parseHeaderToMarkdown(block: DocumentBlockHeader["data"]) {
@@ -16,26 +16,29 @@ export function parseHeaderToMarkdown(block: DocumentBlockHeader["data"]) {
     case 6:
       return `###### ${block.text}\n`;
     default:
-      break;
+      return `# ${block.text}`;
   }
 }
 
-export function parseMarkdownToHeader(
-  block: Parent<Literal, { depth: number }>
-) {
-  let headerData: DocumentBlockHeader | undefined = undefined;
+export function parseMarkdownToHeader(block: Heading) {
+  const headerData: DocumentBlockHeader | undefined = {
+    type: "header",
+    data: {
+      level: 1,
+      text: "",
+    },
+  };
+
   console.log(block);
-  const depth = block.data?.depth;
+  const depth = block.depth;
+  headerData.data.level = depth ?? 1;
 
+  let text = "";
   block.children.forEach((item) => {
-    headerData = {
-      type: "header",
-      data: {
-        level: depth ?? 1,
-        text: String(item.value),
-      },
-    };
+    if (item.type !== "text") return;
+    text += String(item.value);
   });
+  headerData.data.text = text;
 
-  return headerData;
+  return [headerData];
 }
