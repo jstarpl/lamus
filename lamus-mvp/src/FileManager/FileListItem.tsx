@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import prettyBytes from "pretty-bytes";
 import { DateTime } from "luxon";
 import "./FileListItem.css";
@@ -15,12 +15,26 @@ interface IProps {
 }
 
 export function FileListItem({ file, disabled }: IProps) {
-  let listItemSizeLabel = "";
-  if (file.dir) {
-    listItemSizeLabel = file.parentDir ? UP_DIR : SUB_DIR;
-  } else if (!file.virtual) {
-    listItemSizeLabel = prettyBytes(file.size);
-  }
+  const listItemSizeLabel = useMemo(() => {
+    if (file.dir) {
+      return file.parentDir ? UP_DIR : SUB_DIR;
+    } else if (!file.virtual) {
+      return prettyBytes(file.size);
+    }
+  }, [file.dir, file.parentDir, file.size, file.virtual]);
+
+  const listItemModifiedLabel = useMemo(() => {
+    return (
+      file.modified &&
+      DateTime.fromJSDate(file.modified).toLocaleString({
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
+  }, [file.modified]);
 
   return (
     <div
@@ -33,16 +47,7 @@ export function FileListItem({ file, disabled }: IProps) {
       </div>
       <div className="FileListItem__fileName">{file.fileName}</div>
       <div className="FileListItem__size">{listItemSizeLabel}</div>
-      <div className="FileListItem__modified">
-        {file.modified &&
-          DateTime.fromJSDate(file.modified).toLocaleString({
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-      </div>
+      <div className="FileListItem__modified">{listItemModifiedLabel}</div>
     </div>
   );
 }
