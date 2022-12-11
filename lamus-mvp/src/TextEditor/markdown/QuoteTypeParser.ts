@@ -1,27 +1,34 @@
-import { Parent, Literal } from "unist";
+import { Blockquote } from "mdast";
 import { DocumentBlockQuote } from "@editorjs/editorjs";
+import { phrasingContentAsString } from "./utils";
 
-export function parseQuoteToMarkdown(block: DocumentBlockQuote["data"]) {
-  return `> ${block.text}\n>\n> -- ${block.caption}\n`;
+export function parseQuoteToMarkdown(
+  block: DocumentBlockQuote["data"]
+): string {
+  let text = `> ${block.text}`;
+  if (block.caption) {
+    text += `\n>\n> -- ${block.caption}\n`;
+  }
+
+  return text;
 }
 
-export function parseMarkdownToQuote(block: Parent<Parent<Literal<any>>>) {
-  let quoteData: DocumentBlockQuote | undefined = undefined;
-
-  block.children.forEach((items) => {
-    items.children.forEach((listItem) => {
-      if (listItem.type === "text") {
-        quoteData = {
-          data: {
-            alignment: "left",
-            caption: "",
-            text: listItem.value,
-          },
-          type: "quote",
-        };
-      }
-    });
+export function parseMarkdownToQuote(block: Blockquote): DocumentBlockQuote {
+  const text: string[] = [];
+  block.children.forEach((item) => {
+    switch (item.type) {
+      case "paragraph":
+        text.push(...item.children.map(phrasingContentAsString));
+        break;
+    }
   });
 
-  return quoteData;
+  return {
+    data: {
+      alignment: "left" as const,
+      caption: "",
+      text: text.join(),
+    },
+    type: "quote" as const,
+  };
 }

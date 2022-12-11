@@ -23,8 +23,6 @@ export function parseMarkdownToList(
   let listData = {};
   const itemData: string[] = [];
 
-  console.log(block);
-
   block.children.forEach((items) => {
     items.children.forEach((listItem) => {
       listItem.children.forEach((listEntry) => {

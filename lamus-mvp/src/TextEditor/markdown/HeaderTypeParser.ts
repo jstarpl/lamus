@@ -29,7 +29,6 @@ export function parseMarkdownToHeader(block: Heading) {
     },
   };
 
-  console.log(block);
   const depth = block.depth;
   headerData.data.level = depth ?? 1;
 

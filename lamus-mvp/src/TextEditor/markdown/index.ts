@@ -13,9 +13,10 @@ import {
   parseMarkdownToParagraph,
   parseParagraphToMarkdown,
 } from "./ParagraphTypeParser";
-import { parseQuoteToMarkdown } from "./QuoteTypeParser";
+import { parseMarkdownToQuote, parseQuoteToMarkdown } from "./QuoteTypeParser";
 
 export function toMarkdown(document: SomeDocumentBlock[]): string {
+  console.log(JSON.parse(JSON.stringify(document)));
   const parsedData = document.map((item) => {
     switch (item.type) {
       case "header":
@@ -60,10 +61,10 @@ export function fromMarkdown(text: string): SomeDocumentBlock[] {
       case "paragraph":
         editorData.push(...parseMarkdownToParagraph(child));
         break;
+      case "blockquote":
+        editorData.push(parseMarkdownToQuote(child));
     }
   }
-
-  console.log(editorData);
 
   return editorData;
 }
