@@ -71,12 +71,15 @@ export class DropboxProvider implements IFileSystemProvider {
         return null;
     }
   }
+  private static getPath(path: Path, fileName: string): string {
+    return DROPBOX_ROOT_FOLDER + [...path, fileName].join("/");
+  }
   async access(path: Path, name: string): Promise<IAccessResult> {
     if (!this.dropbox) throw new Error("Not initialized");
 
     try {
       const result = await this.dropbox.filesGetMetadata({
-        path: DROPBOX_ROOT_FOLDER + [...path, name].join("/"),
+        path: DropboxProvider.getPath(path, name),
       });
 
       if (isError(result)) {
@@ -174,7 +177,7 @@ export class DropboxProvider implements IFileSystemProvider {
 
     try {
       const result = await this.dropbox.filesCreateFolderV2({
-        path: DROPBOX_ROOT_FOLDER + [...path, name].join("/"),
+        path: DropboxProvider.getPath(path, name),
       });
 
       if (isError(result)) {
@@ -195,16 +198,13 @@ export class DropboxProvider implements IFileSystemProvider {
       };
     }
   }
-  async unlink(path: Path, fileName: string): Promise<IDeleteResult> {
-    throw new Error("Method not implemented.");
-  }
-  async read(path: Path, fileName: string): Promise<IReadResult> {
+  async unlink(path: Path, name: string): Promise<IDeleteResult> {
     if (!this.dropbox) throw new Error("Not initialized");
 
     try {
-      const result = (await this.dropbox.filesDownload({
-        path: DROPBOX_ROOT_FOLDER + [...path, fileName].join("/"),
-      })) as DropboxResponse<files.FileMetadata & { fileBlob: Blob }>;
+      const result = await this.dropbox.filesDeleteV2({
+        path: DropboxProvider.getPath(path, name),
+      });
 
       if (isError(result)) {
         console.error(result);
@@ -214,7 +214,32 @@ export class DropboxProvider implements IFileSystemProvider {
         };
       }
 
-      console.log(result);
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
+  }
+  async read(path: Path, fileName: string): Promise<IReadResult> {
+    if (!this.dropbox) throw new Error("Not initialized");
+
+    try {
+      const result = (await this.dropbox.filesDownload({
+        path: DropboxProvider.getPath(path, fileName),
+      })) as DropboxResponse<files.FileMetadata & { fileBlob: Blob }>;
+
+      if (isError(result)) {
+        console.error(result);
+        return {
+          ok: false,
+          error: String(result.status),
+        };
+      }
 
       return {
         ok: true,
@@ -238,8 +263,8 @@ export class DropboxProvider implements IFileSystemProvider {
 
     try {
       const result = await this.dropbox.filesMoveV2({
-        from_path: DROPBOX_ROOT_FOLDER + [...path, oldFileName].join("/"),
-        to_path: DROPBOX_ROOT_FOLDER + [...path, newFileName].join("/"),
+        from_path: DropboxProvider.getPath(path, oldFileName),
+        to_path: DropboxProvider.getPath(path, newFileName),
       });
 
       if (isError(result)) {
@@ -270,7 +295,7 @@ export class DropboxProvider implements IFileSystemProvider {
 
     try {
       const result = await this.dropbox.filesUpload({
-        path: DROPBOX_ROOT_FOLDER + [...path, fileName].join("/"),
+        path: DropboxProvider.getPath(path, fileName),
         mode: meta
           ? {
               ".tag": "update",
