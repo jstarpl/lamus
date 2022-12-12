@@ -82,7 +82,7 @@ export const ListViewList = function ListViewList({
     : children !== undefined
     ? [children]
     : [];
-  const childrenNodes =
+  const decoratedChildrenNodes =
     children?.map((node, index, array) => {
       const key = `${node.key}`;
       const selected = testedValue?.includes(key) ?? false;
@@ -375,7 +375,7 @@ export const ListViewList = function ListViewList({
       role="listbox"
       tabIndex={0}
     >
-      {childrenNodes}
+      {decoratedChildrenNodes}
     </ul>
   );
 };

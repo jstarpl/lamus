@@ -9,7 +9,7 @@ type IProps = {
   "className" | "aria-selected" | "tabIndex" | "key"
 >;
 
-export const ListViewItem = function ListViewItem({
+export const ListViewItem = React.memo(function ListViewItem({
   value,
   children,
   ...props
@@ -40,4 +40,4 @@ export const ListViewItem = function ListViewItem({
   );
 
   return item;
-};
+});
