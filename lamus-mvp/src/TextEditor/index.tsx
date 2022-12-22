@@ -10,6 +10,7 @@ import Marker from "@editorjs/marker";
 import List from "@editorjs/list";
 import Delimiter from "@editorjs/delimiter";
 import Checklist from "@editorjs/checklist";
+
 import { debounce } from "lodash";
 import "./TextEditor.css";
 import { EmojiPicker } from "../components/EmojiPicker";
@@ -33,6 +34,12 @@ import {
   useModalDialog,
 } from "../helpers/useModalDialog";
 import { assertNever } from "../helpers/util";
+import {
+  bsHeadingIcon,
+  bsMarker,
+  bsParagraphIcon,
+  bsQuoteIcon,
+} from "./editorIcons";
 
 const ReactEditorJS = createReactEditorJS();
 
@@ -47,7 +54,7 @@ function focusEditor(retry?: number) {
   if (mainEls.length === 0) {
     console.error("No block element found");
     if ((retry ?? 0) > INITIAL_FOCUS_RETRY_COUNT) return;
-    setTimeout(() => focusEditor(retry ?? 0 + 1), 250);
+    setTimeout(() => focusEditor((retry ?? 0) + 1), 250);
     return;
   }
   // select last block
@@ -223,13 +230,44 @@ const TextEditor = observer(function TextEditor() {
           onInitialize={onInitialize}
           onChange={onChange}
           tools={{
-            paragraph: Paragraph,
-            header: Header,
-            quote: Quote,
-            marker: Marker,
-            list: List,
-            delimiter: Delimiter,
-            checklist: Checklist,
+            paragraph: {
+              class: Paragraph,
+              inlineToolbar: true,
+              shortcut: "CMD+SHIFT+1",
+              toolbox: {
+                title: "Text",
+                icon: bsParagraphIcon,
+              },
+            },
+            header: {
+              class: Header,
+              inlineToolbar: false,
+              shortcut: "CMD+SHIFT+2",
+              toolbox: {
+                title: "Heading",
+                icon: bsHeadingIcon,
+              },
+            },
+            quote: {
+              class: Quote,
+              inlineToolbar: false,
+              shortcut: "CMD+SHIFT+3",
+              toolbox: {
+                title: "Quote",
+                icon: bsQuoteIcon,
+              },
+            },
+            marker: {
+              class: Marker,
+              shortcut: "CMD+SHIFT+4",
+              toolbox: {
+                title: "Break mark",
+                icon: bsMarker,
+              },
+            },
+            list: { class: List, shortcut: "CMD+SHIFT+5" },
+            delimiter: { class: Delimiter, shortcut: "CMD+SHIFT+6" },
+            checklist: { class: Checklist, shortcut: "CMD+SHIFT+7" },
           }}
         />
         <EmojiPicker />

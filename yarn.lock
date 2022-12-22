@@ -1397,6 +1397,11 @@
     style-mod "^4.0.0"
     w3c-keyname "^2.2.4"
 
+"@codexteam/icons@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@codexteam/icons/-/icons-0.1.0.tgz#a02885fe8699f69902d05b077b5f1cd48a2ca6b9"
+  integrity sha512-jW1fWnwtWzcP4FBGsaodbJY3s1ZaRU+IJy1pvJ7ygNQxkQinybJcwXoyt0a5mWwu/4w30A42EWhCrZn8lp4fdw==
+
 "@codexteam/icons@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@codexteam/icons/-/icons-0.0.4.tgz#8b72dcd3f3a1b0d880bdceb2abebd74b46d3ae13"
@@ -1967,12 +1972,12 @@
   resolved "https://registry.yarnpkg.com/@editorjs/delimiter/-/delimiter-1.2.0.tgz#5075f1a3e68765cfb6aec8694b316d81e2b41607"
   integrity sha512-GKsCFPk85vH5FuCuVQ48NTLc9hk0T3DsBH9zABaicTYIJayFcUa8N4/Y+L3i4tduzDqqyvoxkv+5n43GmC5gEA==
 
-"@editorjs/editorjs@^2.26.2":
-  version "2.26.2"
-  resolved "https://registry.yarnpkg.com/@editorjs/editorjs/-/editorjs-2.26.2.tgz#21e51d4c41f1943d580a34b82a78494a019b4d51"
-  integrity sha512-7oKPWG/Oc6RF0AN1VccuBZMoQ4g/YoAfJvmo2RGjmmMpPT3sPC8a6X4XYetfYbjHfSyJ5E3pARRn9DzJQ6SHcg==
+"@editorjs/editorjs@^2.24.3":
+  version "2.26.4"
+  resolved "https://registry.yarnpkg.com/@editorjs/editorjs/-/editorjs-2.26.4.tgz#097e29341501d81cd1721604a74da1530f5ff74f"
+  integrity sha512-yuJ2NM1Y5+8DDNWr4C00tHMVHKy0uCqK1HS4pwFPVcXUawgJnU2Li2vKGvPLuf0Jj2ir7MVgADO6oC1TbYBOYQ==
   dependencies:
-    "@codexteam/icons" "^0.0.4"
+    "@codexteam/icons" "0.1.0"
     codex-notifier "^1.1.2"
     codex-tooltip "^1.0.5"
     html-janitor "^2.0.4"
@@ -2399,25 +2404,6 @@
   dependencies:
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
-
-"@lamus/codemirror-lang-qbasic-vm@file:codemirror-lang-qbasic-vm":
-  version "0.1.0"
-  dependencies:
-    "@codemirror/language" "^6.0.0"
-    "@lezer/highlight" "^1.1.2"
-    "@lezer/lr" "^1.0.0"
-
-"@lamus/qbasic-vm@file:qbasic-vm":
-  version "0.0.0"
-  dependencies:
-    assert-browserify "^2.0.0"
-    easy-web-crypto "^1.2.10"
-    eventemitter3 "^4.0.0"
-    jsonpath "^1.1.1"
-    mml-iterator "^1.1.0"
-    process "^0.11.10"
-    radix-router "^3.0.1"
-    seq-emitter "^1.2.0"
 
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"
