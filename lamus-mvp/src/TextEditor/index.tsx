@@ -6,7 +6,6 @@ import { Document } from "@editorjs/editorjs";
 import Paragraph from "@editorjs/paragraph";
 import Header from "@editorjs/header";
 import Quote from "@editorjs/quote";
-import Marker from "@editorjs/marker";
 import List from "@editorjs/list";
 import Delimiter from "@editorjs/delimiter";
 import Checklist from "@editorjs/checklist";
@@ -36,9 +35,11 @@ import {
 import { assertNever } from "../helpers/util";
 import {
   bsHeadingIcon,
-  bsMarker,
+  bsDelimiter,
   bsParagraphIcon,
   bsQuoteIcon,
+  bsListIcon,
+  bsCheckListIcon,
 } from "./editorIcons";
 
 const ReactEditorJS = createReactEditorJS();
@@ -257,17 +258,30 @@ const TextEditor = observer(function TextEditor() {
                 icon: bsQuoteIcon,
               },
             },
-            marker: {
-              class: Marker,
+            list: {
+              class: List,
               shortcut: "CMD+SHIFT+4",
               toolbox: {
-                title: "Break mark",
-                icon: bsMarker,
+                title: "List",
+                icon: bsListIcon,
               },
             },
-            list: { class: List, shortcut: "CMD+SHIFT+5" },
-            delimiter: { class: Delimiter, shortcut: "CMD+SHIFT+6" },
-            checklist: { class: Checklist, shortcut: "CMD+SHIFT+7" },
+            delimiter: {
+              class: Delimiter,
+              shortcut: "CMD+SHIFT+5",
+              toolbox: {
+                title: "Delimiter",
+                icon: bsDelimiter,
+              },
+            },
+            checklist: {
+              class: Checklist,
+              shortcut: "CMD+SHIFT+6",
+              toolbox: {
+                title: "Checklist",
+                icon: bsCheckListIcon,
+              },
+            },
           }}
         />
         <EmojiPicker />
