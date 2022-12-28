@@ -3274,11 +3274,17 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	},
 
 	OUT: {
-		// address$, data$
-		args: ['STRING', 'STRING'],
+		// address$, data$ [, OUT responseCode%]
+		args: ['STRING', 'STRING', 'INTEGER'],
+		minArgs: 2,
 		action: function (vm) {
+			let responseCode: undefined | any = undefined
+			const argCount = vm.stack.pop()
 			const data = getArgValue(vm.stack.pop())
 			const address = getArgValue(vm.stack.pop())
+			if (argCount > 2) {
+				responseCode = vm.stack.pop()
+			}
 
 			if (vm.generalIo) {
 				vm.suspend()
@@ -3288,6 +3294,9 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					.then(() => vm.resume())
 					.catch((reason) => {
 						vm.trace.printf('Error while outputting data to address: %s\n', reason)
+						if (responseCode) {
+							responseCode.value = -1
+						}
 						vm.resume()
 					})
 			} else {
