@@ -33,6 +33,16 @@ import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { useGlobalKeyboardHandler } from "../helpers/useKeyboardHandler";
 import { isElementChildOf } from "../lib/lib";
+import { AnimatePresence } from "framer-motion";
+import { FileDialog, IAcceptEventProps } from "../FileManager/FileDialog";
+import {
+  DialogButtonResult,
+  DialogButtons,
+  DialogTemplates,
+  DialogType,
+  useModalDialog,
+} from "../helpers/useModalDialog";
+import { assertNever } from "../helpers/util";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -52,8 +62,11 @@ function orientationToClassName(orientation: "landscape" | "portrait") {
 
 const CODE_EDITOR_SWITCH_CONTEXT = "Escape Escape Tab";
 
+const DEFAULT_NEW_FILE_NAME = "New_Program.bas";
+
 const CodeEditor = observer(function CodeEditor() {
   const keyboard = useGlobalKeyboardHandler();
+  const { showDialog } = useModalDialog();
   const soundEffectsContext = useContext(SoundEffectsContext);
   const editorView = useRef<EditorView | null>(null);
   const editorViewParent = useRef<HTMLDivElement | null>(null);
@@ -63,7 +76,8 @@ const CodeEditor = observer(function CodeEditor() {
     []
   );
 
-  const hasDialogOpen = false;
+  const hasDialogOpen =
+    EditorStore.isSaveFileDialogOpen || EditorStore.isOpenFileDialogOpen;
 
   const navigate = useNavigate();
 
@@ -236,7 +250,7 @@ const CodeEditor = observer(function CodeEditor() {
     const newEditorView = new EditorView({
       parent: editorViewParent.current,
       state: EditorState.create({
-        doc: EditorStore.document ?? undefined,
+        doc: EditorStore.document ?? "",
         extensions: [
           basicSetup,
           keymap.of([indentWithTab]),
@@ -307,6 +321,112 @@ const CodeEditor = observer(function CodeEditor() {
     EditorStore.setDisplayFocus("editor");
   }, []);
 
+  const onSave = useCallback(() => {
+    EditorStore.setSaveFileDialogIsOpen(true);
+  }, []);
+
+  const onSaveAs = useCallback(() => {
+    EditorStore.setSaveFileDialogIsOpen(true);
+  }, []);
+
+  const onOpen = useCallback(() => {
+    EditorStore.setOpenFileDialogIsOpen(true);
+  }, []);
+
+  function onSaveDialogCancel() {
+    EditorStore.setSaveFileDialogIsOpen(false);
+  }
+
+  function onSaveDialogAccept({
+    providerId,
+    path,
+    fileName,
+  }: IAcceptEventProps) {
+    if (!fileName) return;
+
+    AppStore.isBusy = true;
+    EditorStore.checkIfCanSave(providerId, path, fileName)
+      .then(async ({ ok, meta }) => {
+        if (!ok) {
+          AppStore.isBusy = false;
+          // file will be overwriten, ask
+          const result = await showDialog(
+            DialogTemplates.overwriteExistingFile(fileName)
+          );
+          if (result.result === DialogButtonResult.NO) {
+            return;
+          } else if (result.result !== DialogButtonResult.YES) {
+            assertNever(result.result);
+          }
+        }
+
+        AppStore.isBusy = true;
+        const saveAsOk = await EditorStore.saveAs(
+          providerId,
+          path,
+          fileName,
+          meta
+        );
+        AppStore.isBusy = false;
+        if (!saveAsOk) {
+          await showDialog({
+            message:
+              "There was an error saving the file. Try using a different file name.",
+            choices: DialogButtons.OK,
+            type: DialogType.ERROR,
+          });
+          return;
+        }
+        // write file
+        EditorStore.setSaveFileDialogIsOpen(false);
+      })
+      .catch((e) => {
+        AppStore.isBusy = false;
+        console.error(e);
+      });
+  }
+
+  function onOpenDialogCancel() {
+    EditorStore.setOpenFileDialogIsOpen(false);
+  }
+
+  function onOpenDialogAccept({
+    providerId,
+    path,
+    fileName,
+  }: IAcceptEventProps) {
+    if (!fileName) return;
+
+    AppStore.isBusy = true;
+    EditorStore.open({
+      providerId,
+      path,
+      fileName,
+    })
+      .then((isOk) => {
+        if (!editorView.current || !EditorStore.document) return;
+        AppStore.isBusy = false;
+        EditorStore.setOpenFileDialogIsOpen(false);
+        if (!isOk) return;
+        editorView.current.setState(
+          EditorState.create({
+            doc: EditorStore.document ?? "",
+            extensions: [
+              basicSetup,
+              keymap.of([indentWithTab]),
+              scrollPastEnd(),
+              updateModel,
+              errorDecorations,
+            ],
+          })
+        );
+      })
+      .catch((e) => {
+        AppStore.isBusy = false;
+        console.error(e);
+      });
+  }
+
   return (
     <div className="CodeEditor sdi-app">
       <div
@@ -326,6 +446,7 @@ const CodeEditor = observer(function CodeEditor() {
           <CommandBar.Button
             combo={SAVE_COMBO}
             position={2}
+            onClick={onSave}
             highlight
             showOnlyWhenModifiersActive
           >
@@ -334,6 +455,7 @@ const CodeEditor = observer(function CodeEditor() {
           <CommandBar.Button
             combo={SAVE_AS_COMBO}
             position={2}
+            onClick={onSaveAs}
             highlight
             showOnlyWhenModifiersActive
           >
@@ -342,7 +464,7 @@ const CodeEditor = observer(function CodeEditor() {
           <CommandBar.Button
             combo={OPEN_COMBO}
             position={3}
-            onClick={console.log}
+            onClick={onOpen}
             showOnlyWhenModifiersActive
           >
             Open
@@ -393,6 +515,31 @@ const CodeEditor = observer(function CodeEditor() {
           </CommandBar.Button>
         </CommandBar.Nav>
       )}
+      <AnimatePresence>
+        {EditorStore.isSaveFileDialogOpen && (
+          <FileDialog
+            key="save-file-dialog"
+            mode="saveFile"
+            onAccept={onSaveDialogAccept}
+            onCancel={onSaveDialogCancel}
+            initialStorageProvider={EditorStore.file?.providerId}
+            initialPath={EditorStore.file?.path}
+            defaultFileName={
+              EditorStore.file?.fileName ?? DEFAULT_NEW_FILE_NAME
+            }
+          />
+        )}
+        {EditorStore.isOpenFileDialogOpen && (
+          <FileDialog
+            key="save-file-dialog"
+            mode="openFile"
+            onAccept={onOpenDialogAccept}
+            onCancel={onOpenDialogCancel}
+            initialStorageProvider={EditorStore.file?.providerId}
+            initialPath={EditorStore.file?.path}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 });

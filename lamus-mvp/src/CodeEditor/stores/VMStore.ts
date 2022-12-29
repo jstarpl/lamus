@@ -4,13 +4,15 @@ import {
   Console,
   Cryptography,
   GeneralIORouter,
-  LocalStorageFileSystem,
   NetworkAdapter,
   QBasicProgram,
   RuntimeError,
   VirtualMachine,
 } from "@lamus/qbasic-vm";
 import setupGeneralIO from "./../vm/GeneralIO";
+import { LamusStorage } from "../vm/LamusStorage";
+import { AppStore } from "../../stores/AppStore";
+import { ProviderId } from "../../stores/FileSystemStore";
 
 export enum VMRunState {
   IDLE = "idle",
@@ -44,7 +46,11 @@ export class VMStoreClass {
   _audio: AudioDevice;
   _soundEffects: HTMLAudioElement[];
 
-  constructor(viewParent: HTMLElement, soundEffects: HTMLAudioElement[] = []) {
+  constructor(
+    viewParent: HTMLElement,
+    soundEffects: HTMLAudioElement[],
+    defaultStorageProviderId: ProviderId
+  ) {
     makeAutoObservable(
       this,
       {
@@ -69,9 +75,13 @@ export class VMStoreClass {
       600,
       process.env.PUBLIC_URL + "/CodeEditor/"
     );
+
     const audio = new AudioDevice();
     const network = new NetworkAdapter();
-    const fileSystem = new LocalStorageFileSystem();
+    const fileSystem = new LamusStorage(
+      AppStore.fileSystem,
+      defaultStorageProviderId
+    );
     const generalIORouter = new GeneralIORouter();
     const crypto = new Cryptography();
     const vm = new VirtualMachine(

@@ -1,7 +1,14 @@
 import { motion, TargetAndTransition } from "framer-motion";
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
-import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { CommandBar } from "../components/CommandBar";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { ListView } from "../components/ListView";
@@ -185,18 +192,29 @@ export const FileDialog = observer(function FileDialog({
     [isSelectingDirectory, currentStorage, currentPath]
   );
 
-  function onListChange(e: ListViewChangeEvent) {
-    setSelectedFiles(e.detail.value);
+  const onListChange = useCallback(
+    function (e: ListViewChangeEvent) {
+      setSelectedFiles(e.detail.value);
 
-    const selectedItem = e.detail.value[0];
-    if (!selectedItem) return;
+      const selectedItem = e.detail.value[0];
+      if (!selectedItem) return;
 
-    const item = fileList.find((item) => item.guid === selectedItem);
-    if (!item) return;
+      const item = fileList.find((item) => item.guid === selectedItem);
+      if (!item) return;
 
-    setDirSelected(!!item.dir);
-    setIsSelectThisFolderSelected(item.guid === SELECT_THIS_DIR.guid);
-  }
+      setDirSelected(!!item.dir);
+      setIsSelectThisFolderSelected(item.guid === SELECT_THIS_DIR.guid);
+    },
+    [fileList]
+  );
+
+  const onFocus = useCallback(function onFocus() {
+    setListFocused(true);
+  }, []);
+
+  const onBlur = useCallback(function onBlur() {
+    setListFocused(false);
+  }, []);
 
   function onGoToSelectedFolder() {
     const selectedGuid = selectedFiles?.[0];
@@ -222,21 +240,24 @@ export const FileDialog = observer(function FileDialog({
     setCurrentPath(path);
   }
 
-  function onFileEntryDoubleClick(e: React.MouseEvent<HTMLElement>) {
-    const guid = e.currentTarget.dataset["guid"];
-    if (!guid) return;
-    const clickedEntry = fileList.find((entry) => entry.guid === guid);
-    if (!clickedEntry) return;
-    if (!clickedEntry.dir) return;
+  const onFileEntryDoubleClick = useCallback(
+    function onFileEntryDoubleClick(e: React.MouseEvent<HTMLElement>) {
+      const guid = e.currentTarget.dataset["guid"];
+      if (!guid) return;
+      const clickedEntry = fileList.find((entry) => entry.guid === guid);
+      if (!clickedEntry) return;
+      if (!clickedEntry.dir) return;
 
-    if (clickedEntry.parentDir) {
-      const newPath = currentPath.slice();
-      newPath.pop();
-      setCurrentPath(newPath);
-    } else {
-      setCurrentPath([...currentPath, clickedEntry.fileName]);
-    }
-  }
+      if (clickedEntry.parentDir) {
+        const newPath = currentPath.slice();
+        newPath.pop();
+        setCurrentPath(newPath);
+      } else {
+        setCurrentPath([...currentPath, clickedEntry.fileName]);
+      }
+    },
+    [currentPath, fileList]
+  );
 
   function onAcceptInner() {
     if (!onAccept) return;
@@ -262,6 +283,28 @@ export const FileDialog = observer(function FileDialog({
     mode === "saveFile" && (!isDirSelected || !isListFocused) && !isPathFocused;
   const canOpen = mode === "openFile" && !isDirSelected && !isPathFocused;
   const canSelectThisDir = isSelectThisDirSelected && !canGo;
+
+  const listViewItems = useMemo(
+    () =>
+      fileList.map((file) => (
+        <ListView.Item
+          key={file.guid}
+          value={file.guid}
+          data-guid={file.guid}
+          onDoubleClick={onFileEntryDoubleClick}
+        >
+          <FileListItem
+            file={file}
+            disabled={
+              disableFileSelection &&
+              !file.dir &&
+              file.guid !== SELECT_THIS_DIR.guid
+            }
+          />
+        </ListView.Item>
+      )),
+    [fileList, onFileEntryDoubleClick, disableFileSelection]
+  );
 
   return (
     <motion.div
@@ -322,26 +365,10 @@ export const FileDialog = observer(function FileDialog({
                 multiple
                 value={selectedFiles}
                 onChange={onListChange}
-                onFocus={() => setListFocused(true)}
-                onBlur={() => setListFocused(false)}
+                onFocus={onFocus}
+                onBlur={onBlur}
               >
-                {fileList.map((file) => (
-                  <ListView.Item
-                    key={file.guid}
-                    value={file.guid}
-                    data-guid={file.guid}
-                    onDoubleClick={onFileEntryDoubleClick}
-                  >
-                    <FileListItem
-                      file={file}
-                      disabled={
-                        disableFileSelection &&
-                        !file.dir &&
-                        file.guid !== SELECT_THIS_DIR.guid
-                      }
-                    />
-                  </ListView.Item>
-                ))}
+                {listViewItems}
               </ListView.List>
             )}
           </div>

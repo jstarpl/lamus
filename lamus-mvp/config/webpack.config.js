@@ -324,6 +324,7 @@ module.exports = function (webpackEnv) {
       fallback: {
         "crypto": false,
         "util": false,
+        "path": false,
       },
       plugins: [
         // Prevents users from importing files from outside of src/ (or node_modules/).
@@ -568,6 +569,9 @@ module.exports = function (webpackEnv) {
       ].filter(Boolean),
     },
     plugins: [
+      new webpack.DefinePlugin({
+        'process.platform': JSON.stringify('browser'),
+      }),
       // Generates an `index.html` file with the <script> injected.
       new HtmlWebpackPlugin(
         Object.assign(

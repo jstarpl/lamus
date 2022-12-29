@@ -1,7 +1,8 @@
 import { autorun, makeAutoObservable, runInAction } from "mobx";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
-import { FileHandle } from "../../stores/FileSystemStore";
+import { FileName, Path } from "../../stores/fileSystem/IFileSystemProvider";
+import { FileHandle, ProviderId } from "../../stores/FileSystemStore";
 import { VMRunState, VMStoreClass } from "./VMStore";
 
 const ACTIVE_DOCUMENT_KEY = "codeEditor:activeDocument";
@@ -54,7 +55,11 @@ class EditorStoreClass {
     consoleParent: HTMLElement,
     soundEffects: HTMLAudioElement[]
   ) {
-    this.vm = new VMStoreClass(consoleParent, soundEffects);
+    this.vm = new VMStoreClass(
+      consoleParent,
+      soundEffects,
+      this.file?.providerId ?? "dropbox"
+    );
 
     const dispose = autorun(() => {
       if (this.vm?.runState === VMRunState.RUNNING) {
@@ -75,6 +80,53 @@ class EditorStoreClass {
     }, AUTOSAVE_DEBOUNCE);
   }
 
+  async checkIfCanSave(
+    providerId: ProviderId,
+    path: Path,
+    fileName: FileName
+  ): Promise<{ ok: boolean; meta?: any }> {
+    try {
+      const result = await AppStore.fileSystem.access(
+        providerId,
+        path,
+        fileName
+      );
+      if (!result.ok) throw new Error("Could not access storage");
+      if (result.found) return { ok: false, meta: result.meta };
+      return { ok: true, meta: result.meta };
+    } catch (e) {
+      return { ok: false };
+    }
+  }
+
+  async saveAs(
+    providerId: ProviderId,
+    path: Path,
+    fileName: FileName,
+    meta?: any
+  ): Promise<boolean> {
+    if (this.document === null) return false;
+
+    const result = await AppStore.fileSystem.write(
+      providerId,
+      path,
+      fileName,
+      this.getBlob(),
+      meta
+    );
+    if (!result.ok) {
+      console.error(result);
+      throw new Error("Could not save file");
+    }
+    this.setFile({
+      providerId,
+      path: path.slice(),
+      fileName: result.fileName || fileName,
+      meta: result.meta ?? undefined,
+    });
+    return true;
+  }
+
   async save(): Promise<void> {
     if (this.document === null) return;
     if (this.file === null) return;
@@ -84,29 +136,57 @@ class EditorStoreClass {
       this.file.providerId,
       this.file.path,
       this.file.fileName,
-      Promise.resolve(
-        new Blob([this.document], {
-          type: "text/basic",
-        })
-      ),
+      this.getBlob(),
       this.file.meta ?? undefined
     );
 
     if (!result.ok) {
       console.error(result);
-      return;
+      throw new Error("Could not save file");
     }
 
     this.file.fileName = result.fileName || this.file.fileName;
-    this.file.meta = result.meta || null;
+    this.file.meta = result.meta ?? undefined;
   }
 
-  setOpenSaveFileDialog(open: boolean) {
+  async open(file: FileHandle): Promise<boolean> {
+    if (!AppStore.fileSystem.providers.get(file.providerId)) return false;
+
+    const result = await AppStore.fileSystem.read(
+      file.providerId,
+      file.path,
+      file.fileName
+    );
+
+    if (!result.ok) {
+      console.error(result.error);
+      return false;
+    }
+
+    const text = await (await result.data).text();
+    this.document = text;
+
+    return true;
+  }
+
+  setSaveFileDialogIsOpen(open: boolean) {
     this.isSaveFileDialogOpen = open;
   }
 
-  setOpenOpenFileDialog(open: boolean) {
+  setOpenFileDialogIsOpen(open: boolean) {
     this.isOpenFileDialogOpen = open;
+  }
+
+  private async getBlob(): Promise<Blob> {
+    if (!this.document) throw new Error("Document not created");
+
+    return new Blob([this.document], {
+      type: "text/plain",
+    });
+  }
+
+  private setFile(file: FileHandle | null): void {
+    this.file = file;
   }
 
   setDisplayFocus(focus: "editor" | "output") {

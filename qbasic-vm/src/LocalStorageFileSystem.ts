@@ -275,7 +275,7 @@ export class LocalStorageFileSystem implements IFileSystem {
 	directory(_fileSpec: string): Promise<string[]> {
 		throw new Error('Method not implemented.')
 	}
-	kill(_fileSpec: string): Promise<void>[] {
+	kill(_fileSpec: string): Promise<void> {
 		throw new Error('Method not implemented.')
 	}
 	async access(fileNameOrUri: string): Promise<boolean> {

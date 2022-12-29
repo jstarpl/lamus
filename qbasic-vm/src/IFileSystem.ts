@@ -115,5 +115,5 @@ export interface IFileSystem {
 	seek(handle: number, pos: number): Promise<void>
 	eof(handle: number): Promise<boolean>
 	directory(fileSpec: string): Promise<string[]>
-	kill(fileSpec: string): Promise<void>[]
+	kill(fileSpec: string): Promise<void>
 }

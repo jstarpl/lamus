@@ -3119,7 +3119,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		// filename$ FOR (INPUT|OUTPUT|APPEND|RANDOM|BINARY) AS (fileNum%|#N)
 		action: function (vm) {
 			const fileHandle = vm.stack.pop()
-			const fileName = vm.stack.pop()
+			const fileName = vm.cwd + vm.stack.pop()
 			const mode = vm.stack.pop() as FileAccessMode
 
 			if (vm.fileSystem) {
@@ -3215,12 +3215,12 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		args: ['STRING'],
 		minArgs: 1,
 		action: function (vm) {
-			const fileName = getArgValue(vm.stack.pop())
+			const fileName = vm.cwd + getArgValue(vm.stack.pop())
 
 			if (vm.fileSystem) {
 				vm.suspend()
 
-				Promise.all(vm.fileSystem.kill(fileName))
+				vm.fileSystem.kill(fileName)
 					.then(() => vm.resume())
 					.catch((reason) => {
 						vm.trace.printf('Error while deleting files: %s\n', reason)
@@ -3239,11 +3239,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		action: function (vm) {
 			const argCount = vm.stack.pop()
 
-			let specifier = '*'
+			let specifier = vm.cwd + '*'
 
 			const target = vm.stack.pop() as ArrayVariable<StringType>
 			if (argCount > 1) {
-				specifier = getArgValue(vm.stack.pop())
+				specifier = vm.cwd + getArgValue(vm.stack.pop())
 			}
 
 			if (vm.fileSystem) {
