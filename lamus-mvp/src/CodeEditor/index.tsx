@@ -43,6 +43,10 @@ import {
   useModalDialog,
 } from "../helpers/useModalDialog";
 import { assertNever } from "../helpers/util";
+import {
+  FILE_PATH_SEPARATOR,
+  PROVIDER_SEPARATOR,
+} from "../stores/fileSystem/IFileSystemProvider";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -294,6 +298,15 @@ const CodeEditor = observer(function CodeEditor() {
 
     const code = EditorStore.document ?? "";
 
+    if (EditorStore.file) {
+      EditorStore.vm.setCWD(
+        `${EditorStore.file.providerId}${PROVIDER_SEPARATOR}${
+          EditorStore.file.path.length > 0 ? FILE_PATH_SEPARATOR : ""
+        }${EditorStore.file.path.join(FILE_PATH_SEPARATOR)}/`
+      );
+    } else {
+      EditorStore.vm.setCWD("");
+    }
     EditorStore.vm.setCode(code);
     EditorStore.vm.run();
   }, []);
@@ -408,6 +421,7 @@ const CodeEditor = observer(function CodeEditor() {
         AppStore.isBusy = false;
         EditorStore.setOpenFileDialogIsOpen(false);
         if (!isOk) return;
+        EditorStore.vm?.reset();
         editorView.current.setState(
           EditorState.create({
             doc: EditorStore.document ?? "",

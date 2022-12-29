@@ -45,6 +45,7 @@ export class VMStoreClass {
   _destructors: (() => void)[] = [];
   _audio: AudioDevice;
   _soundEffects: HTMLAudioElement[];
+  _cwd: string = "";
 
   constructor(
     viewParent: HTMLElement,
@@ -59,6 +60,7 @@ export class VMStoreClass {
         _console: false,
         _program: false,
         _destructors: false,
+        _cwd: false,
       },
       {
         autoBind: true,
@@ -184,7 +186,7 @@ export class VMStoreClass {
 
   run() {
     if (this._program === null) return;
-    this._vm.cwd = "";
+    this._vm.cwd = this._cwd;
 
     this.runtimeErrors.replace([]);
     this.runState = VMRunState.RUNNING;
@@ -234,5 +236,9 @@ export class VMStoreClass {
     this._viewParent.replaceChildren();
 
     this._destructors.forEach((destructor) => destructor());
+  }
+
+  setCWD(location: string) {
+    this._cwd = location;
   }
 }

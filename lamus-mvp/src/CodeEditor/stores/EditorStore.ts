@@ -18,7 +18,6 @@ class EditorStoreClass {
     path: [],
     providerId: "dropbox",
   };
-  meta: any = null;
   isSaveFileDialogOpen: boolean = false;
   isOpenFileDialogOpen: boolean = false;
 
@@ -46,6 +45,7 @@ class EditorStoreClass {
   }
 
   setDocument(newDocument: Text) {
+    if (newDocument === this.document) return;
     this.document = newDocument;
     localStorage.setItem(ACTIVE_DOCUMENT_KEY, JSON.stringify(newDocument));
     this.autosave();
@@ -164,6 +164,14 @@ class EditorStoreClass {
     }
 
     const text = await (await result.data).text();
+
+    this.setFile({
+      providerId: file.providerId,
+      path: file.path.slice(),
+      fileName: file.fileName,
+      meta: result.meta ?? undefined,
+    });
+
     this.document = text;
 
     return true;
@@ -178,9 +186,7 @@ class EditorStoreClass {
   }
 
   private async getBlob(): Promise<Blob> {
-    if (!this.document) throw new Error("Document not created");
-
-    return new Blob([this.document], {
+    return new Blob([this.document ?? ""], {
       type: "text/plain",
     });
   }
