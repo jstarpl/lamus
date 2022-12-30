@@ -13,11 +13,7 @@ type Text = string;
 
 class EditorStoreClass {
   document: Text | null = null;
-  file: FileHandle | null = {
-    fileName: "program.bas",
-    path: [],
-    providerId: "dropbox",
-  };
+  file: FileHandle | null = null;
   isSaveFileDialogOpen: boolean = false;
   isOpenFileDialogOpen: boolean = false;
 

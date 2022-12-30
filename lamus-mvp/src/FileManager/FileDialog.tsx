@@ -144,52 +144,81 @@ export const FileDialog = observer(function FileDialog({
     [initialStorageProvider]
   );
 
-  useEffect(
-    () =>
-      autorun(() => {
-        if (!currentStorage) return;
-        const provider = AppStore.fileSystem.providers.get(currentStorage);
+  const refreshList = useCallback(() => {
+    if (!currentStorage) return;
+    const provider = AppStore.fileSystem.providers.get(currentStorage);
 
-        if (!provider) {
-          setStatus(LoadStatus.ERROR);
+    if (!provider) {
+      setStatus(LoadStatus.ERROR);
+      return;
+    }
+
+    setStatus(LoadStatus.LOADING);
+    provider
+      .list(currentPath)
+      .then(async (result) => {
+        if (!result.ok) {
+          console.error(result.error);
           return;
         }
 
-        setStatus(LoadStatus.LOADING);
-        provider
-          .list(currentPath)
-          .then(async (result) => {
-            if (!result.ok) {
-              console.error(result.error);
-              return;
-            }
-
-            let files = (await result.files).map<IFileEntryEx>((file) => ({
-              ...file,
-              guid: uuidv4(),
-            }));
-            files = files.sort(fileComparator);
-            if (isSelectingDirectory) {
-              files.unshift(SELECT_THIS_DIR);
-            }
-            if (currentPath.length > 0) {
-              files.unshift({
-                guid: uuidv4(),
-                fileName: "...",
-                size: 0,
-                dir: true,
-                parentDir: true,
-              });
-            }
-            setStatus(LoadStatus.OK);
-            setFileList(files);
-          })
-          .catch((e) => {
-            console.error(e);
-            setStatus(LoadStatus.ERROR);
+        let files = (await result.files).map<IFileEntryEx>((file) => ({
+          ...file,
+          guid: uuidv4(),
+        }));
+        files = files.sort(fileComparator);
+        if (isSelectingDirectory) {
+          files.unshift(SELECT_THIS_DIR);
+        }
+        if (currentPath.length > 0) {
+          files.unshift({
+            guid: uuidv4(),
+            fileName: "...",
+            size: 0,
+            dir: true,
+            parentDir: true,
           });
+        }
+        setStatus(LoadStatus.OK);
+        setFileList(files);
+      })
+      .catch((e) => {
+        console.error(e);
+        setStatus(LoadStatus.ERROR);
+      });
+  }, [isSelectingDirectory, currentStorage, currentPath]);
+
+  useEffect(() => {
+    function onKeyDown(evt: KeyboardEvent) {
+      if (
+        evt.key === "r" &&
+        evt.ctrlKey === true &&
+        evt.altKey === false &&
+        evt.shiftKey === false &&
+        evt.metaKey === false
+      ) {
+        if (!evt.repeat) refreshList();
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown, {
+      capture: true,
+      passive: false,
+    });
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
+    };
+  }, [refreshList]);
+
+  useEffect(
+    () =>
+      autorun(() => {
+        refreshList();
       }),
-    [isSelectingDirectory, currentStorage, currentPath]
+    [refreshList]
   );
 
   const onListChange = useCallback(
