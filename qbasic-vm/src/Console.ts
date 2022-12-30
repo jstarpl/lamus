@@ -342,6 +342,17 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
+	public resize(width: number, height: number) {
+		this.containerWidth = width
+		this.containerHeight = height
+		
+		const targetContainerWidth = this.containerWidth || this._width
+		const targetContainerHeight = this.containerHeight || this._height
+
+		this.container.style.width = targetContainerWidth + 'px'
+		this.container.style.height = targetContainerHeight + 'px'
+	}
+
 	public screen(num: number): boolean {
 		const dimensions = VIDEO_MODES[num] as IVideoMode | undefined
 		if (dimensions === undefined) {
@@ -352,6 +363,20 @@ export class Console extends EventTarget implements IConsole {
 
 		this._width = dimensions.width
 		this._height = dimensions.height
+
+		this.rows = dimensions.rows
+		this.cols = dimensions.cols
+
+		this.dispatchEvent(
+			new CustomEvent('resize', {
+				detail: {
+					width: this._width,
+					height: this._height,
+					rows: this.rows,
+					cols: this.cols,
+				},
+			})
+		)
 
 		// this.containerWidth = this._width
 		// this.containerHeight = this._height
@@ -375,24 +400,11 @@ export class Console extends EventTarget implements IConsole {
 
 		this.canvas.width = dimensions.width
 		this.canvas.height = dimensions.height
-		this.rows = dimensions.rows
-		this.cols = dimensions.cols
 
 		this.ctx.imageSmoothingEnabled = false
 
 		this.cls()
 		this.clearAllSprites()
-
-		this.dispatchEvent(
-			new CustomEvent('resize', {
-				detail: {
-					width: this._width,
-					height: this._height,
-					rows: this.rows,
-					cols: this.cols,
-				},
-			})
-		)
 
 		if (this._landscape !== (dimensions.landscape || false)) {
 			this._landscape = dimensions.landscape || false

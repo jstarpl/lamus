@@ -66,6 +66,8 @@ function orientationToClassName(orientation: "landscape" | "portrait") {
 
 const CODE_EDITOR_SWITCH_CONTEXT = "Escape Escape Tab";
 
+const EXIT_FINISHED_PROGRAM = "Escape";
+
 const DEFAULT_NEW_FILE_NAME = "New_Program.bas";
 
 const CodeEditor = observer(function CodeEditor() {
@@ -147,12 +149,25 @@ const CodeEditor = observer(function CodeEditor() {
       }
     }
 
+    function onExitFinishedProgram(e: KeyboardEvent) {
+      if (
+        EditorStore.displayFocus === "output" &&
+        EditorStore.vm?.runState !== VMRunState.RUNNING
+      ) {
+        EditorStore.setDisplayFocus("editor");
+        focusEditor();
+      }
+    }
+
     keyboard.bind(CODE_EDITOR_SWITCH_CONTEXT, onTabEditorOutput, {
       preventDefaultPartials: false,
     });
 
+    keyboard.bind(EXIT_FINISHED_PROGRAM, onExitFinishedProgram);
+
     return () => {
       keyboard.unbind(CODE_EDITOR_SWITCH_CONTEXT, onTabEditorOutput);
+      keyboard.unbind(EXIT_FINISHED_PROGRAM, onExitFinishedProgram);
     };
   }, [keyboard, focusEditor, focusOutput]);
 

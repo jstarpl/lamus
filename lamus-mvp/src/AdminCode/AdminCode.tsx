@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { observer } from "mobx-react-lite";
 import { Dialog } from "../components/Dialog";
 import "./AdminCode.css";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { KeyboardHandler } from "../helpers/useKeyboardHandler";
 
 const KONAMI_CODE =
@@ -29,6 +29,8 @@ export const AdminCode = observer(function AdminCode() {
     AppStore.setShowAdminCode(true);
   }
 
+  const adminUrl = useMemo(() => generateAdminUrl(deviceId), [deviceId]);
+
   useEffect(() => {
     if (!keyboardHandler) return;
 
@@ -46,10 +48,7 @@ export const AdminCode = observer(function AdminCode() {
   return showAdminCode ? (
     <Dialog>
       <p>
-        <QRCodeSVG
-          value={generateAdminUrl(deviceId)}
-          className="admin-code-qr"
-        />
+        <QRCodeSVG value={adminUrl} className="admin-code-qr" />
       </p>
       <p>
         <input

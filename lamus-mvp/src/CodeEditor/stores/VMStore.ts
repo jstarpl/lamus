@@ -32,6 +32,9 @@ export interface IError {
   column?: number;
 }
 
+const LONGER_SCREEN_SIDE_LENGTH = 600;
+const SHORTER_SCREEN_SIDE_LENGTH = 320;
+
 export class VMStoreClass {
   code: string = "";
   runState: VMRunState = VMRunState.IDLE;
@@ -73,8 +76,8 @@ export class VMStoreClass {
     const cons = new Console(
       viewParent,
       undefined,
-      320,
-      600,
+      SHORTER_SCREEN_SIDE_LENGTH,
+      LONGER_SCREEN_SIDE_LENGTH,
       process.env.PUBLIC_URL + "/CodeEditor/"
     );
 
@@ -106,6 +109,7 @@ export class VMStoreClass {
     vm.addListener("reset", this._onReset);
     cons.addEventListener("input", this._onInput);
     cons.addEventListener("orientationchange", this._onOrientationChange);
+    cons.addEventListener("resize", this._onResize);
 
     this._vm = vm;
     this._console = cons;
@@ -136,9 +140,36 @@ export class VMStoreClass {
     this.runState = VMRunState.STOPPED;
   }
 
-  _onOrientationChange(event: Event) {
-    if (!(event instanceof CustomEvent)) return;
-    console.log(event.detail);
+  _onOrientationChange(evt: Event) {
+    if (!(evt instanceof CustomEvent)) return;
+    const customEvent: CustomEvent<{ landscape: boolean }> = evt;
+    if (customEvent.detail.landscape === true) {
+      this._setOutputOrientation(VMOutputOrientation.LANDSCAPE);
+    } else {
+      this._setOutputOrientation(VMOutputOrientation.PORTRAIT);
+    }
+  }
+
+  _onResize(evt: Event) {
+    if (!(evt instanceof CustomEvent)) return;
+    const customEvent: CustomEvent<{
+      width: number;
+      height: number;
+      rows: number;
+      cols: number;
+    }> = evt;
+
+    if (customEvent.detail.width > customEvent.detail.height) {
+      this._console.resize(
+        LONGER_SCREEN_SIDE_LENGTH,
+        SHORTER_SCREEN_SIDE_LENGTH
+      );
+    } else {
+      this._console.resize(
+        SHORTER_SCREEN_SIDE_LENGTH,
+        LONGER_SCREEN_SIDE_LENGTH
+      );
+    }
   }
 
   _onInput() {
@@ -231,6 +262,7 @@ export class VMStoreClass {
       "orientationchange",
       this._onOrientationChange
     );
+    this._console.removeEventListener("resize", this._onResize);
 
     this._vm.reset();
     this._viewParent.replaceChildren();

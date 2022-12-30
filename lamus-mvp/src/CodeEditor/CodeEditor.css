@@ -2,6 +2,8 @@
   --output-zoom: 1;
   --gutter-min-width: 80px;
   --editor-font-size: 1em;
+  --output-longer-length: 600px;
+  --output-shorter-length: 320px;
 }
 
 .CodeEditor > .sdi-app-workspace {
@@ -18,7 +20,7 @@
 
 .CodeEditor > .sdi-app-workspace > .Output {
   grid-area: Output;
-  overflow: auto;
+  overflow: hidden;
   display: grid;
   grid-template-rows: auto;
   grid-template-columns: auto;
@@ -29,9 +31,14 @@
 }
 
 .CodeEditor .Output__Canvas {
-  height: 600px;
-  width: 320px;
+  height: var(--output-longer-length);
+  width: var(--output-shorter-length);
   background-color: black;
+}
+
+.CodeEditor > .sdi-app-workspace.Orientation-Landscape .Output__Canvas {
+  width: var(--output-longer-length);
+  height: var(--output-shorter-length);
 }
 
 .CodeEditor .cm-editor {
@@ -115,15 +122,33 @@
   }
 }
 
-@media screen and (min-width: 750px) and (max-width: 1279px) and (min-height: 500px) and (orientation: landscape) {
-  .CodeEditor {
+@media screen and (min-width: 240px) and (min-height: 180px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    --output-zoom: 0.5;
+  }
+}
+
+@media screen and (min-width: 460px) and (min-height: 280px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
     --output-zoom: 0.75;
+  }
+}
+
+@media screen and (min-width: 620px) and (min-height: 360px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    --output-zoom: 1;
   }
 }
 
 @media screen and (min-width: 750px) and (max-width: 1279px) and (min-height: 500px) and (orientation: landscape) {
   .CodeEditor {
     --output-zoom: 0.75;
+  }
+}
+
+@media screen and (min-width: 940px) and (min-height: 530px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    --output-zoom: 1.5;
   }
 }
 
@@ -132,6 +157,25 @@
     --output-zoom: 1.5;
   }
 }
+
+@media screen and (min-width: 1279px) and (min-height: 700px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    --output-zoom: 2;
+  }
+}
+
+@media screen and (min-width: 1540px) and (min-height: 880px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    --output-zoom: 2.5;
+  }
+}
+
+@media screen and (min-width: 1920px) and (min-height: 1080px) and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    --output-zoom: 3;
+  }
+}
+
 
 @media screen and (orientation: portrait) {
   .CodeEditor {
@@ -166,3 +210,14 @@
     --output-zoom: 1.5;
   }
 }
+
+@media screen and (orientation: landscape) {
+  .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
+    display: grid;
+    grid-template-areas: "Document Output";
+    grid-template-columns: 0 100vw;
+    grid-template-rows: auto;
+    overflow: hidden;
+  }
+}
+
