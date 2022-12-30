@@ -5,6 +5,7 @@ import { Dialog } from "../components/Dialog";
 import "./AdminCode.css";
 import { useContext, useEffect, useMemo } from "react";
 import { KeyboardHandler } from "../helpers/useKeyboardHandler";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const KONAMI_CODE =
   "ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight KeyB KeyA";
@@ -19,20 +20,32 @@ export const AdminCode = observer(function AdminCode() {
   const showAdminCode = AppStore.showAdminCode;
   const deviceId = AppStore.deviceId;
   const keyboardHandler = useContext(KeyboardHandler);
-
-  function onClose(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    e.preventDefault();
-    AppStore.setShowAdminCode(false);
-  }
-
-  function onShow() {
-    AppStore.setShowAdminCode(true);
-  }
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const adminUrl = useMemo(() => generateAdminUrl(deviceId), [deviceId]);
 
+  const isMobile = useMemo(
+    () =>
+      !!navigator.userAgent.match(
+        /iPad|iPhone|Android|BlackBerry|Windows Phone|webOS/i
+      ),
+    []
+  );
+
+  function onClose(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    e.preventDefault();
+    // AppStore.setShowAdminCode(false);
+    navigate(location.pathname + location.search);
+  }
+
   useEffect(() => {
     if (!keyboardHandler) return;
+
+    function onShow() {
+      // AppStore.setShowAdminCode(true);
+      navigate("#serviceMode");
+    }
 
     keyboardHandler.bind(KONAMI_CODE, onShow, {
       preventDefaultPartials: false,
@@ -43,12 +56,26 @@ export const AdminCode = observer(function AdminCode() {
     return () => {
       keyboardHandler.unbind(KONAMI_CODE, onShow);
     };
-  }, [keyboardHandler]);
+  }, [keyboardHandler, navigate]);
+
+  useEffect(() => {
+    if (location.hash === "#serviceMode") {
+      AppStore.setShowAdminCode(true);
+    } else {
+      AppStore.setShowAdminCode(false);
+    }
+  }, [location]);
 
   return showAdminCode ? (
     <Dialog>
       <p>
-        <QRCodeSVG value={adminUrl} className="admin-code-qr" />
+        {isMobile ? (
+          <a href={adminUrl} target="_blank" rel="noreferrer">
+            <QRCodeSVG value={adminUrl} className="admin-code-qr" />
+          </a>
+        ) : (
+          <QRCodeSVG value={adminUrl} className="admin-code-qr" />
+        )}
       </p>
       <p>
         <input
