@@ -898,6 +898,7 @@ export class QBasicProgram {
 			rules.addToken('endl', '\\n')
 			rules.addToken('comment', "'.*$")
 			rules.addToken('hexconstant', '\\&H[0-9A-Fa-f]+')
+			rules.addToken('binconstant', '\\&B[0-1]+')
 			rules.addToken('floatconstant', '\\d*\\.\\d+')
 			rules.addToken('intconstant', '-?\\d+')
 			rules.addToken('stringconstant', '"[^"]*"')
@@ -1271,7 +1272,8 @@ export class QBasicProgram {
 			rules.addRule('expr9: constant')
 			rules.addRule('expr9: expr10')
 			rules.addRule('expr10: ReferenceList')
-			rules.addRule('constant: hexconstant', this.onNumber)
+			rules.addRule('constant: hexconstant', this.onHexNumber)
+			rules.addRule('constant: binconstant', this.onBinNumber)
 			rules.addRule('constant: intconstant', this.onNumber)
 			rules.addRule('constant: floatconstant', this.onNumber)
 			rules.addRule('constant: stringconstant', this.onString)
@@ -1338,6 +1340,14 @@ export class QBasicProgram {
 		const program = new AstProgram(locus, new AstSubroutine(locus, '_main', [], symbols[0], false))
 		dbg().printf('Program successfully parsed. %d statements.\n', program.subs[0].statements.length)
 		return program
+	}
+
+	private onBinNumber(symbols, locus) {
+		return new AstConstantExpr(locus, parseInt(symbols[0].substr(2), 2))
+	}
+
+	private onHexNumber(symbols, locus) {
+		return new AstConstantExpr(locus, parseInt(symbols[0].substr(2), 16))
 	}
 
 	private onNumber(symbols, locus) {
