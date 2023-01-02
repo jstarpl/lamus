@@ -2519,10 +2519,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.6.22.tgz#219dfd89ae5b97a8801f015323ffa4b62f45718b"
   integrity sha512-H1rQc1ZOHANWBvPcW+JpGwr+juXSxM8Q8YCkm3GhZd8REu1fHR3z99CErO1p9pkcfcxZnMdIZdIsXkOHY0NilA==
 
-"@meshtastic/meshtasticjs@^0.9.1":
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/@meshtastic/meshtasticjs/-/meshtasticjs-0.9.1.tgz#973c5b0e404080d017b144a5b37ec934abb38ad4"
-  integrity sha512-BYTqcH/ArIr82EpYW23Y2cwvkWoKgNJAdjU21L8SUt9HjuVUNzeJOxieASINqLEWLFbcnOf7G5owmN2rKCSkLA==
+"@meshtastic/meshtasticjs@^0.9.8":
+  version "0.9.8"
+  resolved "https://registry.yarnpkg.com/@meshtastic/meshtasticjs/-/meshtasticjs-0.9.8.tgz#b09a3f46ac08dd5af9fa6b1620e669f47fef196e"
+  integrity sha512-B76jPM3sKBVFcmW9Z3/I8DY+KHEbjVHfKTqIAnxfqTgDOTSIn5/kgxseVxnDLmMo795MxTey5rUm0ysao/s40g==
   dependencies:
     "@protobuf-ts/runtime" "^2.8.2"
     glob "^8.0.3"
