@@ -16,21 +16,21 @@ type ISomeMeshtasticConnection =
 
 export default function setup(router: GeneralIORouter) {
   let currentConnection: ISomeMeshtasticConnection | null = null;
-  let messageBuffer: Types.MessagePacket[] = [];
+  let messageInbox: Types.MessagePacket[] = [];
   let knownNodes: NodeInfo[] = [];
   let myNode: MyNodeInfo | null = null;
   let myNodeStatus: Types.DeviceStatusEnum =
     Types.DeviceStatusEnum.DEVICE_DISCONNECTED;
 
   function initConnection(connection: ISomeMeshtasticConnection) {
-    messageBuffer.length = 0;
+    messageInbox.length = 0;
     knownNodes.length = 0;
     myNode = null;
     myNodeStatus = Types.DeviceStatusEnum.DEVICE_DISCONNECTED;
 
     connection.events.onMessagePacket.subscribe((pkt) => {
       console.log(pkt);
-      messageBuffer.push(pkt);
+      messageInbox.push(pkt);
       router.emit("/meshtastic/packet/message", JSON.stringify(pkt));
     });
     connection.events.onNodeInfoPacket.subscribe((pkt) => {
@@ -96,10 +96,10 @@ export default function setup(router: GeneralIORouter) {
       concurrentLogOutput: false,
     });
   });
-  router.insertRoute("/meshtastic/packet/message", async (req) => {
+  router.insertRoute("/meshtastic/inbox", async (req) => {
     if (req.method === "in") {
-      const data = JSON.stringify(messageBuffer);
-      messageBuffer.length = 0;
+      const data = JSON.stringify(messageInbox);
+      messageInbox.length = 0;
       return data;
     }
 
