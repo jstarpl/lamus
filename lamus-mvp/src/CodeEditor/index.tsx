@@ -266,6 +266,7 @@ const CodeEditor = observer(function CodeEditor() {
   useEffect(() => {
     if (!editorViewParent.current) return;
 
+    console.log("Creating new state");
     const newEditorView = new EditorView({
       parent: editorViewParent.current,
       state: EditorState.create({
@@ -437,6 +438,7 @@ const CodeEditor = observer(function CodeEditor() {
         EditorStore.setOpenFileDialogIsOpen(false);
         if (!isOk) return;
         EditorStore.vm?.reset();
+        console.log("Setting new state");
         editorView.current.setState(
           EditorState.create({
             doc: EditorStore.document ?? "",

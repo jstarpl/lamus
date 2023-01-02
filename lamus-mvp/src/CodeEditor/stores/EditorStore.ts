@@ -29,6 +29,8 @@ class EditorStoreClass {
       {
         autosave: false,
         _autosaveTimeout: false,
+        document: false,
+        file: false,
       },
       {
         autoBind: true,

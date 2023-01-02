@@ -22,6 +22,7 @@
     "@emoji-mart/data": "^1.0.1",
     "@lamus/codemirror-lang-qbasic-vm": "*",
     "@lamus/qbasic-vm": "*",
+    "@meshtastic/meshtasticjs": "^0.9.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@sofie-automation/sorensen": "^1.4.2",
     "@svgr/webpack": "^6.2.1",
