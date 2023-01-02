@@ -14,9 +14,11 @@ type ISomeMeshtasticConnection =
   | IHTTPConnection
   | ISerialConnection;
 
+type TextMessage = Types.PacketMetadata<string>;
+
 export default function setup(router: GeneralIORouter) {
   let currentConnection: ISomeMeshtasticConnection | null = null;
-  let messageInbox: Types.MessagePacket[] = [];
+  let messageInbox: TextMessage[] = [];
   let knownNodes: NodeInfo[] = [];
   let myNode: MyNodeInfo | null = null;
   let myNodeStatus: Types.DeviceStatusEnum =
@@ -35,8 +37,8 @@ export default function setup(router: GeneralIORouter) {
     });
     connection.events.onNodeInfoPacket.subscribe((pkt) => {
       console.log(pkt);
-      knownNodes = knownNodes.filter((oldNode) => oldNode.num !== pkt.data.num);
-      knownNodes.push(pkt.data);
+      knownNodes = knownNodes.filter((oldNode) => oldNode.num !== pkt.num);
+      knownNodes.push(pkt);
       router.emit("/meshtastic/packet/nodeInfo", JSON.stringify(pkt));
     });
     connection.events.onMyNodeInfo.subscribe((pkt) => {
@@ -69,7 +71,7 @@ export default function setup(router: GeneralIORouter) {
     await connection.connect({
       address: req.data,
       fetchInterval: HTTP_FETCH_INTERVAL,
-      receiveBatchRequests: true,
+      receiveBatchRequests: false,
     });
   });
   router.insertRoute("/meshtastic/connection/bt", async (req) => {
