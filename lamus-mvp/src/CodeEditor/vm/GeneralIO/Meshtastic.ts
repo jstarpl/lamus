@@ -108,6 +108,26 @@ export default function setup(router: GeneralIORouter) {
     if (!req.data) return;
     if (!currentConnection) throw new Error("No Meshtastic connection");
   });
+  router.insertRoute("/meshtastic/outbox", async (req) => {
+    if (req.method !== "out" || !req.data) return;
+
+    if (!currentConnection) throw new Error("No Meshtastic connection");
+    currentConnection.sendText({
+      text: req.data,
+    });
+  });
+  router.insertRoute("/meshtastic/outbox/:nodeNum", async (req) => {
+    if (req.method !== "out" || !req.data || !req.params) return;
+
+    const dstNum = parseInt(req.params["nodeNum"], 10);
+
+    if (!currentConnection) throw new Error("No Meshtastic connection");
+    await currentConnection.sendText({
+      text: req.data,
+      destination: dstNum,
+      wantAck: true,
+    });
+  });
   router.insertRoute("/meshtastic/knownNodes", async (req) => {
     if (req.method !== "in") return;
     const data = JSON.stringify(knownNodes);
