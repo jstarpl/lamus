@@ -47,8 +47,10 @@ export interface IConsole {
 	getPixel(x: number, y: number): [number, number, number]
 	putPixel(x: number, y: number, color: number)
 	putPixel(x: number, y: number, color: [number, number, number])
-	get(x1: number, y1: number, x2: number, y2: number, step1?: boolean, step2?: boolean): ImageData
-	put(data: ImageData, x: number, y: number): void
+	get(): Uint8ClampedArray
+	get(x1: number, y1: number, x2: number, y2: number): Uint8ClampedArray
+	put(data: Uint8ClampedArray): void
+	put(data: Uint8ClampedArray, x1: number, y1: number, width: number, height: number): void
 	paint(x: number, y: number, colour: number, borderColor: number, step?: number): void
 	putImage(
 		image: HTMLImageElement,

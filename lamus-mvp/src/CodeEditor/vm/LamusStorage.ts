@@ -518,6 +518,14 @@ export class LamusStorage implements IFileSystem {
 
     fileHandle.cursor = pos;
   }
+  async position(handle: number): Promise<number> {
+    const fileHandle = this.fileHandles[handle];
+    if (!fileHandle) {
+      throw new Error("Invalid file handle.");
+    }
+
+    return fileHandle.cursor;
+  }
   async eof(handle: number): Promise<boolean> {
     const fileHandle = this.fileHandles[handle];
     if (!fileHandle) {

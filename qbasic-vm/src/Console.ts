@@ -75,6 +75,7 @@ const SPECIAL_CHARS = {
 	Enter: 13,
 	Escape: 27,
 	Backspace: 8,
+	Tab: 9,
 }
 
 interface IVideoMode {
@@ -166,13 +167,7 @@ export class Console extends EventTarget implements IConsole {
 	private containerWidth: number | undefined
 	private containerHeight: number | undefined
 
-	constructor(
-		parentElement: HTMLElement,
-		className?: string,
-		width?: number,
-		height?: number,
-		assetPath = 'assets/'
-	) {
+	constructor(parentElement: HTMLElement, className?: string, width?: number, height?: number, assetPath = 'assets/') {
 		super()
 
 		this.canvas = document.createElement('canvas')
@@ -345,7 +340,7 @@ export class Console extends EventTarget implements IConsole {
 	public resize(width: number, height: number) {
 		this.containerWidth = width
 		this.containerHeight = height
-		
+
 		const targetContainerWidth = this.containerWidth || this._width
 		const targetContainerHeight = this.containerHeight || this._height
 
@@ -568,18 +563,13 @@ export class Console extends EventTarget implements IConsole {
 		this.ctx.fillStyle = fillBuf
 	}
 
-	public get(x1: number, y1: number, x2: number, y2: number, step1?: boolean, step2?: boolean): ImageData {
+	public get(x1?: number, y1?: number, x2?: number, y2?: number): Uint8ClampedArray {
 		let temp: number
 
-		if (step1) {
-			x1 = this.curX + x1
-			y1 = this.curY + y1
-		}
-
-		if (step2) {
-			x1 = this.curX + x2
-			y2 = this.curY + y2
-		}
+		x1 = x1 ?? 0
+		y1 = y1 ?? 0
+		x2 = x2 ?? this._width
+		y2 = y2 ?? this._height
 
 		if (x1 > x2) {
 			temp = x1
@@ -593,11 +583,19 @@ export class Console extends EventTarget implements IConsole {
 			y2 = temp
 		}
 
-		return this.ctx.getImageData(x1, y1, x2 - x1, y2 - y1)
+		const data = this.ctx.getImageData(x1, y1, x2 - x1, y2 - y1)
+		return data.data
 	}
 
-	public put(data: ImageData, x: number, y: number): void {
-		this.ctx.putImageData(data, x, y)
+	public put(data: Uint8ClampedArray, x?: number, y?: number, width?: number, height?: number): void {
+		width = width ?? this._width
+		height = height ?? this._height
+		x = x ?? 0
+		y = y ?? 0
+		const imageData = new ImageData(width, height)
+		imageData.data.set(data);
+	
+		this.ctx.putImageData(imageData, x, y)
 	}
 
 	public paint(_x: number, _y: number, _colour: number, _borderColour: number, _step?: number): void {
@@ -613,7 +611,8 @@ export class Console extends EventTarget implements IConsole {
 		reject: (reason?: any) => void
 	) {
 		img.src = url
-		img.decode()
+		img
+			.decode()
 			.then(() => {
 				const idx = this.images.findIndex((i) => i === undefined)
 				if (idx >= 0) {
@@ -988,20 +987,10 @@ export class Console extends EventTarget implements IConsole {
 
 		if (show) {
 			this.ctx.fillStyle = this.fgcolor
-			this.ctx.fillRect(
-				this.x * this.charWidth,
-				this.y * this.charHeight + this.charHeight - 2,
-				this.charWidth,
-				2
-			)
+			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
 		} else {
 			this.ctx.fillStyle = this.bgcolor
-			this.ctx.fillRect(
-				this.x * this.charWidth,
-				this.y * this.charHeight + this.charHeight - 2,
-				this.charWidth,
-				2
-			)
+			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
 		}
 
 		this.cursorShown = show

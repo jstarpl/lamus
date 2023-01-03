@@ -35,6 +35,7 @@ import {
 	JSONType,
 	IsNumericType,
 	IsStringType,
+	IntegerType,
 } from './Types'
 import { IConsole, STRUCTURED_INPUT_MATCH } from './IConsole'
 import { IAudioDevice } from './IAudioDevice'
@@ -733,9 +734,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 
 			const num = vm.stack.pop()
 			const result = Number(num).toString(10)
-			vm.stack.push(
-				'0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result
-			)
+			vm.stack.push('0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result)
 		},
 	},
 
@@ -752,9 +751,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 
 			const num = vm.stack.pop()
 			const result = Number(num).toString(16)
-			vm.stack.push(
-				'0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result
-			)
+			vm.stack.push('0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result)
 		},
 	},
 
@@ -1142,6 +1139,32 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	LOC: {
+		// fileNum1%
+		type: 'INTEGER',
+		args: ['INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const fileNum = vm.stack.pop()
+
+			if (vm.fileSystem) {
+				vm.suspend()
+
+				vm.fileSystem
+					.position(fileNum)
+					.then((position) => {
+						vm.stack.push(position)
+						vm.resume()
+					})
+					.catch((error) => {
+						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking LOC: ${error}`)
+					})
+			} else {
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
+			}
+		},
+	},
+
 	RGB: {
 		type: 'INTEGER',
 		args: ['INTEGER', 'INTEGER', 'INTEGER'],
@@ -1225,7 +1248,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		minArgs: 2,
 		action: function (vm) {
 			const delim = vm.stack.pop()
-			const target = vm.stack.pop() as ArrayVariable<JSONType>
+			const target = vm.stack.pop() as ArrayVariable<StringType>
 
 			if (target.type !== vm.types['STRING']) {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `Argument is not an array of STRING`)
@@ -1363,6 +1386,29 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 			}
 
 			vm.stack.push(JSON.stringify(obj, undefined, 1))
+		},
+	},
+
+	CSRLIN: {
+		type: 'INTEGER',
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.stack.push(vm.cons.y)
+		},
+	},
+
+	POS: {
+		type: 'INTEGER',
+		args: ['INTEGER'],
+		minArgs: 0,
+		action: function (vm) {
+			const numArgs = vm.stack.pop()
+			if (numArgs > 0) {
+				vm.stack.pop()
+			}
+
+			vm.stack.push(vm.cons.x)
 		},
 	},
 
@@ -2631,6 +2677,71 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		},
 	},
 
+	GSAVE: {
+		// [X1%, Y1%, X2%, Y2%, ] TargetArray()
+		args: ['ANY', 'ANY', 'ANY', 'ANY', 'ARRAY OF INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			// TODO: get contents of the console frame buffer
+			const argCount = vm.stack.pop()
+			let x1: number | undefined = undefined
+			let y1: number | undefined = undefined
+			let x2: number | undefined = undefined
+			let y2: number | undefined = undefined
+			const target = vm.stack.pop() as ArrayVariable<IntegerType>
+			if (argCount > 1) {
+				y2 = getArgValue(vm.stack.pop())
+				x2 = getArgValue(vm.stack.pop())
+				y1 = getArgValue(vm.stack.pop())
+				x1 = getArgValue(vm.stack.pop())
+			}
+			let imgData: Uint8ClampedArray
+			if (x1 !== undefined && y1 !== undefined && x2 !== undefined && y2 !== undefined) {
+				imgData = vm.cons.get(x1, y1, x2, y2)
+			} else {
+				imgData = vm.cons.get()
+			}
+			target.resize([new Dimension(1, imgData.length)])
+			for (let i = 0; i < imgData.length; i++) {
+				target.assign([i + 1], new ScalarVariable<number>(vm.types['INTEGER'] as IntegerType, imgData[i]))
+			}
+		},
+	},
+
+	GLOAD: {
+		// [X%, Y%, Width%, Height%, ] SourceArray()
+		args: ['ANY', 'ANY', 'ANY', 'ANY', 'ARRAY OF INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			// paint 32-bit RGBA image from array
+			const argCount = vm.stack.pop()
+			let x1: number | undefined = undefined
+			let y1: number | undefined = undefined
+			let width: number | undefined = undefined
+			let height: number | undefined = undefined
+			const source = vm.stack.pop() as ArrayVariable<IntegerType>
+			if (source.type.name !== 'INTEGER')
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Source Array needs to be ARRAY OF INTEGER')
+
+			if (argCount > 1) {
+				height = getArgValue(vm.stack.pop())
+				width = getArgValue(vm.stack.pop())
+				y1 = getArgValue(vm.stack.pop())
+				x1 = getArgValue(vm.stack.pop())
+			}
+			const pixels = new Uint8ClampedArray(source.values.length)
+			for (let i = 0; i < source.values.length; i++) {
+				pixels[i] = source.values[i].value & 255;
+			}
+
+			if (x1 !== undefined && y1 !== undefined && width !== undefined && height !== undefined) {
+				vm.cons.put(pixels, x1, y1, width, height)
+			} else {
+				vm.cons.put(pixels)
+			}
+		},
+	},
+
 	GLINE: {
 		// X1%, Y1% [[, X2%, Y2%], COLOR%]
 		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
@@ -2877,8 +2988,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				}
 			}
 
-			target[explodedPath.shift()!] =
-				typeof value === 'number' && convertToBool ? (value === 0 ? false : true) : value
+			target[explodedPath.shift()!] = typeof value === 'number' && convertToBool ? (value === 0 ? false : true) : value
 		},
 	},
 
@@ -3220,7 +3330,8 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			if (vm.fileSystem) {
 				vm.suspend()
 
-				vm.fileSystem.kill(fileName)
+				vm.fileSystem
+					.kill(fileName)
 					.then(() => vm.resume())
 					.catch((reason) => {
 						vm.trace.printf('Error while deleting files: %s\n', reason)
@@ -3254,18 +3365,12 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					.then((files) => {
 						target.resize([new Dimension(1, files.length)])
 						for (let i = 0; i < files.length; i++) {
-							target.assign(
-								[i + 1],
-								new ScalarVariable<string>(vm.types['STRING'] as StringType, files[i])
-							)
+							target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'] as StringType, files[i]))
 						}
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(
-							RuntimeErrorCodes.IO_ERROR,
-							`Error while listing directory contents: ${error}`
-						)
+						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while listing directory contents: ${error}`)
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
