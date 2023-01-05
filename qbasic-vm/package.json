@@ -19,7 +19,7 @@
       "url": "http://stevehanov.ca"
     }
   ],
-  "license": "GPL v3.0-only",
+  "license": "GPL-3.0-only",
   "scripts": {
     "start": "webpack serve",
     "lint": "tslint --project tsconfig.json --config tslint.json",

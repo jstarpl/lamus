@@ -1394,7 +1394,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		args: [],
 		minArgs: 0,
 		action: function (vm) {
-			vm.stack.push(vm.cons.y)
+			vm.stack.push(vm.cons.y + 1)
 		},
 	},
 
@@ -1408,7 +1408,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 				vm.stack.pop()
 			}
 
-			vm.stack.push(vm.cons.x)
+			vm.stack.push(vm.cons.x + 1)
 		},
 	},
 

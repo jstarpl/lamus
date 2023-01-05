@@ -757,8 +757,8 @@ export class Console extends EventTarget implements IConsole {
 	public locate(row: number, col: number): void {
 		this.record('[L' + row + ',' + col + ']')
 		this.cursor(false)
-		this.x = Math.floor(col) - 1
-		this.y = Math.floor(row) - 1
+		this.x = Math.max(0, Math.min(Math.floor(col) - 1, this.cols)) ?? this.x ?? 0
+		this.y = Math.max(0, Math.min(Math.floor(row) - 1, this.rows)) ?? this.y ?? 0
 	}
 
 	private static colorIntegerToRgb(color: number): string {
