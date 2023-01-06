@@ -308,6 +308,9 @@ export class Console extends EventTarget implements IConsole {
 		this.inputMode = false
 		this.onInputDone = null
 		this.inputStr = ''
+		this.keyBuffer.length = 0
+		this.keyDown.length = 0
+		this.onTrappedKey = {}
 		this.rows = VIDEO_MODES[DEFAULT_VIDEO_MODE].rows
 		this.cols = VIDEO_MODES[DEFAULT_VIDEO_MODE].cols
 		this._height = VIDEO_MODES[DEFAULT_VIDEO_MODE].height
