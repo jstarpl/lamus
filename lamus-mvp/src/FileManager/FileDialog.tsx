@@ -271,21 +271,48 @@ export const FileDialog = observer(function FileDialog({
 
   const onFileEntryDoubleClick = useCallback(
     function onFileEntryDoubleClick(e: React.MouseEvent<HTMLElement>) {
+      if (!currentStorage) return;
       const guid = e.currentTarget.dataset["guid"];
       if (!guid) return;
       const clickedEntry = fileList.find((entry) => entry.guid === guid);
       if (!clickedEntry) return;
-      if (!clickedEntry.dir) return;
 
-      if (clickedEntry.parentDir) {
-        const newPath = currentPath.slice();
-        newPath.pop();
-        setCurrentPath(newPath);
-      } else {
-        setCurrentPath([...currentPath, clickedEntry.fileName]);
+      const fileName = clickedEntry?.fileName;
+
+      if (isSelectingDirectory && isSelectThisDirSelected) {
+        if (!onAccept) return;
+        onAccept({
+          providerId: currentStorage,
+          path: currentPath,
+          fileName,
+        });
+      }
+      if (!isSelectingDirectory && !clickedEntry.dir) {
+        if (!onAccept) return;
+        onAccept({
+          providerId: currentStorage,
+          path: currentPath,
+          fileName: clickedEntry.fileName,
+        });
+      }
+      if (clickedEntry.dir) {
+        if (clickedEntry.parentDir) {
+          const newPath = currentPath.slice();
+          newPath.pop();
+          setCurrentPath(newPath);
+        } else {
+          setCurrentPath([...currentPath, clickedEntry.fileName]);
+        }
       }
     },
-    [currentPath, fileList]
+    [
+      currentPath,
+      fileList,
+      currentStorage,
+      isSelectThisDirSelected,
+      isSelectingDirectory,
+      onAccept,
+    ]
   );
 
   function onAcceptInner() {
