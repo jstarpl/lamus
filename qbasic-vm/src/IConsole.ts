@@ -51,7 +51,7 @@ export interface IConsole {
 	get(x1: number, y1: number, x2: number, y2: number): Uint8ClampedArray
 	put(data: Uint8ClampedArray): void
 	put(data: Uint8ClampedArray, x1: number, y1: number, width: number, height: number): void
-	paint(x: number, y: number, colour: number, borderColor: number, step?: number): void
+	paint(x: number, y: number, color: number, borderColor?: number): void
 	putImage(
 		image: HTMLImageElement,
 		dx: number,

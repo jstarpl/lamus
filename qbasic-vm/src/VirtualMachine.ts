@@ -2731,7 +2731,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			}
 			const pixels = new Uint8ClampedArray(source.values.length)
 			for (let i = 0; i < source.values.length; i++) {
-				pixels[i] = source.values[i].value & 255;
+				pixels[i] = source.values[i].value & 255
 			}
 
 			if (x1 !== undefined && y1 !== undefined && width !== undefined && height !== undefined) {
@@ -2766,6 +2766,24 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			} else {
 				vm.cons.lineTo(x1, y1, color)
 			}
+		},
+	},
+
+	GPAINT: {
+		// X%, Y%, COLOR% [, BORDER_COLOR%]
+		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
+		minArgs: 3,
+		action: function (vm) {
+			const argCount = vm.stack.pop()
+			let borderColor: number | undefined = undefined
+			if (argCount > 3) {
+				borderColor = Math.round(getArgValue(vm.stack.pop()))
+			}
+			const color: number | undefined = Math.round(getArgValue(vm.stack.pop()))
+			const y = Math.round(getArgValue(vm.stack.pop()))
+			const x = Math.round(getArgValue(vm.stack.pop()))
+
+			vm.cons.paint(x, y, color, borderColor)
 		},
 	},
 

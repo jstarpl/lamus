@@ -19,7 +19,6 @@
     along with qbasic-vm.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { getDebugConsole as dbg } from './DebugConsole'
 import { IConsole } from './IConsole'
 import { Sprite } from './Sprite'
 
@@ -30,12 +29,22 @@ export class ImageManipulator {
 		this.image = imageData
 	}
 
-	public get(x: number, y: number): number {
-		return this.image.data[this.image.width * y + x]
+	public get(x: number, y: number): [number, number, number, number] {
+		const pixelOffset = (this.image.width * y + x) * 4
+		return [
+			this.image.data[pixelOffset + 0],
+			this.image.data[pixelOffset + 1],
+			this.image.data[pixelOffset + 2],
+			this.image.data[pixelOffset + 3],
+		]
 	}
 
-	public put(x: number, y: number, color: number): void {
-		this.image.data[this.image.width * y + x] = color
+	public put(x: number, y: number, r: number, g: number, b: number, a: number): void {
+		const pixelOffset = (this.image.width * y + x) * 4
+		this.image.data[pixelOffset + 0] = r
+		this.image.data[pixelOffset + 1] = g
+		this.image.data[pixelOffset + 2] = b
+		this.image.data[pixelOffset + 3] = a
 	}
 }
 
@@ -593,15 +602,47 @@ export class Console extends EventTarget implements IConsole {
 		x = x ?? 0
 		y = y ?? 0
 		const imageData = new ImageData(width, height)
-		imageData.data.set(data);
-	
+		imageData.data.set(data)
+
 		this.ctx.putImageData(imageData, x, y)
 	}
 
-	public paint(_x: number, _y: number, _colour: number, _borderColour: number, _step?: number): void {
+	public paint(x: number, y: number, color: number, borderColor?: number): void {
 		const image = new ImageManipulator(this.ctx.getImageData(0, 0, this._width, this._height))
+		x = Math.max(0, Math.min(image.image.width, x))
+		y = Math.max(0, Math.min(image.image.height, y))
 
-		dbg().printf('%s\n', image.get(10, 10))
+		const colorRgb = color < 0 ? Console.colorIntegerToRgb(color) : VIDEO_COLORS[color & VIDEO_COLORS_MASK]
+		const [fillR, fillG, fillB] = Console.rgbToNumbers(colorRgb)
+
+		let borderR, borderG, borderB
+		let borderIsBackground = true
+		if (borderColor !== undefined) {
+			const colorRgb =
+				borderColor < 0 ? Console.colorIntegerToRgb(borderColor) : VIDEO_COLORS[borderColor & VIDEO_COLORS_MASK]
+			borderIsBackground = false
+			;[borderR, borderG, borderB] = Console.rgbToNumbers(colorRgb)
+		} else {
+			;[borderR, borderG, borderB] = image.get(x, y)
+		}
+
+		if (borderIsBackground && fillR === borderR && fillG === borderG && fillB === borderB) return
+
+		const pixelQueue: [number, number][] = []
+		pixelQueue.push([x, y])
+
+		let currentPixel: [number, number] | undefined
+		while ((currentPixel = pixelQueue.shift())) {
+			const [oldR, oldG, oldB] = image.get(currentPixel[0], currentPixel[1])
+			if (borderIsBackground && (oldR !== borderR || oldG !== borderG || oldB !== borderB)) continue
+			if (!borderIsBackground && (oldR === borderR || oldG === borderG || oldB === borderB)) continue
+			image.put(currentPixel[0], currentPixel[1], fillR, fillG, fillB, 255)
+			if (currentPixel[0] > 0) pixelQueue.push([currentPixel[0] - 1, currentPixel[1]])
+			if (currentPixel[0] < image.image.width) pixelQueue.push([currentPixel[0] + 1, currentPixel[1]])
+			if (currentPixel[1] > 0) pixelQueue.push([currentPixel[0], currentPixel[1] - 1])
+			if (currentPixel[1] < image.image.height) pixelQueue.push([currentPixel[0], currentPixel[1] + 1])
+		}
+		this.ctx.putImageData(image.image, 0, 0)
 	}
 
 	private innerLoadImage(
@@ -766,7 +807,16 @@ export class Console extends EventTarget implements IConsole {
 		const red = ((source >> 10) & 31) << 3
 		const green = ((source >> 5) & 31) << 3
 		const blue = (source & 31) << 3
-		return `rgb(${red}, ${green}, ${blue})`
+		return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue
+			.toString(16)
+			.padStart(2, '0')}`
+	}
+
+	private static rgbToNumbers(color: string): [number, number, number] {
+		const red = Number.parseInt(color.substring(1, 3), 16)
+		const green = Number.parseInt(color.substring(3, 5), 16)
+		const blue = Number.parseInt(color.substring(5, 7), 16)
+		return [red, green, blue]
 	}
 
 	public color(fg: number | null, bg: number | null, bo: number | null): void {
