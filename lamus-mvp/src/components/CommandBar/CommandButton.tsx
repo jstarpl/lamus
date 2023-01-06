@@ -106,7 +106,7 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
         })}
       >
         <button
-          onClick={onClick}
+          onMouseUp={onClick}
           style={
             //@ts-ignore Setting CSS Variable
             position ? { "--command-button-position": position } : undefined
