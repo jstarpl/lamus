@@ -283,6 +283,8 @@ const CodeEditor = observer(function CodeEditor() {
     editorView.current = newEditorView;
     onInitialize();
 
+    EditorStore.setDisplayFocus("editor");
+
     return () => {
       newEditorView.destroy();
     };
