@@ -154,7 +154,8 @@ export class Console extends EventTarget implements IConsole {
 	private charWidth = 8
 	private charHeight = 8
 
-	private keyDown: string[] = []
+	// This is a map of pressed key codes and the resulting characters  
+	private keyDown: Map<string, string> = new Map()
 	private inputMode = false
 	private inputNewLineAfterEnter = false
 	private inputPixelAspect = 1
@@ -309,7 +310,7 @@ export class Console extends EventTarget implements IConsole {
 		this.onInputDone = null
 		this.inputStr = ''
 		this.keyBuffer.length = 0
-		this.keyDown.length = 0
+		this.keyDown.clear()
 		this.onTrappedKey = {}
 		this.rows = VIDEO_MODES[DEFAULT_VIDEO_MODE].rows
 		this.cols = VIDEO_MODES[DEFAULT_VIDEO_MODE].cols
@@ -915,8 +916,8 @@ export class Console extends EventTarget implements IConsole {
 		// do not repeat keys if a global key trap is set
 		if (!this.onTrappedKey[-1]) {
 			if (this.keyRepeatThrottle % 5 === 0) {
-				for (let i = 0; i < this.keyDown.length; i++) {
-					this.pushKeyToBuffer(this.keyDown[i])
+				for (const char of this.keyDown.values()) {
+					this.pushKeyToBuffer(char)
 				}
 			}
 			this.keyRepeatThrottle++
@@ -934,10 +935,7 @@ export class Console extends EventTarget implements IConsole {
 	}
 
 	public onKeyUp(event: KeyboardEvent): void {
-		const idx = this.keyDown.indexOf(event.key)
-		if (idx >= 0) {
-			this.keyDown.splice(idx, 1)
-		}
+		this.keyDown.delete(event.code)
 
 		this.handleTrappedKey(this.keyBuffer[this.keyBuffer.length - 1])
 	}
@@ -988,9 +986,9 @@ export class Console extends EventTarget implements IConsole {
 			this.inputElement.style.top = `${this.y * this.charHeight * this.inputPixelAspect}px`
 		} else {
 			if (!event.repeat) {
-				if (this.keyDown.indexOf(event.key) < 0) {
+				if (!this.keyDown.has(event.code)) {
 					this.pushKeyToBuffer(event.key)
-					this.keyDown.push(event.key)
+					this.keyDown.set(event.code, event.key)
 				}
 			}
 		}
