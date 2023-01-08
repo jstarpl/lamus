@@ -916,9 +916,9 @@ export class Console extends EventTarget implements IConsole {
 		// do not repeat keys if a global key trap is set
 		if (!this.onTrappedKey[-1]) {
 			if (this.keyRepeatThrottle % 5 === 0) {
-				for (const char of this.keyDown.values()) {
+				this.keyDown.forEach((char) => {
 					this.pushKeyToBuffer(char)
-				}
+				})
 			}
 			this.keyRepeatThrottle++
 		}
