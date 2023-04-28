@@ -1,8 +1,9 @@
+import { DropboxAuthOptions } from "dropbox";
 import fetch from "node-fetch";
 const clientId = process.env.DROPBOX_CLIENT_ID as string;
 const apiUri = process.env.API_URI as string;
 
-export const DROPBOX_CONFIG = {
+export const DROPBOX_CONFIG: DropboxAuthOptions = {
   fetch,
   clientId,
 };

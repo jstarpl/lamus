@@ -147,7 +147,9 @@ class AppStoreClass {
     const url = new URL(LAMUS_API + "/login");
     url.searchParams.set("device_id", this.deviceId);
     url.searchParams.set("scopes", REQUIRED_SCOPES.join(","));
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: [["Content-Type", "application/json"]],
+    });
     if (!response.ok) throw new Error(`Could not log in`);
     const data = await response.json();
     this.settings = data as ISettings;
@@ -189,7 +191,10 @@ class AppStoreClass {
     return fetch(LAMUS_API + path, {
       ...init,
       credentials: "include",
-      headers: [["Authorization", `Bearer ${this.token}`]],
+      headers: [
+        ["Authorization", `Bearer ${this.token}`],
+        ["Content-Type", "application/json"],
+      ],
     });
   }
 

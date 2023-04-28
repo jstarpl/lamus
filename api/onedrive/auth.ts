@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
-import { getAccessTokenFromCode } from "./_onedrive";
-import { createSupabaseClient } from "../_supabase";
-import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
-import { ALLOWED_ORIGINS } from "../_security";
+import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils.js";
+import { getAccessTokenFromCode } from "./_onedrive.js";
+import { createSupabaseClient } from "../_supabase.js";
+import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth.js";
+import { ALLOWED_ORIGINS } from "../_security.js";
 
 export default async function auth(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;

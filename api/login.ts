@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createSupabaseClient } from "./_supabase";
+import { createSupabaseClient } from "./_supabase.js";
 import {
   acceptContentType,
   acceptMethod,
   deArray,
   handleCrossOrigin,
   sendStatus,
-} from "./_utils";
-import { loginDeviceId } from "./_auth";
+} from "./_utils.js";
+import { loginDeviceId } from "./_auth.js";
 
 export default async function login(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET", "POST")) return;

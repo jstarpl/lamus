@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { JWK } from "jose";
-import encryptedKeys from "./keys.enc.json";
+import encryptedKeys from "./keys.enc.json" assert {
+  type: 'json',
+};
 
 export type KeyPair = {
   private: JWK;

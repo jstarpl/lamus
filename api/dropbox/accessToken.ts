@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, sendStatus } from "../_utils";
+import { acceptMethod, sendStatus } from "../_utils.js";
 import { DropboxAuth } from "dropbox";
-import { DROPBOX_CONFIG } from "./_dropbox";
-import { createSupabaseClient } from "../_supabase";
-import { authorize, Scope } from "../_auth";
+import { DROPBOX_CONFIG } from "./_dropbox.js";
+import { createSupabaseClient } from "../_supabase.js";
+import { authorize, Scope } from "../_auth.js";
 
 export default async function accessKey(
   req: VercelRequest,

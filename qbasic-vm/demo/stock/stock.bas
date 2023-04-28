@@ -23,7 +23,7 @@ imgNumbers = IMGLOAD("money.png")
 imgBkg = IMGLOAD("bkg.png")
 imgBling = IMGLOAD("bling.png")
 
-API_KEY$ = "OeAFFmMliFG5orCUuwAKQ8l4WWFQ67YX"
+API_KEY$ = "demo"
 EODHD_API_URL$ = "wss://ws.eodhistoricaldata.com/ws/us?api_token=" + API_KEY$
 
 DECLARE SUB FullLine (text$, lines%)

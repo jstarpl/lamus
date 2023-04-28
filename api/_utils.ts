@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { ALLOWED_HEADERS, ALLOWED_ORIGINS } from "./_security";
+import { ALLOWED_HEADERS, ALLOWED_ORIGINS } from "./_security.js";
 
 export function sendStatus(
   res: VercelResponse,

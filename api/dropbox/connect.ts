@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
+import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils.js";
 import { DropboxAuth } from "dropbox";
-import { DROPBOX_CONFIG, REDIRECT_URI, SCOPES } from "./_dropbox";
-import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
+import { DROPBOX_CONFIG, REDIRECT_URI, SCOPES } from "./_dropbox.js";
+import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth.js";
 
 export default async function connect(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "POST")) return;

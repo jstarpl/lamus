@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
-import { generateVerifierAndChallange, getAuthUrl } from "./_onedrive";
-import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
+import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils.js";
+import { generateVerifierAndChallange, getAuthUrl } from "./_onedrive.js";
+import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth.js";
 
 export default async function connect(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "POST")) return;

@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils";
+import { acceptMethod, handleCrossOrigin, sendStatus } from "./../_utils.js";
 import { DropboxAuth } from "dropbox";
-import { DROPBOX_CONFIG, REDIRECT_URI } from "./_dropbox";
-import { createSupabaseClient } from "../_supabase";
-import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth";
-import { ALLOWED_ORIGINS } from "../_security";
+import { DROPBOX_CONFIG, REDIRECT_URI } from "./_dropbox.js";
+import { createSupabaseClient } from "../_supabase.js";
+import { authorize, Scope, TOKEN_COOKIE_NAME } from "../_auth.js";
+import { ALLOWED_ORIGINS } from "../_security.js";
 
 export default async function auth(req: VercelRequest, res: VercelResponse) {
   if (handleCrossOrigin(req, res, "GET")) return;

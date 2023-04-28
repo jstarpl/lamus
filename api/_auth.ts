@@ -1,8 +1,8 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { importJWK, jwtVerify, SignJWT } from "jose";
-import { API_URI } from "./_env";
-import { getSigKeys, KEY_ALGORITHM } from "./_keys";
-import { sendStatus } from "./_utils";
+import { API_URI } from "./_env.js";
+import { getSigKeys, KEY_ALGORITHM } from "./_keys.js";
+import { sendStatus } from "./_utils.js";
 
 export const TOKEN_COOKIE_NAME = "token";
 

@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import fetch from "node-fetch";
-import { ALLOWED_ORIGINS } from "../_security";
+import { ALLOWED_ORIGINS } from "../_security.js";
 
 export const AZURE_CLIENT_ID = process.env.AZURE_CLIENT_ID as string;
 const apiUri = process.env.API_URI as string;
@@ -74,7 +74,7 @@ export async function getAccessTokenFromCode(code: string, verifier: string) {
     console.error(JSON.stringify(await res.json()));
     return null;
   }
-  return res.json();
+  return res.json() as Promise<{ refresh_token: string }>;
 }
 
 export async function getAccessTokenFromRefreshToken(refreshToken: string) {
@@ -95,5 +95,5 @@ export async function getAccessTokenFromRefreshToken(refreshToken: string) {
     console.error(JSON.stringify(await res.json()));
     return null;
   }
-  return res.json();
+  return res.json() as Promise<{ access_token: string, refresh_token: string, expires_in: number }>;
 }

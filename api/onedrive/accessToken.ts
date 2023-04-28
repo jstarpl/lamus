@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { acceptMethod, sendStatus } from "../_utils";
-import { createSupabaseClient } from "../_supabase";
-import { authorize, Scope } from "../_auth";
-import { getAccessTokenFromRefreshToken } from "./_onedrive";
+import { acceptMethod, sendStatus } from "../_utils.js";
+import { createSupabaseClient } from "../_supabase.js";
+import { authorize, Scope } from "../_auth.js";
+import { getAccessTokenFromRefreshToken } from "./_onedrive.js";
 
 export default async function accessKey(
   req: VercelRequest,
