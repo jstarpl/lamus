@@ -78,7 +78,10 @@ export class VMStoreClass {
       undefined,
       SHORTER_SCREEN_SIDE_LENGTH,
       LONGER_SCREEN_SIDE_LENGTH,
-      process.env.PUBLIC_URL + "/CodeEditor/"
+      new URL(
+        "../../../public/CodeEditor/charmap.png",
+        import.meta.url
+      ).toString()
     );
 
     const audio = new AudioDevice();

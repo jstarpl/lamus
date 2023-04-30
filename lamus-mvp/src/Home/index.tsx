@@ -95,18 +95,25 @@ const Home = function Home() {
     >
       <picture>
         <source
-          srcSet={`${process.env.PUBLIC_URL + "/Home/bkg_480.webp"} 853w, ${
-            process.env.PUBLIC_URL + "/Home/bkg_720.webp"
-          } 1280w, ${process.env.PUBLIC_URL + "/Home/bkg_1440.webp"} 2560w`}
+          srcSet={`${new URL(
+            "../../public/Home/bkg_480.webp",
+            import.meta.url
+          )} 853w, ${new URL(
+            "../../public/Home/bkg_720.webp",
+            import.meta.url
+          )} 1280w, ${new URL(
+            "../../public/Home/bkg_1440.webp",
+            import.meta.url
+          )} 2560w`}
           type="image/webp"
         />
         <source
-          srcSet={`${process.env.PUBLIC_URL + "/Home/bkg.png"}`}
+          srcSet={`${new URL("../../public/Home/bkg.png", import.meta.url)}`}
           type="image/png"
         />
         <img
           className="bkg"
-          src={`${process.env.PUBLIC_URL + "/Home/bkg.png"}`}
+          src={`${new URL("../../public/Home/bkg.png", import.meta.url)}`}
           alt=""
           ref={bkgEl}
         />

@@ -18,7 +18,7 @@ export enum DeviceType {
 
 export default function setup(generalIORouter: GeneralIORouter) {
   void typeof isWebBluetooth;
-  const poweredUp = new window.PoweredUP.PoweredUP();
+  const poweredUp = new PoweredUP();
 
   poweredUp.on("discover", (hub: Hub) => {
     console.log("discover", poweredUp, hub);
