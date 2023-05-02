@@ -12,3 +12,5 @@ root.render(
     <App />
   </Router>
 );
+
+console.log("Lamus starting now")
