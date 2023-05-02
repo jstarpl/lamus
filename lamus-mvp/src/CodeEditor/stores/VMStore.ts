@@ -81,7 +81,7 @@ export class VMStoreClass {
       new URL(
         "../../../public/CodeEditor/charmap.png",
         import.meta.url
-      ).toString()
+      ).href + '?/'
     );
 
     const audio = new AudioDevice();

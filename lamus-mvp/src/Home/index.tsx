@@ -98,22 +98,22 @@ const Home = function Home() {
           srcSet={`${new URL(
             "../../public/Home/bkg_480.webp",
             import.meta.url
-          )} 853w, ${new URL(
+          ).href} 853w, ${new URL(
             "../../public/Home/bkg_720.webp",
             import.meta.url
-          )} 1280w, ${new URL(
+          ).href} 1280w, ${new URL(
             "../../public/Home/bkg_1440.webp",
             import.meta.url
-          )} 2560w`}
+          ).href} 2560w`}
           type="image/webp"
         />
         <source
-          srcSet={`${new URL("../../public/Home/bkg.png", import.meta.url)}`}
+          srcSet={`${new URL("../../public/Home/bkg.png", import.meta.url).href}`}
           type="image/png"
         />
         <img
           className="bkg"
-          src={`${new URL("../../public/Home/bkg.png", import.meta.url)}`}
+          src={`${new URL("../../public/Home/bkg.png", import.meta.url).href}`}
           alt=""
           ref={bkgEl}
         />

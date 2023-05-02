@@ -147,7 +147,7 @@ class AppStoreClass {
     const url = new URL(LAMUS_API + "/login");
     url.searchParams.set("device_id", this.deviceId);
     url.searchParams.set("scopes", REQUIRED_SCOPES.join(","));
-    const response = await fetch(url.toString(), {
+    const response = await fetch(url.href, {
       headers: [["Content-Type", "application/json"]],
     });
     if (!response.ok) throw new Error(`Could not log in`);
