@@ -19,6 +19,9 @@
       "url": "http://stevehanov.ca"
     }
   ],
+  "engines": {
+    "node": ">=10"
+  },
   "license": "GPL-3.0-only",
   "scripts": {
     "start": "webpack serve",

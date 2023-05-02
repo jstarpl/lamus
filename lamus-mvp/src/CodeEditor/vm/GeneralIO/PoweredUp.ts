@@ -42,6 +42,7 @@ export default function setup(generalIORouter: GeneralIORouter) {
     try {
       const result = await poweredUp.scan();
       if (result === true) return "1";
+      poweredUp.stop();
       return "0";
     } catch (e) {
       console.error(e);

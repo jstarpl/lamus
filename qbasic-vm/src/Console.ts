@@ -154,7 +154,7 @@ export class Console extends EventTarget implements IConsole {
 	private charWidth = 8
 	private charHeight = 8
 
-	// This is a map of pressed key codes and the resulting characters  
+	// This is a map of pressed key codes and the resulting characters
 	private keyDown: Map<string, string> = new Map()
 	private inputMode = false
 	private inputNewLineAfterEnter = false
@@ -177,7 +177,13 @@ export class Console extends EventTarget implements IConsole {
 	private containerWidth: number | undefined
 	private containerHeight: number | undefined
 
-	constructor(parentElement: HTMLElement, className?: string, width?: number, height?: number, assetPath = 'assets/') {
+	constructor(
+		parentElement: HTMLElement,
+		className?: string,
+		width?: number,
+		height?: number,
+		assetPath = 'assets/'
+	) {
 		super()
 
 		this.canvas = document.createElement('canvas')
@@ -350,7 +356,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public resize(width: number, height: number) {
+	public resize(width: number, height: number): void {
 		this.containerWidth = width
 		this.containerHeight = height
 
@@ -656,8 +662,7 @@ export class Console extends EventTarget implements IConsole {
 		reject: (reason?: any) => void
 	) {
 		img.src = url
-		img
-			.decode()
+		img.decode()
 			.then(() => {
 				const idx = this.images.findIndex((i) => i === undefined)
 				if (idx >= 0) {
@@ -1038,10 +1043,20 @@ export class Console extends EventTarget implements IConsole {
 
 		if (show) {
 			this.ctx.fillStyle = this.fgcolor
-			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
+			this.ctx.fillRect(
+				this.x * this.charWidth,
+				this.y * this.charHeight + this.charHeight - 2,
+				this.charWidth,
+				2
+			)
 		} else {
 			this.ctx.fillStyle = this.bgcolor
-			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
+			this.ctx.fillRect(
+				this.x * this.charWidth,
+				this.y * this.charHeight + this.charHeight - 2,
+				this.charWidth,
+				2
+			)
 		}
 
 		this.cursorShown = show

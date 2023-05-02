@@ -14,8 +14,6 @@ const AUTOSAVE_DEBOUNCE = 5000;
 class EditorStoreClass {
   document: Document | null = null;
   file: FileHandle | null = null;
-  isSaveFileDialogOpen: boolean = false;
-  isOpenFileDialogOpen: boolean = false;
 
   private autosaveTimeout: NodeJS.Timeout | undefined = undefined;
 
@@ -152,14 +150,6 @@ class EditorStoreClass {
     };
 
     return true;
-  }
-
-  setSaveFileDialogIsOpen(open: boolean) {
-    this.isSaveFileDialogOpen = open;
-  }
-
-  setOpenFileDialogIsOpen(open: boolean) {
-    this.isOpenFileDialogOpen = open;
   }
 
   private async getBlob(): Promise<Blob> {

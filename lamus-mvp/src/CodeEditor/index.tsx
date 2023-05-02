@@ -47,6 +47,7 @@ import {
   FILE_PATH_SEPARATOR,
   PROVIDER_SEPARATOR,
 } from "../stores/fileSystem/IFileSystemProvider";
+import { useFragmentRoute } from "../helpers/useFragmentRoute";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -82,10 +83,17 @@ const CodeEditor = observer(function CodeEditor() {
     []
   );
 
+  const isOpenFileDialogOpen = useFragmentRoute("#open");
+  const isSaveFileDialogOpen = useFragmentRoute("#save");
+
   const hasDialogOpen =
-    EditorStore.isSaveFileDialogOpen || EditorStore.isOpenFileDialogOpen;
+    isSaveFileDialogOpen || isOpenFileDialogOpen;
 
   const navigate = useNavigate();
+
+  function resetFragment() {
+    navigate(-1)
+  }
 
   const onInitialize = useCallback(() => {
     AppStore.setUIReady();
@@ -353,19 +361,19 @@ const CodeEditor = observer(function CodeEditor() {
   }, []);
 
   const onSave = useCallback(() => {
-    EditorStore.setSaveFileDialogIsOpen(true);
+    navigate("#save");
   }, []);
 
   const onSaveAs = useCallback(() => {
-    EditorStore.setSaveFileDialogIsOpen(true);
+    navigate("#save");
   }, []);
 
   const onOpen = useCallback(() => {
-    EditorStore.setOpenFileDialogIsOpen(true);
+    navigate("#open");
   }, []);
 
   function onSaveDialogCancel() {
-    EditorStore.setSaveFileDialogIsOpen(false);
+    resetFragment();
   }
 
   function onSaveDialogAccept({
@@ -409,7 +417,7 @@ const CodeEditor = observer(function CodeEditor() {
           return;
         }
         // write file
-        EditorStore.setSaveFileDialogIsOpen(false);
+        resetFragment();
       })
       .catch((e) => {
         AppStore.isBusy = false;
@@ -418,7 +426,7 @@ const CodeEditor = observer(function CodeEditor() {
   }
 
   function onOpenDialogCancel() {
-    EditorStore.setOpenFileDialogIsOpen(false);
+    resetFragment();
   }
 
   function onOpenDialogAccept({
@@ -437,7 +445,7 @@ const CodeEditor = observer(function CodeEditor() {
       .then((isOk) => {
         if (!editorView.current || !EditorStore.document) return;
         AppStore.isBusy = false;
-        EditorStore.setOpenFileDialogIsOpen(false);
+        resetFragment();
         if (!isOk) return;
         EditorStore.vm?.reset();
         console.log("Setting new state");
@@ -549,7 +557,7 @@ const CodeEditor = observer(function CodeEditor() {
         </CommandBar.Nav>
       )}
       <AnimatePresence>
-        {EditorStore.isSaveFileDialogOpen && (
+        {isSaveFileDialogOpen && (
           <FileDialog
             key="save-file-dialog"
             mode="saveFile"
@@ -562,7 +570,7 @@ const CodeEditor = observer(function CodeEditor() {
             }
           />
         )}
-        {EditorStore.isOpenFileDialogOpen && (
+        {isOpenFileDialogOpen && (
           <FileDialog
             key="save-file-dialog"
             mode="openFile"

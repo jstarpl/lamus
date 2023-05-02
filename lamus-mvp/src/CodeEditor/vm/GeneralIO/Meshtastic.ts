@@ -1,10 +1,11 @@
 import { GeneralIORouter } from "@lamus/qbasic-vm";
 import {
+  Client,
   IBLEConnection,
   IHTTPConnection,
   ISerialConnection,
   Types,
-} from "@meshtastic/meshtasticjs";
+} from "@meshtastic/meshtasticjs/dist/index";
 import { MyNodeInfo, NodeInfo } from "@meshtastic/meshtasticjs/dist/generated";
 
 const HTTP_FETCH_INTERVAL = 3000;
@@ -23,6 +24,8 @@ export default function setup(router: GeneralIORouter) {
   let myNode: MyNodeInfo | null = null;
   let myNodeStatus: Types.DeviceStatusEnum =
     Types.DeviceStatusEnum.DEVICE_DISCONNECTED;
+
+  const client = new Client();
 
   function initConnection(connection: ISomeMeshtasticConnection) {
     messageInbox.length = 0;
@@ -63,9 +66,10 @@ export default function setup(router: GeneralIORouter) {
     if (req.method !== "out" || !req.data) return;
     if (currentConnection) {
       await currentConnection.disconnect();
+      client.removeConnection(currentConnection);
     }
 
-    const connection = new IHTTPConnection();
+    const connection = client.createHTTPConnection();
     currentConnection = connection;
     initConnection(connection);
     await connection.connect({
@@ -78,9 +82,10 @@ export default function setup(router: GeneralIORouter) {
     if (req.method !== "out") return;
     if (currentConnection) {
       await currentConnection.disconnect();
+      client.removeConnection(currentConnection);
     }
 
-    const connection = new IBLEConnection();
+    const connection = client.createBLEConnection();
     currentConnection = connection;
     initConnection(connection);
     await connection.connect({});
@@ -89,9 +94,10 @@ export default function setup(router: GeneralIORouter) {
     if (req.method !== "out") return;
     if (currentConnection) {
       await currentConnection.disconnect();
+      client.removeConnection(currentConnection);
     }
 
-    const connection = new ISerialConnection();
+    const connection = client.createSerialConnection();
     currentConnection = connection;
     initConnection(connection);
     await connection.connect({

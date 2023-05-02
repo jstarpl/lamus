@@ -43,14 +43,14 @@ class MMLEmitter extends SeqEmitter {
 		const tracks = source
 			.toLowerCase()
 			.split(/[;,]/)
-			.filter(source => !!source.trim())
+			.filter((source) => !!source.trim())
 			// strip out MML header
-			.map(source => source.replace(/^MML@/, ''))
-			.map(source => source.replace(/\#/g, '+'))
-			.map(source => source.replace(/\&/g, '^'))
+			.map((source) => source.replace(/^MML@/, ''))
+			.map((source) => source.replace(/#/g, '+'))
+			.map((source) => source.replace(/&/g, '^'))
 			// MML songs available on the internet often assume the player is going
 			// to use the same tempo as in the previous track
-			.map(track => {
+			.map((track) => {
 				const tempo = track.match(/t(\d+)/i)
 				if (!tempo && lastTempo) {
 					return `t${lastTempo}` + track
@@ -59,7 +59,7 @@ class MMLEmitter extends SeqEmitter {
 				}
 				return track
 			})
-			.map(track => new MMLIteratorClass(track, config))
+			.map((track) => new MMLIteratorClass(track, config))
 
 		super(tracks, config)
 
@@ -67,7 +67,7 @@ class MMLEmitter extends SeqEmitter {
 	}
 
 	private static reverseOctave(source) {
-		return source.replace(/[<>]/g, str => (str === '<' ? '>' : '<'))
+		return source.replace(/[<>]/g, (str) => (str === '<' ? '>' : '<'))
 	}
 }
 
@@ -78,10 +78,10 @@ export class AudioDevice implements IAudioDevice {
 	private currentMMLEmitter: MMLEmitter | undefined
 
 	constructor() {
-		this.reset()
+		this.reset().catch(console.error)
 	}
 
-	beep(num: number): Promise<void> {
+	async beep(num: number): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const endedHandler = () => {
 				resolve()
@@ -93,7 +93,7 @@ export class AudioDevice implements IAudioDevice {
 			this.beeps[num].play().catch((e) => reject(e))
 		})
 	}
-	addBeep(urlOrData: string | Blob | HTMLAudioElement): Promise<number> {
+	async addBeep(urlOrData: string | Blob | HTMLAudioElement): Promise<number> {
 		return new Promise((resolve, reject) => {
 			let beepAudio: HTMLAudioElement
 			if (typeof urlOrData === 'string') {
@@ -128,7 +128,7 @@ export class AudioDevice implements IAudioDevice {
 	clearBeep(num: number): void {
 		delete this.beeps[num]
 	}
-	playMusic(mml: string, repeat?: number): Promise<void> {
+	async playMusic(mml: string, repeat?: number): Promise<void> {
 		return new Promise<void>((resolve) => {
 			const config = { context: this.audioContext }
 
@@ -170,13 +170,14 @@ export class AudioDevice implements IAudioDevice {
 		return 440 * Math.pow(2, (noteNumber - 69) / 12)
 	}
 	private playNote(e: any) {
+		if (!this.currentMMLEmitter) return
 		const t0 = e.playbackTime
 		const t1 = t0 + e.duration * (e.quantize / 100)
 		const t2 = t1 + 0.5
 		const osc1 = this.audioContext.createOscillator()
 		const osc2 = this.audioContext.createOscillator()
 		const amp = this.audioContext.createGain()
-		const volume = (1 / this.currentMMLEmitter!.tracksNum / 3) * (e.velocity / 128)
+		const volume = (1 / this.currentMMLEmitter.tracksNum / 3) * (e.velocity / 128)
 
 		osc1.frequency.value = this.mtof(e.noteNumber)
 		osc1.detune.setValueAtTime(+12, t0)
@@ -197,7 +198,7 @@ export class AudioDevice implements IAudioDevice {
 		amp.gain.exponentialRampToValueAtTime(1e-3, t2)
 		amp.connect(this.audioContext.destination)
 	}
-	makeSound(frequency: number, duration: number, volume = 0.05): Promise<void> {
+	async makeSound(frequency: number, duration: number, volume = 0.05): Promise<void> {
 		frequency = Math.min(Math.max(12, frequency), 4000)
 		return new Promise<void>((resolve) => {
 			const baseTime = this.audioContext.currentTime

@@ -17,8 +17,8 @@
 	along with qbasic-vm.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { IGeneralIO } from "./IGeneralIO";	
-import RadixRouter = require("radix-router");
+import { IGeneralIO } from './IGeneralIO'
+import RadixRouter = require('radix-router')
 
 export type InOutRequest = {
 	method: 'in' | 'out'
@@ -38,15 +38,16 @@ export class GeneralIORouter implements IGeneralIO {
 	}
 	async output(path: string, data: string): Promise<void> {
 		const route = this.inOutRouter.lookup(path)
-		
+
 		if (route) {
 			try {
 				await route.handler({
 					...route,
 					method: 'out',
-					data: data
+					data: data,
 				})
 			} catch (e) {
+				console.error(e)
 			}
 		}
 	}
@@ -54,11 +55,14 @@ export class GeneralIORouter implements IGeneralIO {
 		const route = this.inOutRouter.lookup(path)
 		if (route) {
 			try {
-				return (await route.handler({
-					...route,
-					method: 'in',
-				})) || ''
+				return (
+					(await route.handler({
+						...route,
+						method: 'in',
+					})) || ''
+				)
 			} catch (e) {
+				console.error(e)
 				return ''
 			}
 		}
@@ -74,16 +78,16 @@ export class GeneralIORouter implements IGeneralIO {
 	removeEventListener(path: string, _handler: (data: string) => void): void {
 		this.eventsRouter.remove(path)
 	}
-	emit(address: string, data: string) {
+	emit(address: string, data: string): void {
 		const route = this.eventsRouter.lookup(address)
 		if (route) {
 			route.handler(data)
 		}
 	}
-	insertRoute(path: string, handler: InOutRouteHandler) {
+	insertRoute(path: string, handler: InOutRouteHandler): void {
 		this.inOutRouter.insert({
 			path,
-			handler
+			handler,
 		})
 	}
 	removeRoute(path: string): boolean {
@@ -94,7 +98,7 @@ export class GeneralIORouter implements IGeneralIO {
 		// the inOutRouter has routes from the environment, so it should be
 		// static
 		this.eventsRouter = new RadixRouter<EventRouteHandler>({
-			strict: true
+			strict: true,
 		})
 	}
-} 
+}

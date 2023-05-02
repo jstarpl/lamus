@@ -44,7 +44,7 @@ export class NetworkAdapter implements INetworkAdapter {
 
 		const fetchHeaders = new Headers()
 		if (headers) {
-			Object.keys(headers).forEach(header => {
+			Object.keys(headers).forEach((header) => {
 				fetchHeaders.set(header, headers[header])
 			})
 		}
@@ -56,7 +56,7 @@ export class NetworkAdapter implements INetworkAdapter {
 			method,
 			headers: fetchHeaders,
 			body,
-			signal: abortController.signal
+			signal: abortController.signal,
 		})
 
 		this.fetchAborts.delete(abortController)
@@ -65,10 +65,10 @@ export class NetworkAdapter implements INetworkAdapter {
 
 		return {
 			code: responseCode,
-			body: responseBody
+			body: responseBody,
 		}
 	}
-	wsOpen(handle: number, url: string, protocol?: string): Promise<void> {
+	async wsOpen(handle: number, url: string, protocol?: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (this.sockets[handle]) {
 				throw new Error('WebSocket handle busy')
@@ -77,11 +77,11 @@ export class NetworkAdapter implements INetworkAdapter {
 			const socketHandle: SocketHandle = {
 				socket,
 				buffer: [],
-				eventListeners: []
+				eventListeners: [],
 			}
 			this.sockets[handle] = socketHandle
 			let opened = false
-			socket.addEventListener('message', e => this.wsOnMessage(handle, e.data))
+			socket.addEventListener('message', (e) => this.wsOnMessage(handle, e.data))
 			socket.addEventListener('open', () => {
 				opened = true
 				resolve()
@@ -113,7 +113,7 @@ export class NetworkAdapter implements INetworkAdapter {
 		this.bufferSize -= message ? message.length : 0
 		return message
 	}
-	wsClose(handle: number) {
+	wsClose(handle: number): void {
 		const socketHandle = this.sockets[handle]
 		if (!socketHandle) {
 			throw new Error('Floating WebSocket handle')
@@ -131,7 +131,7 @@ export class NetworkAdapter implements INetworkAdapter {
 		}
 		socketHandle.buffer.push(message)
 		this.bufferSize += message.length
-		socketHandle.eventListeners.forEach(handler => {
+		socketHandle.eventListeners.forEach((handler) => {
 			try {
 				handler()
 			} catch (e) {
@@ -158,7 +158,7 @@ export class NetworkAdapter implements INetworkAdapter {
 		}
 	}
 	async reset(): Promise<void> {
-		this.sockets.forEach(socketHandle => {
+		this.sockets.forEach((socketHandle) => {
 			if (socketHandle) {
 				socketHandle.socket.close(1000, 'Network adapter reset.')
 			}
@@ -166,7 +166,7 @@ export class NetworkAdapter implements INetworkAdapter {
 		this.sockets.length = 0
 		this.bufferSize = 0
 
-		this.fetchAborts.forEach(abortController => abortController.abort())
+		this.fetchAborts.forEach((abortController) => abortController.abort())
 		this.fetchAborts.clear()
 	}
 }

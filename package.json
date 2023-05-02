@@ -11,7 +11,8 @@
     "build:qbasic": "cd qbasic-vm && yarn bundle",
     "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && yarn build",
     "build:app": "cd lamus-mvp && yarn build",
-    "build": "yarn build:qbasic && yarn build:app"
+    "build": "yarn build:qbasic && yarn build:app",
+    "check": "tsc --noEmit"
   },
   "workspaces": {
     "nohoist": [
@@ -22,6 +23,7 @@
       "**/react-editor-js",
       "**/babel-preset-react-app",
       "**/@babel/**",
+      "**/@meshtastic/meshtasticjs",
       "docs/**"
     ],
     "packages": [
@@ -40,12 +42,21 @@
     "typescript": "^5.0.0"
   },
   "devDependencies": {
+    "@kkirbatski/parcel-resolver-require-resolve": "^1.0.4",
+    "@parcel/config-default": "^2.8.3",
     "@parcel/packager-raw-url": "2.8.3",
+    "@parcel/transformer-raw": "^2.8.3",
     "@parcel/transformer-webmanifest": "2.8.3",
     "@types/node-fetch": "^2.6.2",
     "buffer": "^5.5.0",
     "commander": "^9.2.0",
     "crypto-browserify": "^3.12.0",
+    "parcel": "^2.7.0",
+    "parcel-resolver-esm-exports": "^0.1.0",
+    "parcel-resolver-typescript-esm": "^1.0.1",
     "stream-browserify": "^3.0.0"
+  },
+  "alias": {
+    "tslog": "/lamus-mvp/src/lib/tslog.ts"
   }
 }

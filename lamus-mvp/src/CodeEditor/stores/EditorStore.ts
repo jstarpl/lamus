@@ -14,8 +14,6 @@ type Text = string;
 class EditorStoreClass {
   document: Text | null = null;
   file: FileHandle | null = null;
-  isSaveFileDialogOpen: boolean = false;
-  isOpenFileDialogOpen: boolean = false;
 
   displayFocus: "editor" | "output" = "editor";
 
@@ -173,14 +171,6 @@ class EditorStoreClass {
     this.document = text;
 
     return true;
-  }
-
-  setSaveFileDialogIsOpen(open: boolean) {
-    this.isSaveFileDialogOpen = open;
-  }
-
-  setOpenFileDialogIsOpen(open: boolean) {
-    this.isOpenFileDialogOpen = open;
   }
 
   private async getBlob(): Promise<Blob> {
