@@ -6,6 +6,9 @@
     "node": "18"
   },
   "type": "module",
+  "sideEffects": [
+    "/lamus-mvp/src/index.tsx"
+  ],
   "scripts": {
     "start": "cd lamus-mvp && yarn start",
     "build:qbasic": "cd qbasic-vm && yarn bundle",

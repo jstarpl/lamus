@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "sideEffects": [
-    "src/index.ts"
+    "./src/index.tsx"
   ],
   "dependencies": {
     "@codemirror/basic-setup": "^0.20.0",
