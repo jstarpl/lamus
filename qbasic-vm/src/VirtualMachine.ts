@@ -226,11 +226,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	*/
 	public reset(program?: QBasicProgram): void {
 		if (program) {
-			this.instructions = program.instructions
-			this.types = program.types
-			this.defaultType = program.defaultType
-			this.data = program.data
-			this.shared = program.shared
+			this.assignProgram(program)
 		} else {
 			this.instructions.length = 0
 		}
@@ -258,6 +254,14 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.cryptography?.reset().catch(console.error)
 
 		this.emit('reset')
+	}
+
+	private assignProgram(program: QBasicProgram): void {
+		this.instructions = program.instructions
+		this.types = program.types
+		this.defaultType = program.defaultType
+		this.data = program.data
+		this.shared = program.shared
 	}
 
 	/**

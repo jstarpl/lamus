@@ -13,4 +13,4 @@ root.render(
   </Router>
 );
 
-console.log("Lamus starting now")
+console.log("💻 %cLamus%c starting now", "font-weight: bold", "font-weight: normal")

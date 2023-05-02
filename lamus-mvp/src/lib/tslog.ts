@@ -1,29 +1,33 @@
 export class Logger {
-  constructor() {
-    console.log("Logger")
+  name: string = ''
+  constructor(opts?: { name?: string }) {
+    this.name = opts?.name ?? ''
   }
-  getSubLogger(): Logger {
-    return new Logger()
+  getSubLogger(opts?: { name?: string }): Logger {
+    return new Logger({ name: opts?.name })
+  }
+  private getFormatedName(): string[] {
+    return [ `%c${this.name}`, 'font-weight: bold' ]
   }
   debug(...args: any[]): void {
-    console.log(...args)
+    console.log(...this.getFormatedName(), ...args)
   }
   info(...args: any[]): void {
-    console.log(...args)
+    console.log(...this.getFormatedName(), ...args)
   }
   warning(...args: any[]): void {
-    console.warn(...args)
+    console.warn(...this.getFormatedName(), ...args)
   }
   warn(...args: any[]): void {
-    console.warn(...args)
+    console.warn(...this.getFormatedName(), ...args)
   }
   error(...args: any[]): void {
-    console.error(...args)
+    console.error(...this.getFormatedName(), ...args)
   }
   trace(...args: any[]): void {
-    console.log(...args)
+    console.log(...this.getFormatedName(), ...args)
   }
   verbose(...args: any[]): void {
-    console.log(...args)
+    console.log(...this.getFormatedName(), ...args)
   }
 }
