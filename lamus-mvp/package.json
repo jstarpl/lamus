@@ -2,9 +2,6 @@
   "name": "@lamus/lamus-mvp",
   "version": "0.1.0",
   "private": true,
-  "sideEffects": [
-    "./src/index.tsx"
-  ],
   "dependencies": {
     "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/commands": "^0.20.0",
@@ -72,7 +69,7 @@
   "scripts": {
     "start": "parcel ./public/index.html --dist-dir ./build",
     "clean": "rimraf ./build",
-    "build:app": "parcel build ./public/index.html --dist-dir ./build",
+    "build:app": "parcel build ./public/index.html --dist-dir ./build --public-url ./",
     "build": "yarn clean && yarn build:app",
     "format": "prettier --write src/**/*.ts{,x}",
     "lint": "tsc --noEmit && eslint src/**/*.ts{,x}"
@@ -166,10 +163,5 @@
       "jest-watch-typeahead/testname"
     ],
     "resetMocks": true
-  },
-  "babel": {
-    "presets": [
-      "react-app"
-    ]
   }
 }
