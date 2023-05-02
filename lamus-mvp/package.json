@@ -2,7 +2,9 @@
   "name": "@lamus/lamus-mvp",
   "version": "0.1.0",
   "private": true,
-  "sideEffects": false,
+  "sideEffects": [
+    "src/index.ts"
+  ],
   "dependencies": {
     "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/commands": "^0.20.0",
