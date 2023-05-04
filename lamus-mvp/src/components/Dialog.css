@@ -99,3 +99,66 @@ dialog .buttons > button.active > .DialogButtonHotkey {
   border-color: var(--color-white);
   background: var(--color-white);
 }
+
+.Dialog.sdi-app.enter {
+  opacity: 1;
+}
+.Dialog.sdi-app.enter-active {
+  opacity: 1;
+  transition: opacity 0.5s 0s;
+}
+.Dialog.sdi-app.exit {
+  opacity: 1;
+}
+.Dialog.sdi-app.exit-active {
+  opacity: 1;
+  transition: opacity 0.5s 0s;
+}
+
+.Dialog.sdi-app > .sdi-app-workspace {
+  z-index: 101;
+}
+
+.Dialog.sdi-app > .sdi-app-cmdbar > menu {
+  z-index: 102;
+}
+
+.Dialog.sdi-app.enter > .sdi-app-workspace {
+  transform: translate(0, -110%);
+}
+.Dialog.sdi-app.enter-active > .sdi-app-workspace {
+  transform: translate(0, 0);
+  transition: transform 0.5s 0s ease-out;
+}
+.Dialog.sdi-app.exit > .sdi-app-workspace {
+  transform: translate(0, 0);
+}
+.Dialog.sdi-app.exit-active > .sdi-app-workspace {
+  transform: translate(0, -110%);
+  transition: transform 0.5s 0s ease-in;
+}
+
+.Dialog.sdi-app.enter > .dialog__backdrop.dialog__backdrop--full-screen-dialog {
+  opacity: 0;
+}
+.Dialog.sdi-app.enter-active
+  > .dialog__backdrop.dialog__backdrop--full-screen-dialog {
+  opacity: 1;
+  transition: opacity 0.5s 0s;
+}
+.Dialog.sdi-app.exit > .dialog__backdrop.dialog__backdrop--full-screen-dialog {
+  opacity: 1;
+}
+.Dialog.sdi-app.exit-active
+  > .dialog__backdrop.dialog__backdrop--full-screen-dialog {
+  opacity: 0;
+  transition: opacity 0.5s 0s;
+}
+
+.Dialog.sdi-app.exit > .sdi-app-cmdbar > menu {
+  opacity: 1;
+}
+.Dialog.sdi-app.exit-active > .sdi-app-cmdbar > menu {
+  opacity: 0;
+  transition: opacity 0.25s 0s;
+}

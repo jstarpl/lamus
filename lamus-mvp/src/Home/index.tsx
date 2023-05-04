@@ -96,24 +96,24 @@ const Home = function Home() {
       <picture>
         <source
           srcSet={`${new URL(
-            "../../public/Home/bkg_480.webp",
+            "./img/bkg_480.webp",
             import.meta.url
           ).href} 853w, ${new URL(
-            "../../public/Home/bkg_720.webp",
+            "./img/bkg_720.webp",
             import.meta.url
           ).href} 1280w, ${new URL(
-            "../../public/Home/bkg_1440.webp",
+            "./img/bkg_1440.webp",
             import.meta.url
           ).href} 2560w`}
           type="image/webp"
         />
         <source
-          srcSet={`${new URL("../../public/Home/bkg.png", import.meta.url).href}`}
+          srcSet={`${new URL("./img/bkg.png", import.meta.url).href}`}
           type="image/png"
         />
         <img
           className="bkg"
-          src={`${new URL("../../public/Home/bkg.png", import.meta.url).href}`}
+          src={`${new URL("./img/bkg.png", import.meta.url).href}`}
           alt=""
           ref={bkgEl}
         />

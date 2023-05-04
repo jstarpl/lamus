@@ -34,13 +34,15 @@ export class NetworkAdapter implements INetworkAdapter {
 
 	async fetch(
 		url: string,
-		options: {
+		options?: {
 			method?: string | undefined
 			headers?: Record<string, string> | undefined
 			body?: string | Blob | Uint8Array | undefined
+			cache?: "default" | "force-cache" | "no-cache" | "no-store" | "only-if-cached" | "reload"
+			credentials?: "include" | "omit" | "same-origin" 
 		}
 	): Promise<IFetchResponse> {
-		const { method, headers, body } = options
+		const { method, headers, body, cache, credentials } = options ?? {}
 
 		const fetchHeaders = new Headers()
 		if (headers) {
@@ -57,6 +59,8 @@ export class NetworkAdapter implements INetworkAdapter {
 			headers: fetchHeaders,
 			body,
 			signal: abortController.signal,
+			cache,
+			credentials,
 		})
 
 		this.fetchAborts.delete(abortController)

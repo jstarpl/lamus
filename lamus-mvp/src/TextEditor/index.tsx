@@ -73,7 +73,7 @@ const TextEditor = observer(function TextEditor() {
   const { showDialog } = useModalDialog();
 
   function resetFragment() {
-    navigate(-1)
+    navigate(-1);
   }
 
   useFocusSoundEffect("input,button,.list-view,.list-view-item");
@@ -81,8 +81,7 @@ const TextEditor = observer(function TextEditor() {
   const isOpenFileDialogOpen = useFragmentRoute("#open");
   const isSaveFileDialogOpen = useFragmentRoute("#save");
 
-  const hasDialogOpen =
-    isSaveFileDialogOpen || isOpenFileDialogOpen;
+  const hasDialogOpen = isSaveFileDialogOpen || isOpenFileDialogOpen;
 
   const onInitialize = useCallback((instance: any) => {
     editorCore.current = instance;
@@ -321,31 +320,25 @@ const TextEditor = observer(function TextEditor() {
           </CommandBar.Button>
         </CommandBar.Nav>
       )}
-      <AnimatePresence>
-        {isSaveFileDialogOpen && (
-          <FileDialog
-            key="save-file-dialog"
-            mode="saveFile"
-            onAccept={onSaveDialogAccept}
-            onCancel={onSaveDialogCancel}
-            initialStorageProvider={EditorStore.file?.providerId}
-            initialPath={EditorStore.file?.path}
-            defaultFileName={
-              EditorStore.file?.fileName ?? DEFAULT_NEW_FILE_NAME
-            }
-          />
-        )}
-        {isOpenFileDialogOpen && (
-          <FileDialog
-            key="save-file-dialog"
-            mode="openFile"
-            onAccept={onOpenDialogAccept}
-            onCancel={onOpenDialogCancel}
-            initialStorageProvider={EditorStore.file?.providerId}
-            initialPath={EditorStore.file?.path}
-          />
-        )}
-      </AnimatePresence>
+      <FileDialog
+        show={isSaveFileDialogOpen}
+        key="save-file-dialog"
+        mode="saveFile"
+        onAccept={onSaveDialogAccept}
+        onCancel={onSaveDialogCancel}
+        initialStorageProvider={EditorStore.file?.providerId}
+        initialPath={EditorStore.file?.path}
+        defaultFileName={EditorStore.file?.fileName ?? DEFAULT_NEW_FILE_NAME}
+      />
+      <FileDialog
+        show={isOpenFileDialogOpen}
+        key="open-file-dialog"
+        mode="openFile"
+        onAccept={onOpenDialogAccept}
+        onCancel={onOpenDialogCancel}
+        initialStorageProvider={EditorStore.file?.providerId}
+        initialPath={EditorStore.file?.path}
+      />
     </div>
   );
 });

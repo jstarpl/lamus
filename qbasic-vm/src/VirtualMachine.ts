@@ -420,7 +420,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	}
 }
 
-function getArgValue<T>(variable: ScalarVariable<T> | T) {
+function getArgValue<T>(variable: ScalarVariable<T> | T): T {
 	return variable instanceof ScalarVariable ? variable.value : variable
 }
 
@@ -3036,25 +3036,85 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	},
 
 	FETCH: {
-		// URL$, OUT RESPONSE_CODE%, OUT DATA$ [, METHOD$ [, HEADERS$() [, BODY$]]]
-		args: ['STRING', 'INTEGER', 'STRING', 'STRING', 'ARRAY OF STRING', 'STRING'],
+		// URL$, OUT RESPONSE_CODE%, OUT DATA$ [, METHOD$ [[, HEADERS$()] | [, AUTHORIZATION] [[, BODY$] | [, OPTIONS, BODY$] | [, OPTIONS]]]]
+		args: ['STRING', 'INTEGER', 'STRING', 'STRING', 'ANY', 'ANY', 'ANY'],
 		minArgs: 3,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
 
-			const headers = {}
+			let headers: Record<string, string> | undefined
 			let method = 'GET'
 			let body: string | undefined = undefined
+			let options = 0
+			let cache: "default" | "force-cache" | "no-cache" | "no-store" | "only-if-cached" | "reload" | undefined = undefined
+			let credentials: "include" | "omit" | "same-origin" | undefined = undefined
 
-			if (argCount > 5) {
+			if (argCount > 6) {
 				body = getArgValue(vm.stack.pop())
 			}
+			if (argCount > 5) {
+				if (argCount === 6) {
+					const bodyOrOptions = getArgValue<string | number>(vm.stack.pop())
+					if (typeof bodyOrOptions === "number") {
+						options = bodyOrOptions
+					} else {
+						body = bodyOrOptions
+					}
+				} else {
+					options = Math.round(Number(getArgValue(vm.stack.pop())))
+
+					let cacheOption = options % 10
+					switch (cacheOption) {
+						case 1:
+							cache = 'force-cache'
+							break
+						case 2:
+							cache = 'no-cache'
+							break
+						case 3: 
+							cache = 'no-store'
+							break
+						case 4:
+							cache = 'only-if-cached'
+							break
+						case 5:
+							cache = 'reload'
+							break
+						default:
+						case 0:
+							cache = 'default'
+					}
+
+					let credentialsOption = (options % 100) / 10
+					switch (credentialsOption) {
+						case 1:
+							credentials = 'include'
+							break
+						case 2:
+							credentials = 'omit'
+							break
+						default:
+						case 0:
+							credentials = 'same-origin'
+					}
+				}
+			}
 			if (argCount > 4) {
-				const headersArray = vm.stack.pop() as ArrayVariable<StringType>
-				const pairs = headersArray.values.length / 2
-				let i = 0
-				while (i < pairs) {
-					headers[headersArray.values[i++].value] = headersArray.values[i++].value
+				const headersOrAuth = vm.stack.pop()
+
+				if (headersOrAuth instanceof ArrayVariable) {
+					headers = {}
+					const headersArray = vm.stack.pop() as ArrayVariable<StringType>
+					const pairs = headersArray.values.length / 2
+					let i = 0
+					while (i < pairs) {
+						headers[headersArray.values[i++].value] = String(headersArray.values[i++].value)
+					}
+				} else {
+					const auth = getArgValue(headersOrAuth)
+					headers = {
+						'Authorization': String(auth)
+					}
 				}
 			}
 			if (argCount > 3) {
@@ -3071,6 +3131,8 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 						method,
 						headers,
 						body,
+						cache,
+						credentials,
 					})
 					.then((value) => {
 						outResCode.value = value.code

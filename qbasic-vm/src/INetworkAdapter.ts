@@ -29,6 +29,8 @@ export interface INetworkAdapter {
 			method?: string
 			headers?: Record<string, string> | undefined
 			body?: string | Blob | Uint8Array
+			cache?: "default" | "force-cache" | "no-cache" | "no-store" | "only-if-cached" | "reload"
+			credentials?: "include" | "omit" | "same-origin" 
 		}
 	): Promise<IFetchResponse>
 	wsOpen(handle: number, url: string, protocol?: string): Promise<void>

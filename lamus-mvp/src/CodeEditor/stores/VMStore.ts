@@ -79,7 +79,7 @@ export class VMStoreClass {
       SHORTER_SCREEN_SIDE_LENGTH,
       LONGER_SCREEN_SIDE_LENGTH,
       new URL(
-        "../../../public/CodeEditor/charmap.png",
+        "../img/charmap.png",
         import.meta.url
       ).href + '?/'
     );

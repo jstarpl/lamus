@@ -1,4 +1,4 @@
-import { motion, TargetAndTransition } from "framer-motion";
+import { TargetAndTransition } from "framer-motion";
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, {
@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { CommandBar } from "../components/CommandBar";
@@ -30,6 +31,7 @@ import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { Spinner } from "../components/Spinner";
+import { CSSTransition } from "react-transition-group";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -38,6 +40,7 @@ export interface IAcceptEventProps {
 }
 
 interface IBaseProps {
+  show: boolean;
   mode: "saveFile" | "openFile" | "selectDir";
   defaultFileName?: FileName;
   disabledRename?: boolean;
@@ -80,6 +83,7 @@ const SELECT_THIS_DIR: IFileEntryEx = {
 };
 
 export const FileDialog = observer(function FileDialog({
+  show,
   mode,
   defaultFileName,
   initialStorageProvider,
@@ -107,11 +111,20 @@ export const FileDialog = observer(function FileDialog({
     useState(false);
   const sfxContext = useContext(SoundEffectsContext);
 
+  const onAcceptRef = useRef<IProps["onAccept"] | null>(onAccept);
+
+  useEffect(() => {
+    onAcceptRef.current = onAccept;
+
+    return () => {
+      onAcceptRef.current = null;
+    };
+  }, [onAccept]);
+
   useCursorNavigation();
   usePreventTabHijack();
 
-  function onAnimationComplete(def: TargetAndTransition) {
-    if (def.y !== 0) return;
+  function onAnimationComplete() {
     setAnimationFinished(true);
 
     if (!sfxContext) return;
@@ -125,6 +138,8 @@ export const FileDialog = observer(function FileDialog({
   const disableFileSelection = isSelectingDirectory;
 
   useLayoutEffect(() => {
+    if (viewReady === false) return;
+
     setTimeout(() => {
       const el = document.querySelector(
         ".btn[data-focus], button[data-focus], input[data-focus], textarea[datafocus]"
@@ -271,6 +286,7 @@ export const FileDialog = observer(function FileDialog({
 
   const onFileEntryDoubleClick = useCallback(
     function onFileEntryDoubleClick(e: React.MouseEvent<HTMLElement>) {
+      const onAcceptNow = onAcceptRef.current;
       if (!currentStorage) return;
       const guid = e.currentTarget.dataset["guid"];
       if (!guid) return;
@@ -280,16 +296,16 @@ export const FileDialog = observer(function FileDialog({
       const fileName = clickedEntry?.fileName;
 
       if (isSelectingDirectory && isSelectThisDirSelected) {
-        if (!onAccept) return;
-        onAccept({
+        if (!onAcceptNow) return;
+        onAcceptNow({
           providerId: currentStorage,
           path: currentPath,
           fileName,
         });
       }
       if (!isSelectingDirectory && !clickedEntry.dir) {
-        if (!onAccept) return;
-        onAccept({
+        if (!onAcceptNow) return;
+        onAcceptNow({
           providerId: currentStorage,
           path: currentPath,
           fileName: clickedEntry.fileName,
@@ -311,7 +327,6 @@ export const FileDialog = observer(function FileDialog({
       currentStorage,
       isSelectThisDirSelected,
       isSelectingDirectory,
-      onAccept,
     ]
   );
 
@@ -362,164 +377,160 @@ export const FileDialog = observer(function FileDialog({
     [fileList, onFileEntryDoubleClick, disableFileSelection]
   );
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   return (
-    <motion.div
+    <CSSTransition
+      nodeRef={dialogRef}
+      in={show}
+      timeout={600}
+      mountOnEnter
+      unmountOnExit
       className="FileManager FileDialog Dialog sdi-app"
-      data-open
-      exit={{ zIndex: 99 }}
-      transition={{ duration: 0.5 }}
+      onEntered={onAnimationComplete}
     >
-      <motion.div
-        className="dialog__backdrop dialog__backdrop--full-screen-dialog"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0, zIndex: 98 }}
-        transition={{ duration: 0.5 }}
-      ></motion.div>
-      <motion.div
-        className="Document sdi-app-workspace bg-files"
-        initial={{ y: "-110%", opacity: 1 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: "-110%", opacity: 1, zIndex: 99 }}
-        transition={{ duration: 0.5 }}
-        onAnimationComplete={onAnimationComplete}
-      >
-        <FocusTrapStart />
-        <div className="FileDialog__layout">
-          <div className="FileDialog__path">
-            {currentStorage && (
-              <BreadcrumbBar.Bar
-                onFocus={() => setPathFocused(true)}
-                onBlur={() => setPathFocused(false)}
-              >
-                <BreadcrumbBar.Crumb
-                  data-path={JSON.stringify([])}
-                  onClick={onGoToPath}
+      <div data-open ref={dialogRef}>
+        <div className="dialog__backdrop dialog__backdrop--full-screen-dialog"></div>
+        <div className="Document sdi-app-workspace bg-files">
+          <FocusTrapStart />
+          <div className="FileDialog__layout">
+            <div className="FileDialog__path">
+              {currentStorage && (
+                <BreadcrumbBar.Bar
+                  onFocus={() => setPathFocused(true)}
+                  onBlur={() => setPathFocused(false)}
                 >
-                  {AppStore.fileSystem.providers.get(currentStorage)?.name}
-                  {PROVIDER_SEPARATOR}
-                </BreadcrumbBar.Crumb>
-                <BreadcrumbBar.Separator />
-                {currentPath.map((pathSegment, index, array) => (
-                  <React.Fragment key={`${index}_${pathSegment}`}>
-                    <BreadcrumbBar.Crumb
-                      data-path={JSON.stringify(array.slice(0, index + 1))}
-                      onClick={onGoToPath}
-                    >
-                      {pathSegment}
-                    </BreadcrumbBar.Crumb>
-                    {index !== array.length - 1 && <BreadcrumbBar.Separator />}
-                  </React.Fragment>
-                ))}
-              </BreadcrumbBar.Bar>
-            )}
-          </div>
-          <div className="FileDialog__pane">
-            {status === LoadStatus.LOADING && <Spinner />}
-            {status === LoadStatus.OK && (
-              <ListView.List
-                multiple
-                value={selectedFiles}
-                onChange={onListChange}
-                onFocus={onFocus}
-                onBlur={onBlur}
+                  <BreadcrumbBar.Crumb
+                    data-path={JSON.stringify([])}
+                    onClick={onGoToPath}
+                  >
+                    {AppStore.fileSystem.providers.get(currentStorage)?.name}
+                    {PROVIDER_SEPARATOR}
+                  </BreadcrumbBar.Crumb>
+                  <BreadcrumbBar.Separator />
+                  {currentPath.map((pathSegment, index, array) => (
+                    <React.Fragment key={`${index}_${pathSegment}`}>
+                      <BreadcrumbBar.Crumb
+                        data-path={JSON.stringify(array.slice(0, index + 1))}
+                        onClick={onGoToPath}
+                      >
+                        {pathSegment}
+                      </BreadcrumbBar.Crumb>
+                      {index !== array.length - 1 && (
+                        <BreadcrumbBar.Separator />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </BreadcrumbBar.Bar>
+              )}
+            </div>
+            <div className="FileDialog__pane">
+              {status === LoadStatus.LOADING && <Spinner />}
+              {status === LoadStatus.OK && (
+                <ListView.List
+                  multiple
+                  value={selectedFiles}
+                  onChange={onListChange}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                >
+                  {listViewItems}
+                </ListView.List>
+              )}
+            </div>
+            {showFileNameInput && status === LoadStatus.OK && (
+              <form
+                className="FileDialog__fileNameInput"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onAcceptInner();
+                }}
               >
-                {listViewItems}
-              </ListView.List>
+                <input
+                  type="text"
+                  data-focus
+                  className="form-control"
+                  value={localFileName}
+                  placeholder={defaultFileName}
+                  onChange={(e) => setLocalFileName(e.target.value)}
+                />
+              </form>
             )}
           </div>
-          {showFileNameInput && status === LoadStatus.OK && (
-            <form
-              className="FileDialog__fileNameInput"
-              onSubmit={(e) => {
-                e.preventDefault();
-                onAcceptInner();
-              }}
-            >
-              <input
-                type="text"
-                data-focus
-                className="form-control"
-                value={localFileName}
-                placeholder={defaultFileName}
-                onChange={(e) => setLocalFileName(e.target.value)}
-              />
-            </form>
-          )}
+          <EmojiPicker />
+          <FocusTrapEnd />
         </div>
-        <EmojiPicker />
-        <FocusTrapEnd />
-      </motion.div>
-      <CommandBar.Nav>
-        {!disabledRename && isListFocused && (
+        <CommandBar.Nav>
+          {!disabledRename && isListFocused && (
+            <CommandBar.Button
+              combo={RENAME_COMBO}
+              position={2}
+              showOnlyWhenModifiersActive
+            >
+              Rename
+            </CommandBar.Button>
+          )}
+          {!disabledMkDir && (
+            <CommandBar.Button
+              combo={MK_DIR_COMBO}
+              position={7}
+              showOnlyWhenModifiersActive
+              onClick={() => {}}
+            >
+              MkDir
+            </CommandBar.Button>
+          )}
           <CommandBar.Button
-            combo={RENAME_COMBO}
-            position={2}
+            combo={CANCEL_COMBO}
+            position={9}
             showOnlyWhenModifiersActive
+            onClick={onCancel}
           >
-            Rename
+            Cancel
           </CommandBar.Button>
-        )}
-        {!disabledMkDir && (
-          <CommandBar.Button
-            combo={MK_DIR_COMBO}
-            position={7}
-            showOnlyWhenModifiersActive
-            onClick={() => {}}
-          >
-            MkDir
-          </CommandBar.Button>
-        )}
-        <CommandBar.Button
-          combo={CANCEL_COMBO}
-          position={9}
-          showOnlyWhenModifiersActive
-          onClick={onCancel}
-        >
-          Cancel
-        </CommandBar.Button>
-        {canSave && (
-          <CommandBar.Button
-            combo={CONFIRM_COMBO}
-            position={10}
-            showOnlyWhenModifiersActive
-            onClick={onAcceptInner}
-          >
-            Save
-          </CommandBar.Button>
-        )}
-        {canOpen && (
-          <CommandBar.Button
-            combo={CONFIRM_COMBO}
-            position={10}
-            showOnlyWhenModifiersActive
-            onClick={onAcceptInner}
-          >
-            Open
-          </CommandBar.Button>
-        )}
-        {canSelectThisDir && (
-          <CommandBar.Button
-            combo={CONFIRM_COMBO}
-            position={10}
-            showOnlyWhenModifiersActive
-            onClick={onAcceptInner}
-          >
-            Select
-          </CommandBar.Button>
-        )}
-        {canGo && (
-          <CommandBar.Button
-            combo={CONFIRM_COMBO}
-            position={10}
-            showOnlyWhenModifiersActive
-            onClick={!isPathFocused ? onGoToSelectedFolder : undefined}
-          >
-            Go
-          </CommandBar.Button>
-        )}
-      </CommandBar.Nav>
-    </motion.div>
+          {canSave && (
+            <CommandBar.Button
+              combo={CONFIRM_COMBO}
+              position={10}
+              showOnlyWhenModifiersActive
+              onClick={onAcceptInner}
+            >
+              Save
+            </CommandBar.Button>
+          )}
+          {canOpen && (
+            <CommandBar.Button
+              combo={CONFIRM_COMBO}
+              position={10}
+              showOnlyWhenModifiersActive
+              onClick={onAcceptInner}
+            >
+              Open
+            </CommandBar.Button>
+          )}
+          {canSelectThisDir && (
+            <CommandBar.Button
+              combo={CONFIRM_COMBO}
+              position={10}
+              showOnlyWhenModifiersActive
+              onClick={onAcceptInner}
+            >
+              Select
+            </CommandBar.Button>
+          )}
+          {canGo && (
+            <CommandBar.Button
+              combo={CONFIRM_COMBO}
+              position={10}
+              showOnlyWhenModifiersActive
+              onClick={!isPathFocused ? onGoToSelectedFolder : undefined}
+            >
+              Go
+            </CommandBar.Button>
+          )}
+        </CommandBar.Nav>
+      </div>
+    </CSSTransition>
   );
 });
 FileDialog.displayName = "FileDialog";
