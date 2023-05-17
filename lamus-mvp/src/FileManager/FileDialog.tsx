@@ -32,6 +32,7 @@ import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { Spinner } from "../components/Spinner";
 import { CSSTransition } from "react-transition-group";
+import { SelectStorageDialog } from "./SelectStorageDialog";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -63,6 +64,7 @@ type IProps = IBaseProps &
       }
   );
 
+const CHANGE_STORAGE = ["Control", "F1"];
 const RENAME_COMBO = ["F2"];
 const MK_DIR_COMBO = ["F7"];
 const CANCEL_COMBO = ["Escape"];
@@ -107,11 +109,17 @@ export const FileDialog = observer(function FileDialog({
   const [isDirSelected, setDirSelected] = useState(false);
   const [isListFocused, setListFocused] = useState(false);
   const [isPathFocused, setPathFocused] = useState(false);
+  const [isChangeStorageDialogOpen, setChangeStorageDialogOpen] =
+    useState(false);
   const [isSelectThisDirSelected, setIsSelectThisFolderSelected] =
     useState(false);
   const sfxContext = useContext(SoundEffectsContext);
 
   const onAcceptRef = useRef<IProps["onAccept"] | null>(onAccept);
+
+  useEffect(() => {
+    setIsSelectThisFolderSelected(false);
+  }, [show]);
 
   useEffect(() => {
     onAcceptRef.current = onAccept;
@@ -347,6 +355,19 @@ export const FileDialog = observer(function FileDialog({
     });
   }
 
+  function onOpenChangeStorageDialog() {
+    setChangeStorageDialogOpen(true);
+  }
+
+  function onCloseChangeStorageDialog() {
+    setChangeStorageDialogOpen(false);
+  }
+
+  function onChangeStorage(storageId: ProviderId) {
+    setChangeStorageDialogOpen(false);
+    setCurrentStorage(storageId);
+  }
+
   const { FocusTrapStart, FocusTrapEnd } = useFocusTrap();
 
   const canGo = (isDirSelected && isListFocused) || isPathFocused;
@@ -379,158 +400,178 @@ export const FileDialog = observer(function FileDialog({
 
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  const isAnyDialogOpen = isChangeStorageDialogOpen;
+
   return (
-    <CSSTransition
-      nodeRef={dialogRef}
-      in={show}
-      timeout={600}
-      mountOnEnter
-      unmountOnExit
-      className="FileManager FileDialog Dialog sdi-app"
-      onEntered={onAnimationComplete}
-    >
-      <div data-open ref={dialogRef}>
-        <div className="dialog__backdrop dialog__backdrop--full-screen-dialog"></div>
-        <div className="Document sdi-app-workspace bg-files">
-          <FocusTrapStart />
-          <div className="FileDialog__layout">
-            <div className="FileDialog__path">
-              {currentStorage && (
-                <BreadcrumbBar.Bar
-                  onFocus={() => setPathFocused(true)}
-                  onBlur={() => setPathFocused(false)}
-                >
-                  <BreadcrumbBar.Crumb
-                    data-path={JSON.stringify([])}
-                    onClick={onGoToPath}
+    <>
+      <CSSTransition
+        nodeRef={dialogRef}
+        in={show}
+        timeout={600}
+        mountOnEnter
+        unmountOnExit
+        className="FileManager FileDialog Dialog sdi-app"
+        onEntered={onAnimationComplete}
+      >
+        <div data-open ref={dialogRef}>
+          <div className="dialog__backdrop dialog__backdrop--full-screen-dialog"></div>
+          <div className="Document sdi-app-workspace bg-files">
+            <FocusTrapStart />
+            <div className="FileDialog__layout">
+              <div className="FileDialog__path">
+                {currentStorage && (
+                  <BreadcrumbBar.Bar
+                    onFocus={() => setPathFocused(true)}
+                    onBlur={() => setPathFocused(false)}
                   >
-                    {AppStore.fileSystem.providers.get(currentStorage)?.name}
-                    {PROVIDER_SEPARATOR}
-                  </BreadcrumbBar.Crumb>
-                  <BreadcrumbBar.Separator />
-                  {currentPath.map((pathSegment, index, array) => (
-                    <React.Fragment key={`${index}_${pathSegment}`}>
-                      <BreadcrumbBar.Crumb
-                        data-path={JSON.stringify(array.slice(0, index + 1))}
-                        onClick={onGoToPath}
-                      >
-                        {pathSegment}
-                      </BreadcrumbBar.Crumb>
-                      {index !== array.length - 1 && (
-                        <BreadcrumbBar.Separator />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </BreadcrumbBar.Bar>
-              )}
-            </div>
-            <div className="FileDialog__pane">
-              {status === LoadStatus.LOADING && <Spinner />}
-              {status === LoadStatus.OK && (
-                <ListView.List
-                  multiple
-                  value={selectedFiles}
-                  onChange={onListChange}
-                  onFocus={onFocus}
-                  onBlur={onBlur}
+                    <BreadcrumbBar.Crumb
+                      data-path={JSON.stringify([])}
+                      onClick={onGoToPath}
+                    >
+                      {AppStore.fileSystem.providers.get(currentStorage)?.name}
+                      {PROVIDER_SEPARATOR}
+                    </BreadcrumbBar.Crumb>
+                    <BreadcrumbBar.Separator />
+                    {currentPath.map((pathSegment, index, array) => (
+                      <React.Fragment key={`${index}_${pathSegment}`}>
+                        <BreadcrumbBar.Crumb
+                          data-path={JSON.stringify(array.slice(0, index + 1))}
+                          onClick={onGoToPath}
+                        >
+                          {pathSegment}
+                        </BreadcrumbBar.Crumb>
+                        {index !== array.length - 1 && (
+                          <BreadcrumbBar.Separator />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </BreadcrumbBar.Bar>
+                )}
+              </div>
+              <div className="FileDialog__pane">
+                {status === LoadStatus.LOADING && <Spinner />}
+                {status === LoadStatus.OK && (
+                  <ListView.List
+                    multiple
+                    value={selectedFiles}
+                    onChange={onListChange}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
+                  >
+                    {listViewItems}
+                  </ListView.List>
+                )}
+              </div>
+              {showFileNameInput && status === LoadStatus.OK && (
+                <form
+                  className="FileDialog__fileNameInput"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    onAcceptInner();
+                  }}
                 >
-                  {listViewItems}
-                </ListView.List>
+                  <input
+                    type="text"
+                    data-focus
+                    className="form-control"
+                    value={localFileName}
+                    placeholder={defaultFileName}
+                    onChange={(e) => setLocalFileName(e.target.value)}
+                  />
+                </form>
               )}
             </div>
-            {showFileNameInput && status === LoadStatus.OK && (
-              <form
-                className="FileDialog__fileNameInput"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  onAcceptInner();
-                }}
-              >
-                <input
-                  type="text"
-                  data-focus
-                  className="form-control"
-                  value={localFileName}
-                  placeholder={defaultFileName}
-                  onChange={(e) => setLocalFileName(e.target.value)}
-                />
-              </form>
-            )}
+            <EmojiPicker />
+            <FocusTrapEnd />
           </div>
-          <EmojiPicker />
-          <FocusTrapEnd />
+          {!isAnyDialogOpen && (
+            <CommandBar.Nav>
+              <CommandBar.Button
+                combo={CHANGE_STORAGE}
+                position={1}
+                showOnlyWhenModifiersActive
+                onClick={onOpenChangeStorageDialog}
+              >
+                Storage
+              </CommandBar.Button>
+              {!disabledRename && isListFocused && (
+                <CommandBar.Button
+                  combo={RENAME_COMBO}
+                  position={2}
+                  showOnlyWhenModifiersActive
+                >
+                  Rename
+                </CommandBar.Button>
+              )}
+              {!disabledMkDir && (
+                <CommandBar.Button
+                  combo={MK_DIR_COMBO}
+                  position={7}
+                  showOnlyWhenModifiersActive
+                  onClick={() => {}}
+                >
+                  MkDir
+                </CommandBar.Button>
+              )}
+              <CommandBar.Button
+                combo={CANCEL_COMBO}
+                position={9}
+                showOnlyWhenModifiersActive
+                onClick={onCancel}
+              >
+                Cancel
+              </CommandBar.Button>
+              {canSave && (
+                <CommandBar.Button
+                  combo={CONFIRM_COMBO}
+                  position={10}
+                  showOnlyWhenModifiersActive
+                  onClick={onAcceptInner}
+                >
+                  Save
+                </CommandBar.Button>
+              )}
+              {canOpen && (
+                <CommandBar.Button
+                  combo={CONFIRM_COMBO}
+                  position={10}
+                  showOnlyWhenModifiersActive
+                  onClick={onAcceptInner}
+                >
+                  Open
+                </CommandBar.Button>
+              )}
+              {canSelectThisDir && (
+                <CommandBar.Button
+                  combo={CONFIRM_COMBO}
+                  position={10}
+                  showOnlyWhenModifiersActive
+                  onClick={onAcceptInner}
+                >
+                  Select
+                </CommandBar.Button>
+              )}
+              {canGo && (
+                <CommandBar.Button
+                  combo={CONFIRM_COMBO}
+                  position={10}
+                  showOnlyWhenModifiersActive
+                  onClick={!isPathFocused ? onGoToSelectedFolder : undefined}
+                >
+                  Go
+                </CommandBar.Button>
+              )}
+            </CommandBar.Nav>
+          )}
         </div>
-        <CommandBar.Nav>
-          {!disabledRename && isListFocused && (
-            <CommandBar.Button
-              combo={RENAME_COMBO}
-              position={2}
-              showOnlyWhenModifiersActive
-            >
-              Rename
-            </CommandBar.Button>
-          )}
-          {!disabledMkDir && (
-            <CommandBar.Button
-              combo={MK_DIR_COMBO}
-              position={7}
-              showOnlyWhenModifiersActive
-              onClick={() => {}}
-            >
-              MkDir
-            </CommandBar.Button>
-          )}
-          <CommandBar.Button
-            combo={CANCEL_COMBO}
-            position={9}
-            showOnlyWhenModifiersActive
-            onClick={onCancel}
-          >
-            Cancel
-          </CommandBar.Button>
-          {canSave && (
-            <CommandBar.Button
-              combo={CONFIRM_COMBO}
-              position={10}
-              showOnlyWhenModifiersActive
-              onClick={onAcceptInner}
-            >
-              Save
-            </CommandBar.Button>
-          )}
-          {canOpen && (
-            <CommandBar.Button
-              combo={CONFIRM_COMBO}
-              position={10}
-              showOnlyWhenModifiersActive
-              onClick={onAcceptInner}
-            >
-              Open
-            </CommandBar.Button>
-          )}
-          {canSelectThisDir && (
-            <CommandBar.Button
-              combo={CONFIRM_COMBO}
-              position={10}
-              showOnlyWhenModifiersActive
-              onClick={onAcceptInner}
-            >
-              Select
-            </CommandBar.Button>
-          )}
-          {canGo && (
-            <CommandBar.Button
-              combo={CONFIRM_COMBO}
-              position={10}
-              showOnlyWhenModifiersActive
-              onClick={!isPathFocused ? onGoToSelectedFolder : undefined}
-            >
-              Go
-            </CommandBar.Button>
-          )}
-        </CommandBar.Nav>
-      </div>
-    </CSSTransition>
+      </CSSTransition>
+      <SelectStorageDialog
+        show={show && isChangeStorageDialogOpen}
+        currentStorage={currentStorage}
+        onChangeStorage={onChangeStorage}
+        onDismiss={onCloseChangeStorageDialog}
+      />
+    </>
   );
 });
 FileDialog.displayName = "FileDialog";

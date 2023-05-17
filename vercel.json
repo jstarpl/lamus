@@ -6,7 +6,15 @@
       "destination": "/api/404.ts"
     },
     {
-      "source": "/([^\\.]+)$",
+      "source": "/text",
+      "destination": "/"
+    },
+    {
+      "source": "/files",
+      "destination": "/"
+    },
+    {
+      "source": "/code",
       "destination": "/"
     }
   ],
@@ -14,5 +22,9 @@
     "api/**/*.ts": {
       "includeFiles": "./api/*.json"
     }
-  }
+  },
+  "buildCommand": "yarn build",
+  "installCommand": "yarn",
+  "devCommand": "yarn start",
+  "outputDirectory": "./lamus-mvp/build"
 }

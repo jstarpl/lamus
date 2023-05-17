@@ -128,6 +128,8 @@ export class Console extends EventTarget implements IConsole {
 	private cursorEnabled = false
 	private cursorShown = false
 
+	private gamepadEnabled = false
+
 	private keyBuffer: number[] = []
 
 	private hasFocus = false
@@ -328,6 +330,7 @@ export class Console extends EventTarget implements IConsole {
 		this.recording = testMode || false
 		this.recorded = ''
 		this.enableCursor(false)
+		this.enableGamepad(false)
 
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
 	}
@@ -1206,5 +1209,23 @@ export class Console extends EventTarget implements IConsole {
 		if (sprite) {
 			sprite.setAnimate(startFrame, endFrame, speed, loop ?? true, pingPong ?? false, pingPongFlip ?? 0)
 		}
+	}
+
+	public enableGamepad(enable: boolean): void {
+		if (enable && this.gamepadEnabled === false) {
+			this.gamepadEnabled = true
+			// TODO: attach event listeners
+		} else if (!enable && this.gamepadEnabled === true) {
+			this.gamepadEnabled = false
+			// TODO: remove event listeners
+		}
+	}
+
+	public getPotValue(potId: number, padId: number): number {
+
+	}
+
+	public getJoystickValue(padId: number): number {
+
 	}
 }

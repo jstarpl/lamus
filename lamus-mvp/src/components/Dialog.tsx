@@ -7,10 +7,18 @@ import "./Dialog.css";
 
 export const Dialog: React.FC<
   React.PropsWithChildren<{
+    className?: string;
     onKeyDown?: React.KeyboardEventHandler<HTMLDialogElement>;
     onKeyUp?: React.KeyboardEventHandler<HTMLDialogElement>;
+    onClickBackdrop?: React.MouseEventHandler<HTMLDivElement>;
   }>
-> = function Dialog({ children, onKeyDown, onKeyUp }) {
+> = function Dialog({
+  children,
+  className,
+  onKeyDown,
+  onKeyUp,
+  onClickBackdrop,
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -70,9 +78,10 @@ export const Dialog: React.FC<
   return (
     <>
       <FocusIndicator />
-      <div className="dialog__backdrop"></div>
+      <div className="dialog__backdrop" onClick={onClickBackdrop}></div>
       <dialog
         open
+        className={className}
         ref={dialogRef}
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}

@@ -7,7 +7,11 @@ export function sendStatus(
   message?: object | string,
   headers?: [string, string][]
 ): void {
-  res.status(status).setHeader("content-type", "application/json");
+  res.status(status)
+
+  if (message) {
+    res.setHeader("content-type", "application/json");
+  }
 
   if (headers) {
     headers.forEach(([header, value]) => {

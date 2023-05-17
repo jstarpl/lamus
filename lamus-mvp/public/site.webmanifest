@@ -1,5 +1,7 @@
 {
+    "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/web-manifest-combined.json",
     "name": "Lamus Cloud",
+    "description": "A Fantasy Personal Computer, with BASIC and Word Processing, but re-imagined with the Internet built-in",
     "short_name": "Lamus",
     "icons": [
         {
@@ -19,7 +21,23 @@
         }
     ],
     "start_url": ".",
-    "theme_color": "#FFF8CF",
+    "theme_color": "#000000",
     "background_color": "#000000",
-    "display": "standalone"
+    "display": "standalone",
+    "categories": ["kids", "utilities", "games"],
+    "scope": "/",
+    "shortcuts": [
+        {
+            "name": "Code",
+            "url": "/code"
+        },
+        {
+            "name": "Files",
+            "url": "/files"
+        },
+        {
+            "name": "Text",
+            "url": "/text"
+        }
+    ]
 }

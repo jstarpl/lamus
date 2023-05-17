@@ -195,7 +195,7 @@ export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>) {
 
       const focusedElementRect = focusedElement.getBoundingClientRect();
       const focusableElementsRects =
-        getBoundingClientRectsForNodeList(focusableElements);
+        getBoundingClientRectsForNodeList(focusableElements).filter((elementAndRect) => elementAndRect.element !== focusedElement);
       const targetElement = findClosestElementInDirection(
         focusedElementRect,
         direction,

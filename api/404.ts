@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendStatus } from "./_utils";
+import { sendStatus } from "./_utils.js";
 
-export default async function login(_: VercelRequest, res: VercelResponse) {
+export default async function notFound(_: VercelRequest, res: VercelResponse) {
   sendStatus(res, 404);
   return;
 }
