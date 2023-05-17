@@ -9,6 +9,7 @@
   cursor: pointer;
   box-sizing: content-box;
   white-space: nowrap;
+  user-select: none;
 }
 
 .BreadcrumbBar__Crumb:focus {

@@ -329,6 +329,7 @@ button.btn {
   cursor: pointer;
   box-sizing: content-box;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button.btn:active {
