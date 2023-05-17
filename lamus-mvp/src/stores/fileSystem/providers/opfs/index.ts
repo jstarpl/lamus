@@ -20,38 +20,38 @@ export class OPFSProvider implements IFileSystemProvider {
     this.name = name;
   }
   async init(): Promise<void> {
-    this.directoryHandle = await navigator.storage.getDirectory()
-    if (await navigator.storage.persisted() === false) {
-      await navigator.storage.persist()
+    this.directoryHandle = await navigator.storage.getDirectory();
+    if ((await navigator.storage.persisted()) === false) {
+      await navigator.storage.persist();
     }
   }
   async access(path: Path, name: string): Promise<IAccessResult> {
     if (!this.directoryHandle) throw new Error("Not initialized");
 
     try {
-      const parentDirectory = await this.resolvePath(path)
+      const parentDirectory = await this.resolvePath(path);
       await parentDirectory.getFileHandle(name, {
-        create: false
-      })
+        create: false,
+      });
 
       return {
         ok: true,
-        found: true
-      }
+        found: true,
+      };
     } catch {
       return {
         ok: true,
-        found: false
-      }
+        found: false,
+      };
     }
   }
   async list(path: Path): Promise<IListResult> {
     if (!this.directoryHandle) throw new Error("Not initialized");
 
     try {
-      const parentDirectory = await this.resolvePath(path)
+      const parentDirectory = await this.resolvePath(path);
 
-      let files: IFileEntry[] = []
+      let files: IFileEntry[] = [];
 
       for await (let [fileName, handle] of parentDirectory.entries()) {
         if (handle.kind === "directory") {
@@ -59,29 +59,29 @@ export class OPFSProvider implements IFileSystemProvider {
             fileName,
             size: 0,
             dir: true,
-          })
+          });
         } else if (handle.kind === "file") {
-          const fileHandle = handle as FileSystemFileHandle
-          const file = await fileHandle.getFile()
+          const fileHandle = handle as FileSystemFileHandle;
+          const file = await fileHandle.getFile();
           files.push({
             fileName,
             size: file.size,
             modified: new Date(file.lastModified),
-          })
+          });
         } else {
-          assertNever(handle.kind)
+          assertNever(handle.kind);
         }
       }
 
       return {
         ok: true,
         files: Promise.resolve(files),
-      }
+      };
     } catch (e) {
       return {
         ok: false,
-        error: String(e)
-      }
+        error: String(e),
+      };
     }
   }
   mkdir(path: Path, name: string): Promise<IMkDirResult> {
@@ -100,19 +100,19 @@ export class OPFSProvider implements IFileSystemProvider {
   async read(path: Path, fileName: string): Promise<IReadResult> {
     if (!this.directoryHandle) throw new Error("Not initialized");
     try {
-      const parentDirectory = await this.resolvePath(path)
+      const parentDirectory = await this.resolvePath(path);
       const fileHandle = await parentDirectory.getFileHandle(fileName, {
-        create: true,
-      })
+        create: false,
+      });
       return {
         ok: true,
         data: fileHandle.getFile(),
-      }
+      };
     } catch (e) {
       return {
         ok: false,
-        error: String(e)
-      }
+        error: String(e),
+      };
     }
   }
   async write(
@@ -123,66 +123,97 @@ export class OPFSProvider implements IFileSystemProvider {
   ): Promise<IWriteResult> {
     if (!this.directoryHandle) throw new Error("Not initialized");
     try {
-      const parentDirectory = await this.resolvePath(path)
+      const parentDirectory = await this.resolvePath(path);
       const fileHandle = await parentDirectory.getFileHandle(fileName, {
         create: true,
-      })
-      const file = await fileHandle.getFile()
-      const writableStream = await file.createWritable()
-      writableStream.write(await data)
+      });
+      const writableStream = await fileHandle.createWritable();
+      await writableStream.write({
+        data: await data,
+        position: 0,
+        type: "write",
+      });
+      await writableStream.close()
       return {
         ok: true,
         fileName: fileName,
-      }
+      };
     } catch (e) {
       return {
         ok: false,
-        error: String(e)
-      }
+        error: String(e),
+      };
     }
   }
   private async resolvePath(path: Path): Promise<FileSystemDirectoryHandle> {
     if (!this.directoryHandle) throw new Error("Not initialized");
 
-    let currentWorkingDirectory = this.directoryHandle
+    let currentWorkingDirectory = this.directoryHandle;
     for (const directory of path) {
-      if (!directory) continue
+      if (!directory) continue;
 
-      currentWorkingDirectory = await currentWorkingDirectory.getDirectoryHandle(directory)
+      currentWorkingDirectory =
+        await currentWorkingDirectory.getDirectoryHandle(directory);
     }
-    return currentWorkingDirectory
+    return currentWorkingDirectory;
   }
   static isSupported(): boolean {
-    if ("storage" in navigator && "getDirectory" in navigator.storage && "persist" in navigator.storage) {
-      return true
+    if (
+      "storage" in navigator &&
+      "getDirectory" in navigator.storage &&
+      "persist" in navigator.storage
+    ) {
+      return true;
     }
-    return false
+    return false;
   }
 }
 
 declare global {
-  interface FileSystemDirectoryHandle extends FileSystemHandle, AsyncIterable<FileSystemHandle> {
-    entries(): AsyncIterable<[string, FileSystemHandle]>
-    values(): AsyncIterable<FileSystemHandle>
-    keys(): AsyncIterable<string>
+  interface FileSystemDirectoryHandle
+    extends FileSystemHandle,
+      AsyncIterable<FileSystemHandle> {
+    entries(): AsyncIterable<[string, FileSystemHandle]>;
+    values(): AsyncIterable<FileSystemHandle>;
+    keys(): AsyncIterable<string>;
   }
 
-  type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array | BigInt64Array | BigUint64Array
-  type WritableStreamData = ArrayBuffer | TypedArray | DataView | Blob | String
+  type TypedArray =
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array
+    | BigInt64Array
+    | BigUint64Array;
+  type WritableStreamData = ArrayBuffer | TypedArray | DataView | Blob | String;
   type WriteOptions = {
-    data: WritableStreamData
-    type: "write" | "seek" | "truncate"
-    position: number
-    size: number
-  }
+    data?: WritableStreamData;
+    type?: "write" | "seek" | "truncate";
+    position?: number;
+    size?: number;
+  };
 
   interface FileSystemWritableStream extends WritableStream {
-    write(data: WritableStreamData | WriteOptions): Promise<void>
-    truncate(size?: number): Promise<void>
-    seek(position?: number): Promise<void>
+    write(data: WritableStreamData | WriteOptions): Promise<void>;
+    truncate(size?: number): Promise<void>;
+    seek(position?: number): Promise<void>;
   }
 
-  interface File {
-    createWritable(): Promise<FileSystemWritableStream>
+  interface FileSystemFileHandle {
+    createWritable(): Promise<FileSystemWritableStream>;
+  }
+
+  interface FileSystemHandle {
+    remove(options?: { recursive: boolean }): Promise<void>;
+    move(fileName: string): Promise<void>;
+    move(
+      directoryHandle: FileSystemDirectoryHandle,
+      fileName?: string
+    ): Promise<void>;
   }
 }

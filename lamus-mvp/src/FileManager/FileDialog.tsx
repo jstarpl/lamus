@@ -368,6 +368,13 @@ export const FileDialog = observer(function FileDialog({
     setCurrentStorage(storageId);
   }
 
+  function onStorageProviderCrumbContextMenu(
+    e: React.MouseEvent<HTMLButtonElement>
+  ) {
+    e.preventDefault();
+    onOpenChangeStorageDialog();
+  }
+
   const { FocusTrapStart, FocusTrapEnd } = useFocusTrap();
 
   const canGo = (isDirSelected && isListFocused) || isPathFocused;
@@ -427,6 +434,7 @@ export const FileDialog = observer(function FileDialog({
                     <BreadcrumbBar.Crumb
                       data-path={JSON.stringify([])}
                       onClick={onGoToPath}
+                      onContextMenu={onStorageProviderCrumbContextMenu}
                     >
                       {AppStore.fileSystem.providers.get(currentStorage)?.name}
                       {PROVIDER_SEPARATOR}

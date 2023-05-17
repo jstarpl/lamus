@@ -81,8 +81,12 @@ class AppStoreClass {
   }
 
   async login(): Promise<void> {
-    await this.refreshToken();
-    await this.createCloudFileSystem();
+    try {
+      await this.refreshToken();
+    } catch {
+      console.error('Could not log in')
+    }
+    await this.createFileSystem();
   }
 
   private createAgentConnection = () => {
@@ -119,6 +123,16 @@ class AppStoreClass {
     );
   };
 
+  private async createFileSystem(): Promise<void> {
+    if (!this.settings) {
+      await this.createLocalFileSystem();
+      return;
+    }
+
+    await this.createCloudFileSystem();
+    await this.createLocalFileSystem();
+  }
+
   private async createCloudFileSystem(): Promise<void> {
     if (!this.settings) return;
     const cloudMode = this.settings.cloud_mode;
@@ -144,12 +158,14 @@ class AppStoreClass {
         this.fileSystem.addProvider("nextcloud", nextcloudProvider);
         break;
     }
+  }
 
-    if (OPFSProvider.isSupported()) {
-      const opfsProvider = new OPFSProvider(OPFS_DRIVE_LETTER);
-      await opfsProvider.init();
-      this.fileSystem.addProvider(OPFS_DRIVE_LETTER, opfsProvider);
-    }
+  private async createLocalFileSystem(): Promise<void> {
+    if (!OPFSProvider.isSupported()) return
+
+    const opfsProvider = new OPFSProvider(OPFS_DRIVE_LETTER);
+    await opfsProvider.init();
+    this.fileSystem.addProvider(OPFS_DRIVE_LETTER, opfsProvider);
   }
 
   async refreshToken(): Promise<void> {
