@@ -110,6 +110,8 @@
 
   --dialog-button-bkg-accept: linear-gradient(to bottom, #9aab94, #bcd1b4 50%);
   --dialog-button-bkg-reject: linear-gradient(to bottom, #c7aea9, #f0d2cc 50%);
+
+  -webkit-tap-highlight-color: #006eff4a;
 }
 
 @media screen and (max-width: 750px), screen and (max-height: 640px) {
@@ -316,16 +318,22 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   box-shadow: 0 0 15px #00000022;
 }
 
-button {
+button.btn {
   border: none;
   background: var(--color-tone);
+  color: var(--color-dark);
   padding: 0.5em;
-  border-radius: var(--button-border-radius);
   border: none;
+  border-radius: var(--button-border-radius);
   font-size: 1em;
   cursor: pointer;
   box-sizing: content-box;
   user-select: none;
+}
+
+button.btn:active {
+  background: var(--color-shade);
+  color: var(--color-light);
 }
 
 .sdi-app {

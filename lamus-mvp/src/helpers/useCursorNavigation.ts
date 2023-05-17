@@ -129,8 +129,10 @@ function findClosestElementInDirection(
   return sortedOptions?.[0]?.element ?? null;
 }
 
-export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>) {
+export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>, enable: boolean = true) {
   useLayoutEffect(() => {
+    if (!enable) return
+
     const target = parentEl?.current ?? window;
 
     function onKeyDown(e: KeyboardEvent) {
@@ -216,5 +218,5 @@ export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>) {
         capture: false,
       });
     };
-  }, [parentEl]);
+  }, [parentEl, enable]);
 }

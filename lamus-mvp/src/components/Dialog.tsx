@@ -15,6 +15,7 @@ export const Dialog: React.FC<
   }>
 > = function Dialog({
   children,
+  top,
   className,
   onKeyDown,
   onKeyUp,

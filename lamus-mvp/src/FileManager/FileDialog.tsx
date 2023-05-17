@@ -130,8 +130,10 @@ export const FileDialog = observer(function FileDialog({
     };
   }, [onAccept]);
 
-  useCursorNavigation();
-  usePreventTabHijack();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useCursorNavigation(undefined, show);
+  usePreventTabHijack(show);
 
   function onAnimationComplete() {
     setAnimationFinished(true);
@@ -213,6 +215,8 @@ export const FileDialog = observer(function FileDialog({
   }, [isSelectingDirectory, currentStorage, currentPath]);
 
   useEffect(() => {
+    if (!show) return;
+
     function onKeyDown(evt: KeyboardEvent) {
       if (
         evt.key === "r" &&
@@ -235,7 +239,7 @@ export const FileDialog = observer(function FileDialog({
     return () => {
       window.removeEventListener("keydown", onKeyDown, { capture: true });
     };
-  }, [refreshList]);
+  }, [refreshList, show]);
 
   useEffect(
     () =>
@@ -407,8 +411,6 @@ export const FileDialog = observer(function FileDialog({
       )),
     [fileList, onFileEntryDoubleClick, disableFileSelection]
   );
-
-  const dialogRef = useRef<HTMLDivElement>(null);
 
   const isAnyDialogOpen = isChangeStorageDialogOpen;
 

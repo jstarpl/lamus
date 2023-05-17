@@ -48,6 +48,7 @@ export const SelectStorageDialog = observer(function SelectStorageDialog({
       className={`SelectStorageDialog bg-files ${className ?? ""}`}
       onClickBackdrop={onDismiss}
       onKeyDown={onKeyDown}
+      top
     >
       {label ? <p>{label}</p> : null}
       <ul className="SelectStorageDialog__StorageList">
@@ -56,12 +57,12 @@ export const SelectStorageDialog = observer(function SelectStorageDialog({
             <button
               data-storage-id={storageId}
               data-focus={currentStorage === storageId ? true : undefined}
-              className={classNames({
+              className={classNames("btn", {
                 selected: currentStorage === storageId,
               })}
               onClick={onStorageButtonClick}
             >
-              {provider.name}
+              {provider.name}:
             </button>
           </li>
         ))}

@@ -1,5 +1,9 @@
 .SelectStorageDialog {
-  background: linear-gradient(to bottom, #d0ddee, #ebf2fb 50%);
+  background: linear-gradient(
+    to bottom,
+    var(--color-tint-1),
+    var(--color-tint-2) 50%
+  );
   padding-top: 1.2rem;
   max-width: min(25ch, 75vw);
 }

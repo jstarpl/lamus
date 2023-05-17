@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 
-export function usePreventTabHijack() {
+export function usePreventTabHijack(enable: boolean = true) {
   useEffect(() => {
+    if (!enable) return
+
     function preventTabHijack(e: KeyboardEvent) {
       if (e.key === "Tab") {
         e.stopImmediatePropagation();
@@ -17,5 +19,5 @@ export function usePreventTabHijack() {
         capture: true,
       });
     };
-  }, []);
+  }, [enable]);
 }

@@ -16,7 +16,6 @@ import { EmojiPicker } from "../components/EmojiPicker";
 import { CommandBar } from "../components/CommandBar";
 import { useNavigate } from "react-router-dom";
 import { FileDialog, IAcceptEventProps } from "../FileManager/FileDialog";
-import { AnimatePresence } from "framer-motion";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { AppStore } from "../stores/AppStore";
 import {
