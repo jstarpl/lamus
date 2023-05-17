@@ -1221,11 +1221,11 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public getPotValue(potId: number, padId: number): number {
-
+	public getPotValue(_potId: number, _padId: number): number {
+		return 0
 	}
 
-	public getJoystickValue(padId: number): number {
-
+	public getJoystickValue(_padId: number): number {
+		return 0
 	}
 }
