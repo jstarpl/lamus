@@ -316,6 +316,18 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   box-shadow: 0 0 15px #00000022;
 }
 
+button {
+  border: none;
+  background: var(--color-tone);
+  padding: 0.5em;
+  border-radius: var(--button-border-radius);
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  box-sizing: content-box;
+  user-select: none;
+}
+
 .sdi-app {
   position: fixed;
   display: grid;
@@ -349,15 +361,4 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   display: contents;
   font-size: var(--command-bar-font-size, 1em);
   color: var(--color-white);
-}
-
-button {
-  border: none;
-  background: var(--color-tone);
-  padding: 0.5em;
-  border-radius: var(--button-border-radius);
-  border: none;
-  font-size: 1em;
-  cursor: pointer;
-  box-sizing: content-box;
 }
