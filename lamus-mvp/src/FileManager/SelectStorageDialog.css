@@ -1,0 +1,25 @@
+.SelectStorageDialog {
+  background: linear-gradient(to bottom, #d0ddee, #ebf2fb 50%);
+  padding-top: 1.2rem;
+}
+
+.SelectStorageDialog__StorageList {
+  display: flex;
+  padding: 0;
+  margin: 0.55em 0.882em 0.88em;
+  font-size: 0.77em;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+
+.SelectStorageDialog__StorageList li {
+  display: block;
+  padding: 0;
+  margin: 0;
+  font-size: 1rem;
+  flex: 0 0;
+}
+
+.SelectStorageDialog__StorageList li button {
+  min-width: 2em;
+}

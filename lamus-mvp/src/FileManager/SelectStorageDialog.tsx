@@ -5,15 +5,21 @@ import { AppStore } from "../stores/AppStore";
 import { Dialog } from "../components/Dialog";
 import classNames from "classnames";
 
+import "./SelectStorageDialog.css";
+
 interface IProps {
+  className?: string;
   show: boolean;
+  label?: React.ReactElement | string;
   currentStorage: ProviderId | undefined;
   onChangeStorage?: (newStorage: ProviderId) => void;
   onDismiss?: () => void;
 }
 
 export const SelectStorageDialog = observer(function SelectStorageDialog({
+  className,
   show,
+  label,
   currentStorage,
   onChangeStorage,
   onDismiss,
@@ -38,8 +44,13 @@ export const SelectStorageDialog = observer(function SelectStorageDialog({
   if (!show) return null;
 
   return (
-    <Dialog onClickBackdrop={onDismiss} onKeyDown={onKeyDown}>
-      <ul>
+    <Dialog
+      className={`SelectStorageDialog bg-files ${className ?? ""}`}
+      onClickBackdrop={onDismiss}
+      onKeyDown={onKeyDown}
+    >
+      {label ? <p>{label}</p> : null}
+      <ul className="SelectStorageDialog__StorageList">
         {availableStorages.map(([storageId, provider]) => (
           <li key={storageId}>
             <button

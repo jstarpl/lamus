@@ -16,6 +16,7 @@
   --focus-border-width: 3px;
   --focus-border-radius: 7px;
   --focus-border: var(--focus-border-width) solid var(--color-focus);
+  --button-border-radius: 4px;
 
   --command-bar-height: 2.5em;
   --command-bar-font-size: 1.1em;
@@ -348,4 +349,15 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   display: contents;
   font-size: var(--command-bar-font-size, 1em);
   color: var(--color-white);
+}
+
+button {
+  border: none;
+  background: var(--color-tone);
+  padding: 0.5em;
+  border-radius: var(--button-border-radius);
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  box-sizing: content-box;
 }

@@ -8,6 +8,7 @@ import "./Dialog.css";
 export const Dialog: React.FC<
   React.PropsWithChildren<{
     className?: string;
+    top?: boolean;
     onKeyDown?: React.KeyboardEventHandler<HTMLDialogElement>;
     onKeyUp?: React.KeyboardEventHandler<HTMLDialogElement>;
     onClickBackdrop?: React.MouseEventHandler<HTMLDivElement>;
@@ -81,7 +82,7 @@ export const Dialog: React.FC<
       <div className="dialog__backdrop" onClick={onClickBackdrop}></div>
       <dialog
         open
-        className={className}
+        className={`${className ?? ""} ${top ? "top" : ""}`}
         ref={dialogRef}
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}

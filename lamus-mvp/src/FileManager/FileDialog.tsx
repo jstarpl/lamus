@@ -118,6 +118,7 @@ export const FileDialog = observer(function FileDialog({
   const onAcceptRef = useRef<IProps["onAccept"] | null>(onAccept);
 
   useEffect(() => {
+    setChangeStorageDialogOpen(false);
     setIsSelectThisFolderSelected(false);
   }, [show]);
 
@@ -365,7 +366,9 @@ export const FileDialog = observer(function FileDialog({
 
   function onChangeStorage(storageId: ProviderId) {
     setChangeStorageDialogOpen(false);
+    if (storageId === currentStorage) return;
     setCurrentStorage(storageId);
+    setCurrentPath([]);
   }
 
   function onStorageProviderCrumbContextMenu(
@@ -490,6 +493,13 @@ export const FileDialog = observer(function FileDialog({
               )}
             </div>
             <EmojiPicker />
+            <SelectStorageDialog
+              show={show && isChangeStorageDialogOpen}
+              currentStorage={currentStorage}
+              label="Select storage:"
+              onChangeStorage={onChangeStorage}
+              onDismiss={onCloseChangeStorageDialog}
+            />
             <FocusTrapEnd />
           </div>
           {!isAnyDialogOpen && (
@@ -573,12 +583,6 @@ export const FileDialog = observer(function FileDialog({
           )}
         </div>
       </CSSTransition>
-      <SelectStorageDialog
-        show={show && isChangeStorageDialogOpen}
-        currentStorage={currentStorage}
-        onChangeStorage={onChangeStorage}
-        onDismiss={onCloseChangeStorageDialog}
-      />
     </>
   );
 });
