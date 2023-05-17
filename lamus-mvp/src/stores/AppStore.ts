@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { parseToken } from "../helpers/util";
 import { DropboxProvider } from "./fileSystem/providers/dropbox";
 import { NextcloudProvider } from "./fileSystem/providers/nextcloud";
+import { OPFSProvider } from "./fileSystem/providers/opfs";
 import { FileSystemStoreClass } from "./FileSystemStore";
 
 const DEVICE_ID_KEY = "deviceId";
@@ -28,6 +29,8 @@ export interface ISettings {
 }
 
 const REQUIRED_SCOPES = ["dropbox.access_token"];
+
+const OPFS_DRIVE_LETTER = "A";
 
 class AppStoreClass {
   deviceId = "";
@@ -140,6 +143,12 @@ class AppStoreClass {
         await nextcloudProvider.init();
         this.fileSystem.addProvider("nextcloud", nextcloudProvider);
         break;
+    }
+
+    if (OPFSProvider.isSupported()) {
+      const opfsProvider = new OPFSProvider(OPFS_DRIVE_LETTER);
+      await opfsProvider.init();
+      this.fileSystem.addProvider(OPFS_DRIVE_LETTER, opfsProvider);
     }
   }
 
