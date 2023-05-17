@@ -229,6 +229,12 @@ const TextEditor = observer(function TextEditor() {
     [editorCore]
   );
 
+  useEffect(() => {
+    if (hasDialogOpen) return;
+
+    focusEditor();
+  }, [hasDialogOpen]);
+
   return (
     <div className="TextEditor sdi-app">
       <div className="Document sdi-app-workspace bg-general">
