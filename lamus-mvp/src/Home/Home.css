@@ -47,11 +47,9 @@
   color: #fff;
   text-align: center;
   text-decoration: none;
-  width: -moz-available;
-  /* WebKit-based browsers will ignore this. */
-  width: -webkit-fill-available;
-  /* Mozilla-based browsers will ignore this. */
-  width: stretch;
+  width: auto;
+  pointer-events: all;
+  cursor: pointer;
 }
 
 #home-screen > nav > ul > li > .btn:visited {
