@@ -21,6 +21,7 @@
     "@lamus/codemirror-lang-qbasic-vm": "*",
     "@lamus/qbasic-vm": "*",
     "@meshtastic/meshtasticjs": "^0.9.8",
+    "@parcel/service-worker": "^2.8.3",
     "@sofie-automation/sorensen": "^1.4.2",
     "@svgr/webpack": "^6.2.1",
     "@testing-library/jest-dom": "^5.16.4",

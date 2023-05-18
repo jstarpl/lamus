@@ -13,4 +13,13 @@ root.render(
   </Router>
 );
 
-console.log("💻 %cLamus%c starting now", "font-weight: bold", "font-weight: normal")
+console.log(
+  "💻 %cLamus%c starting now",
+  "font-weight: bold",
+  "font-weight: normal"
+);
+
+navigator.serviceWorker.register(
+  new URL("./serviceWorker.ts", import.meta.url),
+  { type: "module" }
+);
