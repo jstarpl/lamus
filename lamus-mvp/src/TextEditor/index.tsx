@@ -49,6 +49,7 @@ const INITIAL_FOCUS_RETRY_COUNT = 3;
 const DEFAULT_NEW_FILE_NAME = "New_Text_File.md";
 
 function focusEditor(retry?: number) {
+  console.log("focusEditor");
   const mainEls = document.querySelectorAll(
     ".ce-paragraph.cdx-block"
   ) as NodeListOf<HTMLDivElement>;
