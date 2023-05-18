@@ -10,7 +10,9 @@ async function install() {
   const cache = await caches.open(version);
   // make manifest entries absolute
   await cache.addAll(
-    manifest.map((entry) => `${ensureEndsWithSlash(self.origin)}${entry}`)
+    unique(
+      manifest.map((entry) => `${ensureEndsWithSlash(self.origin)}${entry}`)
+    )
   );
 }
 self.addEventListener("install", (e: ExtendableEvent) =>
@@ -77,4 +79,14 @@ function cacheError(): Response {
 function ensureEndsWithSlash(url: string): string {
   if (!url.endsWith("/")) return `${url}/`;
   return url;
+}
+
+function unique<T>(list: T[]): T[] {
+  function onlyUnique(value: T, index: number, self: T[]) {
+    return self.indexOf(value) === index;
+  }
+
+  var unique = list.filter(onlyUnique);
+
+  return unique;
 }
