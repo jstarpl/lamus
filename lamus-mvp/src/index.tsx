@@ -21,5 +21,5 @@ console.log(
 
 navigator.serviceWorker.register(
   new URL("./serviceWorker.ts", import.meta.url),
-  { type: "module" }
+  { type: "module", scope: `${window.location.origin}/` }
 );
