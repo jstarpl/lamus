@@ -129,9 +129,12 @@ function findClosestElementInDirection(
   return sortedOptions?.[0]?.element ?? null;
 }
 
-export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>, enable: boolean = true) {
+export function useCursorNavigation(
+  parentEl?: React.RefObject<HTMLElement>,
+  enable: boolean = true
+) {
   useLayoutEffect(() => {
-    if (!enable) return
+    if (!enable) return;
 
     const target = parentEl?.current ?? window;
 
@@ -196,8 +199,9 @@ export function useCursorNavigation(parentEl?: React.RefObject<HTMLElement>, ena
       const direction = getDirectionFromCode(e.key);
 
       const focusedElementRect = focusedElement.getBoundingClientRect();
-      const focusableElementsRects =
-        getBoundingClientRectsForNodeList(focusableElements).filter((elementAndRect) => elementAndRect.element !== focusedElement);
+      const focusableElementsRects = getBoundingClientRectsForNodeList(
+        focusableElements
+      ).filter((elementAndRect) => elementAndRect.element !== focusedElement);
       const targetElement = findClosestElementInDirection(
         focusedElementRect,
         direction,

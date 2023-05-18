@@ -8,7 +8,8 @@ import { manifest, version } from "@parcel/service-worker";
 
 async function install() {
   const cache = await caches.open(version);
-  await cache.addAll(manifest);
+  // make manifest entries absolute
+  await cache.addAll(manifest.map((entry) => `${self.origin}${entry}`));
 }
 self.addEventListener("install", (e: ExtendableEvent) =>
   e.waitUntil(install())

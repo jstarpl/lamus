@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { isOrIsAncestorOf } from "../../helpers/util";
+import { combineRefs } from "../../lib/lib";
 import "./BreadcrumbBar.css";
 
 interface IProps {
@@ -7,11 +8,10 @@ interface IProps {
   onBlur?: (e: FocusEvent) => void;
 }
 
-export function BreadcrumbBar({
-  children,
-  onFocus,
-  onBlur,
-}: React.PropsWithChildren<IProps>) {
+export const BreadcrumbBar = React.forwardRef<
+  HTMLOListElement,
+  React.PropsWithChildren<IProps>
+>(function BreadcrumbBar({ children, onFocus, onBlur }, outerRef) {
   const ref = useRef<HTMLOListElement>(null);
 
   useLayoutEffect(() => {
@@ -43,7 +43,8 @@ export function BreadcrumbBar({
 
   return (
     <nav className="BreadcrumbBar__Bar">
-      <ol ref={ref}>{children}</ol>
+      <ol ref={combineRefs(ref, outerRef)}>{children}</ol>
     </nav>
   );
-}
+});
+BreadcrumbBar.displayName = "BreadcrumbBar";

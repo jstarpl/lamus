@@ -27,12 +27,12 @@ import {
   PROVIDER_SEPARATOR,
 } from "../stores/fileSystem/IFileSystemProvider";
 import { ProviderId } from "../stores/FileSystemStore";
-import { BreadcrumbBar } from "../components/BreadcrumbBar";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { Spinner } from "../components/Spinner";
 import { CSSTransition } from "react-transition-group";
 import { SelectStorageDialog } from "./SelectStorageDialog";
+import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -390,13 +390,23 @@ export const FileDialog = observer(function FileDialog({
   const canOpen = mode === "openFile" && !isDirSelected && !isPathFocused;
   const canSelectThisDir = isSelectThisDirSelected && !canGo;
 
-  const listViewItems = useMemo(
-    () =>
-      fileList.map((file) => (
+  const listViewItems = useMemo(() => {
+    let foundFirstNotParentDir = false;
+    return fileList.map((file) => {
+      let focusThisOneAfterLoad: boolean | undefined = undefined;
+      if (
+        (!file.parentDir && !foundFirstNotParentDir) ||
+        fileList.length === 1
+      ) {
+        foundFirstNotParentDir = true;
+        focusThisOneAfterLoad = true;
+      }
+      return (
         <ListView.Item
           key={file.guid}
           value={file.guid}
           data-guid={file.guid}
+          data-focus-initial={focusThisOneAfterLoad}
           onDoubleClick={onFileEntryDoubleClick}
         >
           <FileListItem
@@ -408,9 +418,26 @@ export const FileDialog = observer(function FileDialog({
             }
           />
         </ListView.Item>
-      )),
-    [fileList, onFileEntryDoubleClick, disableFileSelection]
-  );
+      );
+    });
+  }, [fileList, onFileEntryDoubleClick, disableFileSelection]);
+
+  useLayoutEffect(() => {
+    if (status !== LoadStatus.OK) return;
+
+    const timeout = setTimeout(() => {
+      const elementToFocus = document.querySelector(
+        ".FileDialog__pane [data-focus-initial]"
+      );
+      if (!elementToFocus || !(elementToFocus instanceof HTMLElement)) return;
+      elementToFocus.scrollIntoView();
+      elementToFocus.focus();
+    });
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [status]);
 
   const isAnyDialogOpen = isChangeStorageDialogOpen;
 
@@ -432,33 +459,16 @@ export const FileDialog = observer(function FileDialog({
             <div className="FileDialog__layout">
               <div className="FileDialog__path">
                 {currentStorage && (
-                  <BreadcrumbBar.Bar
+                  <FilePathBreadcrumbBar
+                    currentStorageName={
+                      AppStore.fileSystem.providers.get(currentStorage)?.name
+                    }
+                    currentPath={currentPath}
+                    onGoToPath={onGoToPath}
+                    onStorageContextMenu={onStorageProviderCrumbContextMenu}
                     onFocus={() => setPathFocused(true)}
                     onBlur={() => setPathFocused(false)}
-                  >
-                    <BreadcrumbBar.Crumb
-                      data-path={JSON.stringify([])}
-                      onClick={onGoToPath}
-                      onContextMenu={onStorageProviderCrumbContextMenu}
-                    >
-                      {AppStore.fileSystem.providers.get(currentStorage)?.name}
-                      {PROVIDER_SEPARATOR}
-                    </BreadcrumbBar.Crumb>
-                    <BreadcrumbBar.Separator />
-                    {currentPath.map((pathSegment, index, array) => (
-                      <React.Fragment key={`${index}_${pathSegment}`}>
-                        <BreadcrumbBar.Crumb
-                          data-path={JSON.stringify(array.slice(0, index + 1))}
-                          onClick={onGoToPath}
-                        >
-                          {pathSegment}
-                        </BreadcrumbBar.Crumb>
-                        {index !== array.length - 1 && (
-                          <BreadcrumbBar.Separator />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </BreadcrumbBar.Bar>
+                  />
                 )}
               </div>
               <div className="FileDialog__pane">
