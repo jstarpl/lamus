@@ -9,7 +9,9 @@ import { manifest, version } from "@parcel/service-worker";
 async function install() {
   const cache = await caches.open(version);
   // make manifest entries absolute
-  await cache.addAll(manifest.map((entry) => `${self.origin}${entry}`));
+  await cache.addAll(
+    manifest.map((entry) => `${ensureEndsWithSlash(self.origin)}${entry}`)
+  );
 }
 self.addEventListener("install", (e: ExtendableEvent) =>
   e.waitUntil(install())
@@ -70,4 +72,9 @@ function cacheError(): Response {
   return new Response(null, {
     status: 503,
   });
+}
+
+function ensureEndsWithSlash(url: string): string {
+  if (!url.endsWith("/")) return `${url}/`;
+  return url;
 }
