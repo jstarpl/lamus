@@ -319,11 +319,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	*/
 	public runSome(): void {
 		try {
-			for (
-				let i = 0;
-				i < this.instructionsPerInterval && this.pc < this.instructions.length && !this.suspended;
-				i++
-			) {
+			for (let i = 0; i < this.instructionsPerInterval && this.pc < this.instructions.length && !this.suspended; i++) {
 				this.runOneInstruction()
 			}
 		} catch (e) {
@@ -2686,7 +2682,6 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		args: ['ANY', 'ANY', 'ANY', 'ANY', 'ARRAY OF INTEGER'],
 		minArgs: 1,
 		action: function (vm) {
-			// TODO: get contents of the console frame buffer
 			const argCount = vm.stack.pop()
 			let x1: number | undefined = undefined
 			let y1: number | undefined = undefined
@@ -3021,8 +3016,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		action: function (vm) {
 			vm.stack.pop() //numArgs
 
-			const target = vm.stack.pop() as ArrayVariable<JSONType>
-			// TODO: Check that `target` is an `ARRAY OF STRING`
+			const target = vm.stack.pop() as ArrayVariable<StringType>
+			if (target.type.name !== 'STRING') {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Output needs to be a STRING array')
+			}
+
 			const delim = getArgValue(vm.stack.pop())
 			const source = getArgValue(vm.stack.pop())
 
@@ -3046,8 +3044,9 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			let method = 'GET'
 			let body: string | undefined = undefined
 			let options = 0
-			let cache: "default" | "force-cache" | "no-cache" | "no-store" | "only-if-cached" | "reload" | undefined = undefined
-			let credentials: "include" | "omit" | "same-origin" | undefined = undefined
+			let cache: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload' | undefined =
+				undefined
+			let credentials: 'include' | 'omit' | 'same-origin' | undefined = undefined
 
 			if (argCount > 6) {
 				body = getArgValue(vm.stack.pop())
@@ -3055,7 +3054,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			if (argCount > 5) {
 				if (argCount === 6) {
 					const bodyOrOptions = getArgValue<string | number>(vm.stack.pop())
-					if (typeof bodyOrOptions === "number") {
+					if (typeof bodyOrOptions === 'number') {
 						options = bodyOrOptions
 					} else {
 						body = bodyOrOptions
@@ -3063,7 +3062,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				} else {
 					options = Math.round(Number(getArgValue(vm.stack.pop())))
 
-					let cacheOption = options % 10
+					const cacheOption = options % 10
 					switch (cacheOption) {
 						case 1:
 							cache = 'force-cache'
@@ -3071,7 +3070,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 						case 2:
 							cache = 'no-cache'
 							break
-						case 3: 
+						case 3:
 							cache = 'no-store'
 							break
 						case 4:
@@ -3085,7 +3084,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 							cache = 'default'
 					}
 
-					let credentialsOption = (options % 100) / 10
+					const credentialsOption = (options % 100) / 10
 					switch (credentialsOption) {
 						case 1:
 							credentials = 'include'
@@ -3113,7 +3112,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				} else {
 					const auth = getArgValue(headersOrAuth)
 					headers = {
-						'Authorization': String(auth)
+						Authorization: String(auth),
 					}
 				}
 			}
@@ -3437,6 +3436,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			let specifier = vm.cwd + '*'
 
 			const target = vm.stack.pop() as ArrayVariable<StringType>
+
+			if (target.type.name !== 'STRING') {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Output needs to be a STRING array')
+			}
+
 			if (argCount > 1) {
 				specifier = vm.cwd + getArgValue(vm.stack.pop())
 			}
@@ -3454,7 +3458,8 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while listing directory contents: ${error}`)
+						vm.trace.printf('Error while listing directory contents: %s\n', error)
+						vm.resume()
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
@@ -4088,7 +4093,7 @@ export const Instructions: InstructionDefinition = {
 			// Argument is whether we want the reference or value.
 
 			// get the variable
-			const variable = vm.stack.pop()
+			const variable = vm.stack.pop() as ArrayVariable<any>
 
 			const indexes: number[] = []
 
@@ -4101,10 +4106,15 @@ export const Instructions: InstructionDefinition = {
 			}
 
 			// TODO: bounds checking.
+			const arrayMember = variable.access(indexes)
+			if (arrayMember === undefined) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `Argument out of bounds`)
+			}
+
 			if (arg) {
-				vm.stack.push(variable.access(indexes))
+				vm.stack.push(arrayMember)
 			} else {
-				vm.stack.push(variable.access(indexes).value)
+				vm.stack.push(arrayMember.value)
 			}
 		},
 	},
