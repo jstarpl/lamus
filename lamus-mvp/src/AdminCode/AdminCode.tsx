@@ -2,7 +2,7 @@ import { AppStore } from "../stores/AppStore";
 import { QRCodeSVG } from "qrcode.react";
 import { observer } from "mobx-react-lite";
 import { Dialog } from "../components/Dialog";
-import "./AdminCode.css";
+import classes from "./AdminCode.module.css";
 import { useContext, useEffect, useMemo } from "react";
 import { KeyboardHandler } from "../helpers/useKeyboardHandler";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -71,10 +71,10 @@ export const AdminCode = observer(function AdminCode() {
       <p>
         {isMobile ? (
           <a href={adminUrl} target="_blank" rel="noreferrer">
-            <QRCodeSVG value={adminUrl} className="admin-code-qr" />
+            <QRCodeSVG value={adminUrl} className={classes["admin-code-qr"]} />
           </a>
         ) : (
-          <QRCodeSVG value={adminUrl} className="admin-code-qr" />
+          <QRCodeSVG value={adminUrl} className={classes["admin-code-qr"]} />
         )}
       </p>
       <p>

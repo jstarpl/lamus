@@ -488,6 +488,7 @@ export const FileDialog = observer(function FileDialog({
               {showFileNameInput && status === LoadStatus.OK && (
                 <form
                   className="FileDialog__fileNameInput"
+                  spellCheck={false}
                   onSubmit={(e) => {
                     e.preventDefault();
                     onAcceptInner();

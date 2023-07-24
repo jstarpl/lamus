@@ -2,9 +2,10 @@
   flex: 0 0;
   display: block;
   background: var(--color-tint-1);
+  background-clip: padding-box;
   padding: 0.5em;
+  border: var(--focus-border-width) solid transparent;
   border-radius: var(--border-radius);
-  border: none;
   font-size: 1em;
   cursor: pointer;
   box-sizing: content-box;
@@ -14,5 +15,4 @@
 
 .BreadcrumbBar__Crumb:focus {
   border: var(--focus-border-width) solid var(--color-tone);
-  margin: calc(-1 * var(--focus-border-width));
 }
