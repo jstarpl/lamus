@@ -69,13 +69,18 @@ export default function setup(router: GeneralIORouter) {
       client.removeConnection(currentConnection);
     }
 
+    const data = req.data.split(",");
+    const address = data[0];
+    const tls = data[1] === "tls" ?? false;
+
     const connection = client.createHTTPConnection();
     currentConnection = connection;
     initConnection(connection);
     await connection.connect({
-      address: req.data,
+      address,
       fetchInterval: HTTP_FETCH_INTERVAL,
       receiveBatchRequests: false,
+      tls,
     });
   });
   router.insertRoute("/meshtastic/connection/bt", async (req) => {

@@ -193,6 +193,9 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 
 	cwd = ''
 
+	// Status flag
+	status = 0
+
 	/**
 	 * @param console A Console object that will be used as the screen.
 	 */
@@ -237,6 +240,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.frame = this.callstack[0]
 		this.dataPtr = 0
 		this.suspended = false
+		this.status = 0
 		if (this.interval) {
 			clearInterval(this.interval)
 			this.interval = undefined
@@ -452,6 +456,15 @@ type SystemFunctionsDefinition = {
 	to the function.
  */
 export const SystemFunctions: SystemFunctionsDefinition = {
+	ST: {
+		type: 'INTEGER',
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.stack.push(vm.status)
+		},
+	},
+
 	RND: {
 		type: 'SINGLE',
 		args: ['INTEGER'],
@@ -1345,8 +1358,10 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 				if (numArgs > 0) {
 					obj = JSON.parse(vm.stack.pop())
 				}
+				vm.status = 0
 			} catch (e) {
 				// could not parse JSON, we output an empty object
+				vm.status = -4
 			}
 			vm.stack.push(obj)
 		},
@@ -1490,16 +1505,19 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 					.input(address)
 					.then((data) => {
 						vm.stack.push(data)
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((error) => {
 						vm.trace.printf('Error while getting data from address: %s', error)
 						vm.stack.push('')
+						vm.status = -2
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('General IO not available')
+				vm.status = -1
 				vm.stack.push('')
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'General IO not available')
 			}
 		},
 	},
@@ -2935,6 +2953,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			vm.stack.pop()
 
 			const target = vm.stack.pop() as ArrayVariable<JSONType>
+
+			if (target.type !== vm.types['JSON']) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Output needs to be a JSON array')
+			}
+
 			const path = getArgValue(vm.stack.pop())
 			const obj = getArgValue(vm.stack.pop())
 
@@ -3017,7 +3040,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			vm.stack.pop() //numArgs
 
 			const target = vm.stack.pop() as ArrayVariable<StringType>
-			if (target.type.name !== 'STRING') {
+			if (target.type !== vm.types['STRING']) {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Output needs to be a STRING array')
 			}
 
@@ -3028,7 +3051,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 			target.resize([new Dimension(1, resultArr.length)])
 			for (let i = 0; i < resultArr.length; i++) {
-				target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'] as StringType, resultArr[i]))
+				target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'], resultArr[i]))
 			}
 		},
 	},
@@ -3136,37 +3159,39 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					.then((value) => {
 						outResCode.value = value.code
 						outData.value = value.body
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((reason) => {
 						vm.trace.printf('Error while fetching data: %s\n', reason)
-						outResCode.value = -1
+						outResCode.value = -2
+						vm.status = -2
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('Network adapter not available')
 				outResCode.value = -1
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'Network adapter not available')
 			}
 		},
 	},
 
 	WSOPEN: {
-		// URL$, OUT ERR_CODE% [, HANDLE% [, PROTOCOL$]]
-		args: ['STRING', 'INTEGER', 'INTEGER', 'STRING'],
-		minArgs: 2,
+		// URL$ [, HANDLE% [, PROTOCOL$]]
+		args: ['STRING', 'INTEGER', 'STRING'],
+		minArgs: 1,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
 
 			let protocol: string | undefined = undefined
 
 			let handle = 0
-			if (argCount > 3) {
+			if (argCount > 2) {
 				protocol = getArgValue(vm.stack.pop())
 			}
-			if (argCount > 2) {
+			if (argCount > 1) {
 				handle = getArgValue(vm.stack.pop())
 			}
-			const outErrCode = vm.stack.pop()
 			const url = getArgValue(vm.stack.pop())
 
 			if (vm.networkAdapter) {
@@ -3174,17 +3199,17 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.networkAdapter
 					.wsOpen(handle, url, protocol)
 					.then(() => {
-						outErrCode.value = 0
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((reason) => {
 						vm.trace.printf('Error while opening WebSocket: %s\n', reason)
-						outErrCode.value = -1
+						vm.status = -2
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('Network adapter not available')
-				outErrCode.value = -1
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'Network adapter not available')
 			}
 		},
 	},
@@ -3206,32 +3231,31 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.networkAdapter
 					.wsClose(handle)
 					.then(() => {
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((reason) => {
 						vm.trace.printf('Error while closing WebSocket: %s\n', reason)
+						vm.status = -2
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('Network adapter not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'Network adapter not available')
 			}
 		},
 	},
 
 	WSWRITE: {
-		// DATA$ [, OUT ERR_CODE% [, HANDLE% ]]
+		// DATA$ [, HANDLE% ]
 		args: ['STRING', 'INTEGER'],
 		minArgs: 1,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
 
 			let handle = 0
-			if (argCount > 2) {
-				handle = getArgValue(vm.stack.pop())
-			}
-			let outErrCode: any | undefined = undefined
 			if (argCount > 1) {
-				outErrCode = vm.stack.pop()
+				handle = getArgValue(vm.stack.pop())
 			}
 
 			const data = getArgValue(vm.stack.pop())
@@ -3241,38 +3265,31 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.networkAdapter
 					.wsSend(handle, data)
 					.then(() => {
-						if (outErrCode) {
-							outErrCode.value = 0
-						}
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((reason) => {
-						if (outErrCode) {
-							outErrCode.value = -1
-						}
+						vm.status = -2
 						vm.trace.printf('Error while sending data through WebSocket: %s\n', reason)
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('Network adapter not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'Network adapter not available')
 			}
 		},
 	},
 
 	WSREAD: {
-		// OUT DATA$ [, OUT ERR_CODE% [, HANDLE% ]]
-		args: ['STRING', 'INTEGER', 'INTEGER'],
+		// OUT DATA$ [, HANDLE% ]
+		args: ['STRING', 'INTEGER'],
 		minArgs: 1,
 		action: function (vm) {
 			const argCount = vm.stack.pop()
 
 			let handle = 0
-			if (argCount > 2) {
-				handle = getArgValue(vm.stack.pop())
-			}
-			let outErrCode: any | undefined = undefined
 			if (argCount > 1) {
-				outErrCode = vm.stack.pop()
+				handle = getArgValue(vm.stack.pop())
 			}
 
 			const outData = vm.stack.pop()
@@ -3283,27 +3300,22 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					.wsGetMessageFromBuffer(handle)
 					.then((data) => {
 						if (data === undefined) {
-							if (outErrCode) {
-								outErrCode.value = -2 // buffer is empty
-							}
+							vm.status = 4 // buffer is empty
 							vm.resume()
 							return
 						}
 						outData.value = String(data)
-						if (outErrCode) {
-							outErrCode.value = 0
-						}
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((reason) => {
-						if (outErrCode) {
-							outErrCode.value = -1 // could not get data from buffer
-						}
+						vm.status = -2
 						vm.trace.printf('Error while reading data from WebSocket buffer: %s\n', reason)
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('Network adapter not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'Network adapter not available')
 			}
 		},
 	},
@@ -3319,13 +3331,18 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.suspend()
 				vm.fileSystem
 					.open(fileHandle, fileName, mode)
-					.then(() => vm.resume())
+					.then(() => {
+						vm.status = 0
+						vm.resume()
+					})
 					.catch((reason) => {
+						vm.status = -2
 						vm.trace.printf('Error while opening file: %s\n', reason)
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('File System not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
 			}
 		},
 	},
@@ -3349,12 +3366,17 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				}
 
 				Promise.all(fileHandles.map(async (fileHandle) => fileSystem.close(fileHandle)))
-					.then(() => vm.resume())
+					.then(() => {
+						vm.status = 0
+						vm.resume()
+					})
 					.catch((reason) => {
+						vm.status = -2
 						vm.trace.printf('Error while closing file: %s\n', reason)
 					})
 			} else {
-				vm.trace.printf('File System not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
 			}
 		},
 	},
@@ -3370,13 +3392,18 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 				vm.fileSystem
 					.write(fileHandle, buf)
-					.then(() => vm.resume())
+					.then(() => {
+						vm.status = 0
+						vm.resume()
+					})
 					.catch((reason) => {
+						vm.status = -2
 						vm.trace.printf('Error while writing to file: %s\n', reason)
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('File System not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
 			}
 		},
 	},
@@ -3392,13 +3419,18 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 				vm.fileSystem
 					.seek(fileHandle, offset)
-					.then(() => vm.resume())
+					.then(() => {
+						vm.status = 0
+						vm.resume()
+					})
 					.catch((reason) => {
+						vm.status = -2
 						vm.trace.printf('Error while writing to file: %s\n', reason)
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('File System not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
 			}
 		},
 	},
@@ -3415,13 +3447,18 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 				vm.fileSystem
 					.kill(fileName)
-					.then(() => vm.resume())
+					.then(() => {
+						vm.status = 0
+						vm.resume()
+					})
 					.catch((reason) => {
+						vm.status = -2
 						vm.trace.printf('Error while deleting files: %s\n', reason)
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('File System not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
 			}
 		},
 	},
@@ -3437,7 +3474,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 			const target = vm.stack.pop() as ArrayVariable<StringType>
 
-			if (target.type.name !== 'STRING') {
+			if (target.type !== vm.types['STRING']) {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Output needs to be a STRING array')
 			}
 
@@ -3455,46 +3492,45 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 						for (let i = 0; i < files.length; i++) {
 							target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'] as StringType, files[i]))
 						}
+						vm.status = 0
 						vm.resume()
 					})
 					.catch((error) => {
 						vm.trace.printf('Error while listing directory contents: %s\n', error)
+						vm.status = -2
 						vm.resume()
 					})
 			} else {
+				vm.status = -1
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
 			}
 		},
 	},
 
 	OUT: {
-		// address$, data$ [, OUT responseCode%]
-		args: ['STRING', 'STRING', 'INTEGER'],
-		minArgs: 2,
+		// address$, data$
+		args: ['STRING', 'STRING'],
 		action: function (vm) {
-			let responseCode: undefined | any = undefined
-			const argCount = vm.stack.pop()
 			const data = getArgValue(vm.stack.pop())
 			const address = getArgValue(vm.stack.pop())
-			if (argCount > 2) {
-				responseCode = vm.stack.pop()
-			}
 
 			if (vm.generalIo) {
 				vm.suspend()
 
 				vm.generalIo
 					.output(address, data)
-					.then(() => vm.resume())
+					.then(() => {
+						vm.status = 0
+						vm.resume()
+					})
 					.catch((reason) => {
 						vm.trace.printf('Error while outputting data to address: %s\n', reason)
-						if (responseCode) {
-							responseCode.value = -1
-						}
+						vm.status = -2
 						vm.resume()
 					})
 			} else {
-				vm.trace.printf('General IO not available')
+				vm.status = -1
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'General IO not available')
 			}
 		},
 	},
