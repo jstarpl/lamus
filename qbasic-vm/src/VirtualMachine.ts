@@ -20,6 +20,7 @@
 */
 
 // Fix a problem with setTimeout/clearTimeout NodeJS vs Web
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./types/timeout.fix.d.ts" />
 
 import { sprintf, getDebugConsole as dbg } from './DebugConsole'
@@ -76,7 +77,6 @@ export class RuntimeError extends Error {
 export class TraceBuffer {
 	readonly MAX_LINES = 200
 	lines: string[] = []
-	constructor() {}
 
 	public toString(): string {
 		return this.lines.join('')
@@ -94,12 +94,12 @@ export class TraceBuffer {
 
 export class StackFrame {
 	// Address to return to when the subroutine has ended.
-	pc: any
+	pc: number
 
 	// map from name to the Scalar or Array variable.
 	variables: object = {}
 
-	constructor(pc: any) {
+	constructor(pc: number) {
 		this.pc = pc
 		this.variables = {}
 	}
@@ -2473,6 +2473,42 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		},
 	},
 
+	WINDOW: {
+		// [ X1%, Y1%, X2%, Y2% [, CLEAR] ]
+		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
+		minArgs: 0,
+		action: function (vm) {
+			const argCount = vm.stack.pop()
+			let clear = false
+
+			if (argCount === 0) {
+				vm.cons.window()
+				return
+			}
+			if (argCount < 4 || argCount > 5) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					`Provide coordinates for window, or no coordinates to reset`
+				)
+			}
+
+			if (argCount === 5) {
+				clear = getArgValue(vm.stack.pop()) === 1
+			}
+
+			const y2 = Math.round(getArgValue(vm.stack.pop()))
+			const x2 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
+
+			vm.cons.window(x1, y1, x2, y2)
+
+			if (clear) {
+				vm.cons.cls()
+			}
+		},
+	},
+
 	WAIT: {
 		args: ['INTEGER'],
 		minArgs: 0,
@@ -2756,6 +2792,33 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			} else {
 				vm.cons.put(pixels)
 			}
+		},
+	},
+
+	GCLIP: {
+		// [ X1%, Y1%, X2%, Y2% ]
+		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
+		minArgs: 0,
+		action: function (vm) {
+			const argCount = vm.stack.pop()
+
+			if (argCount === 0) {
+				vm.cons.clip()
+				return
+			}
+			if (argCount !== 4) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					`Provide coordinates for clipping, or no coordinates to reset`
+				)
+			}
+
+			const y2 = Math.round(getArgValue(vm.stack.pop()))
+			const x2 = Math.round(getArgValue(vm.stack.pop()))
+			const y1 = Math.round(getArgValue(vm.stack.pop()))
+			const x1 = Math.round(getArgValue(vm.stack.pop()))
+
+			vm.cons.clip(x1, y1, x2, y2)
 		},
 	},
 

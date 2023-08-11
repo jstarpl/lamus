@@ -156,6 +156,9 @@ export class Console extends EventTarget implements IConsole {
 	private charWidth = 8
 	private charHeight = 8
 
+	private _window: { x: number; y: number; width: number; height: number } | null = null
+	private _clipDepth = 0
+
 	// This is a map of pressed key codes and the resulting characters
 	private keyDown: Map<string, string> = new Map()
 	private inputMode = false
@@ -179,13 +182,7 @@ export class Console extends EventTarget implements IConsole {
 	private containerWidth: number | undefined
 	private containerHeight: number | undefined
 
-	constructor(
-		parentElement: HTMLElement,
-		className?: string,
-		width?: number,
-		height?: number,
-		assetPath = 'assets/'
-	) {
+	constructor(parentElement: HTMLElement, className?: string, width?: number, height?: number, assetPath = 'assets/') {
 		super()
 
 		this.canvas = document.createElement('canvas')
@@ -248,6 +245,8 @@ export class Console extends EventTarget implements IConsole {
 		this._width = width || this.canvas.width
 		this._height = height || this.canvas.height
 
+		this._window = null
+
 		this.interval = undefined
 		this.cursorEnabled = false
 		this.cursorShown = false
@@ -285,6 +284,45 @@ export class Console extends EventTarget implements IConsole {
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
 
 		this.cls()
+	}
+	private unclip(): void {
+		while (this._clipDepth > 0) {
+			this._clipDepth--
+			this.ctx.restore()
+		}
+	}
+	clip(x1: number, y1: number, x2: number, y2: number): void
+	clip(): void
+	clip(x1?: unknown, y1?: unknown, x2?: unknown, y2?: unknown): void {
+		if (typeof x1 !== 'number' || typeof y1 !== 'number' || typeof x2 !== 'number' || typeof y2 !== 'number') {
+			this._clipDepth--
+			this.ctx.restore()
+			return
+		}
+
+		this._clipDepth++
+		this.ctx.save()
+		const clipPath = new Path2D()
+		const x = Math.min(x1, x2)
+		const y = Math.min(y1, y2)
+		const width = Math.abs(x2 - x1)
+		const height = Math.abs(y2 - y1)
+		clipPath.rect(x, y, width, height)
+		this.ctx.clip(clipPath)
+	}
+	window(x1: number, y1: number, x2: number, y2: number): void
+	window(): void
+	window(x1?: unknown, y1?: unknown, x2?: unknown, y2?: unknown): void {
+		if (typeof x1 !== 'number' || typeof y1 !== 'number' || typeof x2 !== 'number' || typeof y2 !== 'number') {
+			this._window = null
+			return
+		}
+
+		const x = Math.min(x1, x2)
+		const y = Math.min(y1, y2)
+		const width = Math.abs(x2 - x1)
+		const height = Math.abs(y2 - y1)
+		this._window = { x, y, width, height }
 	}
 	onNextFrame(clb: () => void): number {
 		return window.requestAnimationFrame(clb)
@@ -325,6 +363,9 @@ export class Console extends EventTarget implements IConsole {
 		this._height = VIDEO_MODES[DEFAULT_VIDEO_MODE].height
 		this._width = VIDEO_MODES[DEFAULT_VIDEO_MODE].width
 
+		this._window = null
+
+		this.unclip()
 		this.cls()
 		this.clearAllSprites()
 		this.recording = testMode || false
@@ -420,6 +461,9 @@ export class Console extends EventTarget implements IConsole {
 
 		this.ctx.imageSmoothingEnabled = false
 
+		this._window = null
+
+		this.unclip()
 		this.cls()
 		this.clearAllSprites()
 
@@ -665,7 +709,8 @@ export class Console extends EventTarget implements IConsole {
 		reject: (reason?: any) => void
 	) {
 		img.src = url
-		img.decode()
+		img
+			.decode()
 			.then(() => {
 				const idx = this.images.findIndex((i) => i === undefined)
 				if (idx >= 0) {
@@ -801,10 +846,16 @@ export class Console extends EventTarget implements IConsole {
 	public cls(): void {
 		this.record('[CLS]')
 		this.cursor(false)
-		this.x = 0
-		this.y = 0
+		this.x = this._window?.x ?? 0
+		this.y = this._window?.y ?? 0
+
+		const x = this.x * this.charWidth
+		const y = this.y * this.charHeight
+		const width = this._window?.width !== undefined ? this._window.width * this.charWidth : this._width
+		const height = this._window?.height !== undefined ? this._window.height * this.charHeight : this._height
+
 		this.ctx.fillStyle = this.bgcolor
-		this.ctx.fillRect(0, 0, this._width, this._height)
+		this.ctx.fillRect(x, y, width, height)
 	}
 
 	public locate(row: number, col: number): void {
@@ -858,19 +909,25 @@ export class Console extends EventTarget implements IConsole {
 
 	public scroll(): void {
 		this.cursor(false)
-		this.ctx.drawImage(
-			this.canvas,
-			0,
-			this.charHeight,
-			this._width,
-			this._height - this.charHeight,
-			0,
-			0,
-			this._width,
-			this._height - this.charHeight
-		)
+		const sx = (this._window?.x ?? 0) * this.charWidth
+		const sy = ((this._window?.y ?? 0) + 1) * this.charHeight
+		const swidth = this._window ? this._window.width * this.charWidth : this._width
+		const sheight = this._window ? (this._window.height - 1) * this.charHeight : this._height - this.charHeight
+
+		const tx = (this._window?.x ?? 0) * this.charWidth
+		const ty = (this._window?.y ?? 0) * this.charHeight
+		const twidth = swidth
+		const theight = sheight
+		this.ctx.drawImage(this.canvas, sx, sy, swidth, sheight, tx, ty, twidth, theight)
 		this.ctx.fillStyle = this.bgcolor
-		this.ctx.fillRect(0, this._height - this.charHeight, this._width, this.charHeight)
+
+		const fillx = (this._window?.x ?? 0) * this.charWidth
+		const filly = this._window
+			? (this._window.y + this._window.height - 1) * this.charHeight
+			: this._height - this.charHeight
+		const fillwidth = this._window ? this._window.width * this.charWidth : this._width
+		const fillheight = this.charHeight
+		this.ctx.fillRect(fillx, filly, fillwidth, fillheight)
 		this.y -= 1
 	}
 
@@ -909,13 +966,15 @@ export class Console extends EventTarget implements IConsole {
 		this.cursor(false)
 
 		this.x -= num
-		while (this.x < 0) {
+		const minX = this._window?.x ?? 0
+		const minY = this._window?.y ?? 0
+		while (this.x < minX) {
 			this.y -= 1
-			this.x += this.cols
+			this.x += this._window ? this._window.x + this._window.width : this.cols
 		}
 
-		if (this.y < 0) {
-			this.y = 0
+		if (this.y < minY) {
+			this.y = this._window?.y ?? 0
 		}
 	}
 
@@ -1046,27 +1105,17 @@ export class Console extends EventTarget implements IConsole {
 
 		if (show) {
 			this.ctx.fillStyle = this.fgcolor
-			this.ctx.fillRect(
-				this.x * this.charWidth,
-				this.y * this.charHeight + this.charHeight - 2,
-				this.charWidth,
-				2
-			)
+			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
 		} else {
 			this.ctx.fillStyle = this.bgcolor
-			this.ctx.fillRect(
-				this.x * this.charWidth,
-				this.y * this.charHeight + this.charHeight - 2,
-				this.charWidth,
-				2
-			)
+			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
 		}
 
 		this.cursorShown = show
 	}
 
 	public newline(): void {
-		this.x = 0
+		this.x = this._window?.x ?? 0
 		this.y += 1
 	}
 
@@ -1077,8 +1126,11 @@ export class Console extends EventTarget implements IConsole {
 
 		this.cursor(false)
 
+		const maxY = this._window ? this._window.y + this._window.height : this.rows
+		const maxX = this._window ? this._window.x + this._window.width : this.cols
+
 		for (let i = 0; i < str.length; i++) {
-			if (this.y === this.rows) {
+			if (this.y === maxY) {
 				this.scroll()
 			}
 
@@ -1117,7 +1169,7 @@ export class Console extends EventTarget implements IConsole {
 				this.ctx.restore()
 
 				this.x += 1
-				if (this.x === this.cols) {
+				if (this.x === maxX) {
 					this.newline()
 				}
 			}

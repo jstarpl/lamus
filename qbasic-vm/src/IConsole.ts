@@ -28,6 +28,10 @@ export interface IConsole {
 	screen(num: number): boolean
 	onNextFrame(clb: () => void): number
 	cancelOnNextFrame(handle: number): void
+	clip(x1: number, y1: number, x2: number, y2: number): void
+	clip(): void
+	window(x1: number, y1: number, x2: number, y2: number): void
+	window(): void
 	line(x1: number, y1: number, x2: number, y2: number, color?: number): void
 	lineTo(x: number, y: number, color?: number): void
 	circle(
