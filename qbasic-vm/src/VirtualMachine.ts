@@ -1130,9 +1130,13 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		// (fileNum1%|#N1)
 		type: 'INTEGER',
 		args: ['INTEGER'],
-		minArgs: 1,
+		minArgs: 0,
 		action: function (vm) {
-			const fileNum = vm.stack.pop()
+			const numArgs = vm.stack.pop()
+			let fileNum = 1
+			if (numArgs > 0) {
+				fileNum = vm.stack.pop()
+			}
 
 			if (vm.fileSystem) {
 				vm.suspend()
@@ -1156,9 +1160,13 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		// fileNum1%
 		type: 'INTEGER',
 		args: ['INTEGER'],
-		minArgs: 1,
+		minArgs: 0,
 		action: function (vm) {
-			const fileNum = vm.stack.pop()
+			const numArgs = vm.stack.pop()
+			let fileNum = 1
+			if (numArgs > 0) {
+				fileNum = vm.stack.pop()
+			}
 
 			if (vm.fileSystem) {
 				vm.suspend()
@@ -3141,47 +3149,47 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				if (argCount === 6) {
 					const bodyOrOptions = getArgValue<string | number>(vm.stack.pop())
 					if (typeof bodyOrOptions === 'number') {
-						options = bodyOrOptions
+						options = Math.round(Number(bodyOrOptions))
 					} else {
 						body = bodyOrOptions
 					}
 				} else {
 					options = Math.round(Number(getArgValue(vm.stack.pop())))
+				}
 
-					const cacheOption = options % 10
-					switch (cacheOption) {
-						case 1:
-							cache = 'force-cache'
-							break
-						case 2:
-							cache = 'no-cache'
-							break
-						case 3:
-							cache = 'no-store'
-							break
-						case 4:
-							cache = 'only-if-cached'
-							break
-						case 5:
-							cache = 'reload'
-							break
-						default:
-						case 0:
-							cache = 'default'
-					}
+				const cacheOption = options % 10
+				switch (cacheOption) {
+					case 1:
+						cache = 'force-cache'
+						break
+					case 2:
+						cache = 'no-cache'
+						break
+					case 3:
+						cache = 'no-store'
+						break
+					case 4:
+						cache = 'only-if-cached'
+						break
+					case 5:
+						cache = 'reload'
+						break
+					default:
+					case 0:
+						cache = 'default'
+				}
 
-					const credentialsOption = (options % 100) / 10
-					switch (credentialsOption) {
-						case 1:
-							credentials = 'include'
-							break
-						case 2:
-							credentials = 'omit'
-							break
-						default:
-						case 0:
-							credentials = 'same-origin'
-					}
+				const credentialsOption = (options % 100) / 10
+				switch (credentialsOption) {
+					case 1:
+						credentials = 'include'
+						break
+					case 2:
+						credentials = 'omit'
+						break
+					default:
+					case 0:
+						credentials = 'same-origin'
 				}
 			}
 			if (argCount > 4) {
@@ -3474,7 +3482,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	SEEK: {
 		// [(fileNum1%|#N1),] offset%
 		action: function (vm) {
-			const fileHandle = vm.stack.pop()
+			const fileHandle = vm.stack.pop() ?? 1
 			const offset = getArgValue(vm.stack.pop())
 
 			if (vm.fileSystem) {
@@ -3740,7 +3748,7 @@ interface IDataLabelInstruction extends IInstruction {
 interface IAddrLabelInstruction extends IInstruction {
 	addrLabel?: true
 	numArgs?: 1
-	execute: (vm: VirtualMachine, arg: number) => void
+	execute: (vm: VirtualMachine, arg: number | string) => void
 }
 
 interface INoArgInstruction extends IInstruction {

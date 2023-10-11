@@ -889,8 +889,9 @@ export class QBasicProgram {
 			rules.addToken('WEND', 'WEND')
 			rules.addToken('WHILE', 'WHILE')
 			rules.addToken('REM', 'REM ?.*$')
-			rules.addToken('EOF', 'EOF')
 			rules.addToken('SEEK', 'SEEK')
+			rules.addToken('EOF', 'EOF')
+			rules.addToken('LOC', 'LOC')
 			rules.addToken('OPEN', 'OPEN')
 			rules.addToken('CLOSE', 'CLOSE')
 			rules.addToken('WRITE', 'WRITE')
@@ -1077,13 +1078,9 @@ export class QBasicProgram {
 			})
 			rules.addRule('FileItem: Reference')
 			rules.addRule('FileItem: fileconstant', this.onFileNumber)
-			rules.addRule("istatement: SEEK FileItem ',' expr", function (args, locus) {
-				return new AstCallStatement(locus, args[1], args[3])
-			})
-			rules.addRule('istatement: EOF FileItem', function (_args, _locus) {
-				debugger
-				// return new AstCallStatement(locus, args[1], [])
-				// return new AstNullStatement(locus)
+			rules.addRule("istatement: SEEK FileItem ',' expr", function (_args, locus) {
+				// return new AstCallStatement(locus, 'SEEK', [args[1], args[3]])
+				return new AstNullStatement(locus)
 			})
 			rules.addRule("istatement: WRITE FileItem? ',' PrintItems", function (args, locus) {
 				return new AstWriteStatement(locus, args[1], args[3])
@@ -1283,6 +1280,12 @@ export class QBasicProgram {
 
 			rules.addRule("ReferenceList: ReferenceList '\\(' ParameterList '\\)'", function (args, locus) {
 				return new AstArrayDeref(locus, args[0], args[2])
+			})
+			rules.addRule('ReferenceList: EOF FileItem', function (args, locus) {
+				return new AstArrayDeref(locus, new AstVariableReference(locus, args[0], args[0]), [args[1]])
+			})
+			rules.addRule('ReferenceList: LOC FileItem', function (args, locus) {
+				return new AstArrayDeref(locus, new AstVariableReference(locus, args[0], args[0]), [args[1]])
 			})
 			rules.addRule('ReferenceList: Reference')
 			rules.addRule('Reference: identifier', function (args, locus) {

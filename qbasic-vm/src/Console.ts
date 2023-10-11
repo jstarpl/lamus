@@ -318,10 +318,10 @@ export class Console extends EventTarget implements IConsole {
 			return
 		}
 
-		const x = Math.min(x1, x2)
-		const y = Math.min(y1, y2)
-		const width = Math.abs(x2 - x1)
-		const height = Math.abs(y2 - y1)
+		const x = Math.min(Math.max(0, Math.min(x1, x2)), this.cols)
+		const y = Math.min(Math.max(0, Math.min(y1, y2)), this.rows)
+		const width = Math.min(Math.max(0, Math.abs(x2 - x1)), this.cols - x)
+		const height = Math.min(Math.max(0, Math.abs(y2 - y1)), this.rows - y)
 		this._window = { x, y, width, height }
 	}
 	onNextFrame(clb: () => void): number {
@@ -335,6 +335,22 @@ export class Console extends EventTarget implements IConsole {
 		this.sprites.forEach((sprite) => sprite && sprite.update())
 		this.repeatKeyboard()
 		window.requestAnimationFrame(this.animationFrame)
+	}
+
+	private startX(): number {
+		return this._window?.x ?? 0
+	}
+
+	private startY(): number {
+		return this._window?.y ?? 0
+	}
+
+	private endX(): number {
+		return this._window ? this._window.x + this._window.width : this.cols
+	}
+
+	private endY(): number {
+		return this._window ? this._window.y + this._window.height : this.rows
 	}
 
 	public reset(testMode?: boolean): void {
@@ -909,13 +925,13 @@ export class Console extends EventTarget implements IConsole {
 
 	public scroll(): void {
 		this.cursor(false)
-		const sx = (this._window?.x ?? 0) * this.charWidth
-		const sy = ((this._window?.y ?? 0) + 1) * this.charHeight
+		const sx = this.startX() * this.charWidth
+		const sy = (this.startY() + 1) * this.charHeight
 		const swidth = this._window ? this._window.width * this.charWidth : this._width
 		const sheight = this._window ? (this._window.height - 1) * this.charHeight : this._height - this.charHeight
 
-		const tx = (this._window?.x ?? 0) * this.charWidth
-		const ty = (this._window?.y ?? 0) * this.charHeight
+		const tx = this.startX() * this.charWidth
+		const ty = this.startY() * this.charHeight
 		const twidth = swidth
 		const theight = sheight
 		this.ctx.drawImage(this.canvas, sx, sy, swidth, sheight, tx, ty, twidth, theight)
@@ -965,17 +981,19 @@ export class Console extends EventTarget implements IConsole {
 	public backup(num: number): void {
 		this.cursor(false)
 
-		this.x -= num
-		const minX = this._window?.x ?? 0
-		const minY = this._window?.y ?? 0
-		while (this.x < minX) {
+		let virtualX = this.x - this.startX()
+		virtualX -= num
+		const minY = this.startY()
+		while (virtualX < 0) {
 			this.y -= 1
-			this.x += this._window ? this._window.x + this._window.width : this.cols
+			virtualX += this._window ? this._window.width : this.cols
 		}
 
 		if (this.y < minY) {
-			this.y = this._window?.y ?? 0
+			this.y = minY
 		}
+
+		this.x = virtualX + this.startX()
 	}
 
 	private keyRepeatThrottle = 0
@@ -1104,6 +1122,10 @@ export class Console extends EventTarget implements IConsole {
 		}
 
 		if (show) {
+			if (this.y === this.endY()) {
+				this.scroll()
+			}
+
 			this.ctx.fillStyle = this.fgcolor
 			this.ctx.fillRect(this.x * this.charWidth, this.y * this.charHeight + this.charHeight - 2, this.charWidth, 2)
 		} else {
@@ -1115,7 +1137,7 @@ export class Console extends EventTarget implements IConsole {
 	}
 
 	public newline(): void {
-		this.x = this._window?.x ?? 0
+		this.x = this.startX()
 		this.y += 1
 	}
 
@@ -1126,8 +1148,8 @@ export class Console extends EventTarget implements IConsole {
 
 		this.cursor(false)
 
-		const maxY = this._window ? this._window.y + this._window.height : this.rows
-		const maxX = this._window ? this._window.x + this._window.width : this.cols
+		const maxY = this.endY()
+		const maxX = this.endX()
 
 		for (let i = 0; i < str.length; i++) {
 			if (this.y === maxY) {

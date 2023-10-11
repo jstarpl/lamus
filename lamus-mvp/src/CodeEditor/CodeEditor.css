@@ -176,8 +176,7 @@
   }
 }
 
-
-@media screen and (orientation: portrait) {
+@media screen and ((orientation: portrait) or (max-device-aspect-ratio: 1/1)) {
   .CodeEditor {
     --gutter-min-width: auto;
   }
@@ -211,7 +210,7 @@
   }
 }
 
-@media screen and (orientation: landscape) {
+@media screen and ((orientation: landscape) or (min-device-aspect-ratio: 1/1)) {
   .CodeEditor > .sdi-app-workspace.Output-Active.Orientation-Landscape {
     display: grid;
     grid-template-areas: "Document Output";
@@ -220,4 +219,3 @@
     overflow: hidden;
   }
 }
-
