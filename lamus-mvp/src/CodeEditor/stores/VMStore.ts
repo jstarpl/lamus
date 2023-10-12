@@ -13,6 +13,7 @@ import setupGeneralIO from "./../vm/GeneralIO";
 import { LamusStorage } from "../vm/LamusStorage";
 import { AppStore } from "../../stores/AppStore";
 import { ProviderId } from "../../stores/FileSystemStore";
+import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
 
 export enum VMRunState {
   IDLE = "idle",
@@ -53,7 +54,8 @@ export class VMStoreClass {
   constructor(
     viewParent: HTMLElement,
     soundEffects: HTMLAudioElement[],
-    defaultStorageProviderId: ProviderId
+    defaultStorageProviderId: ProviderId,
+    showModalDialog: ShowModalDialogFunction
   ) {
     makeAutoObservable(
       this,
@@ -78,10 +80,7 @@ export class VMStoreClass {
       undefined,
       SHORTER_SCREEN_SIDE_LENGTH,
       LONGER_SCREEN_SIDE_LENGTH,
-      new URL(
-        "../img/charmap.png",
-        import.meta.url
-      ).href + '?/'
+      new URL("../img/charmap.png", import.meta.url).href + "?/"
     );
 
     const audio = new AudioDevice();
@@ -101,7 +100,7 @@ export class VMStoreClass {
       crypto
     );
 
-    this._destructors.push(setupGeneralIO(generalIORouter));
+    this._destructors.push(setupGeneralIO(generalIORouter, showModalDialog));
 
     setTimeout(() => {
       cons.print("\nREADY.");

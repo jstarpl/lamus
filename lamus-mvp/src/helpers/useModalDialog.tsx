@@ -1,11 +1,13 @@
 import React, { useCallback, useContext, useMemo, useReducer } from "react";
 import { ModalDialog } from "./ModalDialog/ModalDialog";
 
+export type ShowModalDialogFunction = <Result extends string>(
+  dialog: IDialog<Result>,
+  options?: IDialogOptions
+) => Promise<IDialogResult<Result>>;
+
 interface IModalDialogContext {
-  show: <Result extends string>(
-    dialog: IDialog<Result>,
-    options?: IDialogOptions
-  ) => Promise<IDialogResult<Result>>;
+  show: ShowModalDialogFunction;
 }
 
 const ModalDialogContext = React.createContext<IModalDialogContext>({

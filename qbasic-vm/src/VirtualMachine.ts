@@ -3496,7 +3496,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					})
 					.catch((reason) => {
 						vm.status = -2
-						vm.trace.printf('Error while writing to file: %s\n', reason)
+						vm.trace.printf('Error while seeking in file: %s\n', reason)
 						vm.resume()
 					})
 			} else {

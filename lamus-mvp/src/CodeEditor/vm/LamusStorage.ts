@@ -275,6 +275,7 @@ export class LamusStorage implements IFileSystem {
   ): Promise<void> {
     let buffer: Record<string | number, any>[] = [];
     let meta = undefined;
+    let modified = true;
     if (accessResult.ok && accessResult.found) {
       const readResult = await this.fs.read(
         providerId ?? this.defaultProviderId,
@@ -286,14 +287,7 @@ export class LamusStorage implements IFileSystem {
       }
       const data = await readResult.data;
       meta = readResult.meta;
-      if (
-        !data.type.startsWith("application/json") &&
-        data.type !== "text/x-json"
-      ) {
-        throw new Error(
-          `File System Error: Invalid data format in existing file "${fileName}" for mode RANDOM`
-        );
-      }
+      modified = false;
       try {
         const parsed = JSON.parse(await data.text());
         buffer = parsed;
@@ -312,7 +306,7 @@ export class LamusStorage implements IFileSystem {
       mode: FileAccessMode.RANDOM,
       buffer,
       cursor: 0,
-      modified: false,
+      modified,
       props: {
         contentType: KNOWN_MIME_TYPES.JSON,
       },
@@ -332,6 +326,7 @@ export class LamusStorage implements IFileSystem {
     let size = 0;
     let contentType: string = KNOWN_MIME_TYPES.BINARY;
     let meta = undefined;
+    let modified = true;
     if (accessResult.ok && accessResult.found) {
       const readResult = await this.fs.read(
         providerId ?? this.defaultProviderId,
@@ -346,6 +341,7 @@ export class LamusStorage implements IFileSystem {
       buffer = new Uint8Array(await data.arrayBuffer());
       contentType = data.type;
       size = buffer.byteLength;
+      modified = false;
     }
 
     this.fileHandles[handle] = {
@@ -357,7 +353,7 @@ export class LamusStorage implements IFileSystem {
       mode: FileAccessMode.BINARY,
       buffer,
       cursor: 0,
-      modified: false,
+      modified,
       props: {
         contentType,
         size,
@@ -512,7 +508,10 @@ export class LamusStorage implements IFileSystem {
     if (!fileHandle) {
       throw new Error("Invalid file handle.");
     }
-    if (fileHandle.mode === FileAccessMode.OUTPUT) {
+    if (
+      fileHandle.mode === FileAccessMode.OUTPUT ||
+      fileHandle.mode === FileAccessMode.APPEND
+    ) {
       throw new Error("Invalid file access mode.");
     }
 

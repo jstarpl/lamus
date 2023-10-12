@@ -303,7 +303,8 @@ const CodeEditor = observer(function CodeEditor() {
     const viewParent = consoleViewParent.current;
     const dispose = EditorStore.mountVirtualMachine(
       viewParent,
-      soundEffectsContext.getAllAudioElements()
+      soundEffectsContext.getAllAudioElements(),
+      showDialog
     );
 
     viewParent.addEventListener("input", onInput);

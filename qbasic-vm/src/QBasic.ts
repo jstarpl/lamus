@@ -1078,12 +1078,15 @@ export class QBasicProgram {
 			})
 			rules.addRule('FileItem: Reference')
 			rules.addRule('FileItem: fileconstant', this.onFileNumber)
-			rules.addRule("istatement: SEEK FileItem ',' expr", function (_args, locus) {
-				// return new AstCallStatement(locus, 'SEEK', [args[1], args[3]])
-				return new AstNullStatement(locus)
+			rules.addRule("istatement: SEEK FileItem ',' expr", function (args, locus) {
+				return new AstCallStatement(locus, 'SEEK', [args[1], args[3]])
 			})
 			rules.addRule("istatement: WRITE FileItem? ',' PrintItems", function (args, locus) {
 				return new AstWriteStatement(locus, args[1], args[3])
+			})
+			rules.addRule("istatement: WRITE FileItem? ',' Reference", function (args, locus) {
+				debugger
+				return new AstWriteStatement(locus, args[1], [args[3]])
 			})
 			rules.addRule('istatement: WRITE PrintItems', function (args, locus) {
 				return new AstPrintStatement(locus, args[1])

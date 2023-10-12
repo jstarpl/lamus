@@ -4,6 +4,7 @@ import { AppStore } from "../../stores/AppStore";
 import { FileName, Path } from "../../stores/fileSystem/IFileSystemProvider";
 import { FileHandle, ProviderId } from "../../stores/FileSystemStore";
 import { VMRunState, VMStoreClass } from "./VMStore";
+import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
 
 const ACTIVE_DOCUMENT_KEY = "codeEditor:activeDocument";
 
@@ -49,12 +50,14 @@ class EditorStoreClass {
 
   mountVirtualMachine(
     consoleParent: HTMLElement,
-    soundEffects: HTMLAudioElement[]
+    soundEffects: HTMLAudioElement[],
+    showModalDialog: ShowModalDialogFunction
   ) {
     this.vm = new VMStoreClass(
       consoleParent,
       soundEffects,
-      this.file?.providerId ?? "dropbox"
+      this.file?.providerId ?? "dropbox",
+      showModalDialog
     );
 
     const dispose = autorun(() => {
