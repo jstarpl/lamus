@@ -2,7 +2,7 @@ import { AppStore } from "../stores/AppStore";
 import { QRCodeSVG } from "qrcode.react";
 import { observer } from "mobx-react-lite";
 import { Dialog } from "../components/Dialog";
-import classes from "./AdminCode.module.css";
+import * as classes from "./AdminCode.module.css";
 import { useContext, useEffect, useMemo } from "react";
 import { KeyboardHandler } from "../helpers/useKeyboardHandler";
 import { useLocation, useNavigate } from "react-router-dom";
