@@ -902,7 +902,7 @@ export class QBasicProgram {
 			rules.addToken('binconstant', '\\&B[0-1]+')
 			rules.addToken('floatconstant', '\\d*\\.\\d+')
 			rules.addToken('intconstant', '-?\\d+')
-			rules.addToken('stringconstant', '"[^"]*"')
+			rules.addToken('stringconstant', '"([^"]|"")*"')
 			rules.addToken('fileconstant', '#\\d+')
 			rules.addToken('label', '^([a-zA-Z][a-zA-Z0-9_]*:|\\d+)')
 			rules.addToken('identifier', '[a-zA-Z_][a-zA-Z0-9_]*(\\$|%|#|&|!)?')
@@ -1361,7 +1361,9 @@ export class QBasicProgram {
 	}
 
 	private onString(symbols, locus) {
-		return new AstConstantExpr(locus, symbols[0].substr(1, symbols[0].length - 2))
+		const noOuterQuotes = symbols[0].substr(1, symbols[0].length - 2)
+		const dedupedInnerQuotes = noOuterQuotes.replace(/""/g, '"')
+		return new AstConstantExpr(locus, dedupedInnerQuotes)
 	}
 
 	private onFileNumber(symbols, locus) {
