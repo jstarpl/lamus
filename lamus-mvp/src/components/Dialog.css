@@ -27,13 +27,14 @@ dialog h5,
 dialog h6 {
   font-family: var(--system-header-font-family);
   font-weight: 400;
-  margin: 0.55em 0.88em;
+  margin: 0.55rem 1.6rem 0.7rem;
+  font-size: 1.7em;
 }
 
 dialog p {
   font-size: 0.77em;
   font-weight: 400;
-  margin: 0.55em 0.882em 0.88em;
+  margin: 0.7rem 1.8rem 1rem;
 }
 
 dialog::backdrop,

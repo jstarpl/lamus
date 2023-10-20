@@ -55,7 +55,7 @@ export function ModalDialog({
 
     e.stopPropagation();
 
-    if (found) {
+    if (found && key !== "Enter") {
       e.preventDefault();
     }
   }
