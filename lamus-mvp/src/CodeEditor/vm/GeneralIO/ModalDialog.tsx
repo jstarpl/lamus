@@ -11,6 +11,7 @@ export default function setup(
   showModalDialog: ShowModalDialogFunction
 ) {
   let lastResult: string = "";
+  let abortController: AbortController | null = null;
 
   async function outShowModalDialog(req: InOutRequest) {
     let dialogContents: DialogContents | undefined = undefined;
@@ -23,9 +24,14 @@ export default function setup(
 
     if (!dialogContents) return;
 
+    abortController = new AbortController();
     const dialogResult = await showModalDialog(
-      convertDialogContentsToDialog(dialogContents)
+      convertDialogContentsToDialog(dialogContents),
+      {
+        signal: abortController.signal,
+      }
     );
+    abortController = null;
     lastResult = dialogResult.result;
   }
 
@@ -43,6 +49,7 @@ export default function setup(
   });
 
   return async () => {
+    abortController?.abort();
     return Promise.resolve();
   };
 }

@@ -2,6 +2,7 @@ import { GeneralIORouter } from "@lamus/qbasic-vm";
 import poweredUp from "./PoweredUp";
 import meshtastic from "./Meshtastic";
 import modalDialog from "./ModalDialog";
+import oauth2 from "./OAuth2";
 import { ShowModalDialogFunction } from "../../../helpers/useModalDialog";
 
 export default function setup(
@@ -12,6 +13,7 @@ export default function setup(
     poweredUp(generalIORouter),
     meshtastic(generalIORouter),
     modalDialog(generalIORouter, showModalDialog),
+    oauth2(generalIORouter),
   ];
 
   return () => {

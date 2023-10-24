@@ -22,6 +22,7 @@ import { autorun } from "mobx";
 import Home from "./Home";
 import TextEditor from "./TextEditor";
 import CodeEditor from "./CodeEditor";
+import CodeIOOAuth2 from "./CodeEditor/vm/GeneralIO/OAuth2/code";
 import { GlobalSpinner } from "./components/GlobalSpinner/GlobalSpinner";
 
 function removeSplashScreen() {
@@ -119,6 +120,9 @@ export function App() {
                 <Routes location={location} key={location.pathname}>
                   <Route path="/" element={<Home />} />
                   <Route path="/text" element={<TextEditor />} />
+                  <Route path="/code/io">
+                    <Route path="oauth2" element={<CodeIOOAuth2 />} />
+                  </Route>
                   <Route path="/code" element={<CodeEditor />} />
                   <Route path="*" element={<Navigate to={"/"} />} />
                 </Routes>

@@ -71,6 +71,31 @@ self.addEventListener("fetch", (event: FetchEvent) => {
     );
     return;
   }
+
+  if (request.url.startsWith("https://fonts.googleapis.com")) {
+    // The request is for fonts and CSS
+    event.respondWith(
+      fetch(request)
+        .then(function (response) {
+          // do not keep responses that aren't 200, because Cache can't support them
+          if (response.status !== 200) return response;
+
+          // Stash a copy of this page in the cache
+          const copy = response.clone();
+          caches.open(version).then(function (cache) {
+            cache.put(request, copy);
+          });
+          return response;
+        })
+        .catch(async () => {
+          let response = await caches.match(request);
+          if (response) return response;
+
+          return cacheError();
+        }) as Promise<Response>
+    );
+    return;
+  }
 });
 
 function cacheError(): Response {
