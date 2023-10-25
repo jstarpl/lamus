@@ -40,7 +40,8 @@ self.addEventListener("fetch", (event: FetchEvent) => {
   // The request is for our origin and is not targeted towards the API
   if (
     request.url.startsWith(self.origin) &&
-    !request.url.startsWith(`${self.origin}/api/`)
+    !request.url.startsWith(`${self.origin}/api/`) &&
+    !request.url.startsWith(`${self.origin}/internal/`)
   ) {
     // The request is text/html, so respond by caching the
     // item or showing the /offline offline

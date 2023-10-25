@@ -120,7 +120,7 @@ export function App() {
                 <Routes location={location} key={location.pathname}>
                   <Route path="/" element={<Home />} />
                   <Route path="/text" element={<TextEditor />} />
-                  <Route path="/code/io">
+                  <Route path="/internal/io">
                     <Route path="oauth2" element={<CodeIOOAuth2 />} />
                   </Route>
                   <Route path="/code" element={<CodeEditor />} />

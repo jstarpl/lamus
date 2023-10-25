@@ -18,7 +18,7 @@
       "destination": "/"
     },
     {
-      "source": "/code/io/:path*",
+      "source": "/internal/:path*",
       "destination": "/"
     }
   ],

@@ -1,6 +1,6 @@
 import { GeneralIORouter, InOutRequest } from "@lamus/qbasic-vm";
 
-const REDIRECT_URI = new URL("/code/io/oauth2", window.location.href);
+const REDIRECT_URI = new URL("/internal/io/oauth2", window.location.href);
 
 export const OAUTH2_CODE_BCHANNEL_NAME = "oauth2_code";
 

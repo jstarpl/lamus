@@ -12,6 +12,8 @@ export default function OAuth2Code(): JSX.Element | null {
     const receivedCode = currentUrl.searchParams.get("code");
     codeChannel.postMessage(receivedCode);
 
+    console.log("👀 Sent OAuth2 Code back to main window");
+
     window.close();
   }, [codeChannel]);
 
