@@ -16,6 +16,10 @@
     {
       "source": "/code",
       "destination": "/"
+    },
+    {
+      "source": "/code/io/:path*",
+      "destination": "/"
     }
   ],
   "functions": {
