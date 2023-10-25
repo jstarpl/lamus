@@ -267,7 +267,7 @@ export class Console extends EventTarget implements IConsole {
 			}
 		})
 
-		this.canvas.addEventListener('pointerup', (event) => {
+		this.container.addEventListener('pointerup', (event) => {
 			this.onPointerUp(event)
 			if (this.hasFocus) {
 				event.preventDefault()
