@@ -267,6 +267,13 @@ export class Console extends EventTarget implements IConsole {
 			}
 		})
 
+		this.canvas.addEventListener('pointerup', (event) => {
+			this.onPointerUp(event)
+			if (this.hasFocus) {
+				event.preventDefault()
+			}
+		})
+
 		this.container.addEventListener('focusin', () => {
 			this.hasFocus = true
 		})
@@ -1023,6 +1030,12 @@ export class Console extends EventTarget implements IConsole {
 		this.keyDown.delete(event.code)
 
 		this.handleTrappedKey(this.keyBuffer[this.keyBuffer.length - 1])
+	}
+
+	public onPointerUp(event: PointerEvent): void {
+		if (event.pointerType !== 'mouse' && this.onTrappedKey[-1]) {
+			this.onTrappedKey[-1](-1)
+		}
 	}
 
 	public onInput(): void {
