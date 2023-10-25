@@ -73,7 +73,7 @@
   "scripts": {
     "start": "parcel ./public/index.html --dist-dir ./build",
     "clean": "rimraf ./build",
-    "build:app": "parcel build ./public/index.html --dist-dir ./build --public-url ./",
+    "build:app": "parcel build ./public/index.html --dist-dir ./build",
     "build": "yarn clean && yarn build:app",
     "format": "prettier --write src/**/*.ts{,x}",
     "lint": "tsc --noEmit && eslint src/**/*.ts{,x}"

@@ -7,19 +7,19 @@
     },
     {
       "source": "/text",
-      "destination": "/"
+      "destination": "/index.html"
     },
     {
       "source": "/files",
-      "destination": "/"
+      "destination": "/index.html"
     },
     {
       "source": "/code",
-      "destination": "/"
+      "destination": "/index.html"
     },
     {
       "source": "/internal/:path*",
-      "destination": "/"
+      "destination": "/index.html"
     }
   ],
   "functions": {
