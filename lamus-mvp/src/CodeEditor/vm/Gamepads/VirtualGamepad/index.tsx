@@ -100,7 +100,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
       onJoystickReset();
     }
 
-    function onPointerCancel(evt: PointerEvent) {
+    function onPointerLeave(evt: PointerEvent) {
       if (joystickPointerId !== evt.pointerId) return;
       joystickPointerId = null;
       onJoystickReset();
@@ -114,7 +114,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
 
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pagehide", onPageFocusLost);
-    window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("pointerleave", onPointerLeave);
     window.addEventListener("blur", onPageFocusLost);
     window.addEventListener("pointermove", onPointerMove);
     joystickEl.current.addEventListener("pointerdown", onPointerDown);
@@ -124,7 +124,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
     return () => {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pagehide", onPageFocusLost);
-      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("pointerleave", onPointerLeave);
       window.removeEventListener("blur", onPageFocusLost);
       window.removeEventListener("pointermove", onPointerMove);
       joystickEl?.current?.removeEventListener("pointerdown", onPointerDown);
@@ -135,6 +135,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
     const fireButtonId = e.currentTarget.dataset["fireButton"];
     if (!fireButtonId) return;
 
+    e.currentTarget.classList.add(classes.fireActive);
     EditorStore.vm?.virtualGamepad?.setFire(Number(fireButtonId) - 1, true);
   }, []);
 
@@ -142,6 +143,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
     const fireButtonId = e.currentTarget.dataset["fireButton"];
     if (!fireButtonId) return;
 
+    e.currentTarget.classList.remove(classes.fireActive);
     EditorStore.vm?.virtualGamepad?.setFire(Number(fireButtonId) - 1, false);
   }, []);
 

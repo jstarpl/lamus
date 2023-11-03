@@ -50,10 +50,10 @@
   position: relative;
 }
 
-.fire:active {
+.fireActive {
   background-color: var(--button-color, #fff);
   border-color: var(--button-color, #fff);
-  color: #000;
+  color: #000 !important;
 }
 
 .fire > svg {
