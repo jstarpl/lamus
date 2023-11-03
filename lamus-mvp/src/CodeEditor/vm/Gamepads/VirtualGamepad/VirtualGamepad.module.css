@@ -48,6 +48,13 @@
   padding: 0;
   box-sizing: border-box;
   position: relative;
+  text-align: center;
+}
+
+.fire > span {
+  font-family: var(--system-code-font-family);
+  font-weight: 600;
+  font-size: 2em;
 }
 
 .fire:active {
@@ -56,24 +63,12 @@
   color: #000;
 }
 
-.fire > svg {
-  position: absolute;
-  top: 0.45em;
-  left: 0.45em;
-  stroke-width: 1px;
-  font-size: 1.5em;
-}
-
 .fire1 {
   composes: fire;
   justify-self: center;
   align-self: end;
   --button-color: #acd0ff;
   color: var(--button-color);
-}
-
-.fire1 > svg {
-  stroke-width: 0;
 }
 
 .fire2 {

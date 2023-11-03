@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef } from "react";
 import * as classes from "./VirtualGamepad.module.css";
 import { observer } from "mobx-react-lite";
 import { EditorStore } from "../../../stores/EditorStore";
-import { BsCircle, BsSquare, BsTriangle, BsXLg } from "react-icons/bs";
 
 const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
   const joystickEl = useRef<HTMLDivElement>(null);
@@ -158,7 +157,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
           onPointerUp={onFireUp}
           data-fire-button="1"
         >
-          <BsXLg />
+          <span>A</span>
         </button>
         <button
           tabIndex={-1}
@@ -167,7 +166,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
           onPointerUp={onFireUp}
           data-fire-button="2"
         >
-          <BsCircle />
+          <span>B</span>
         </button>
         <button
           tabIndex={-1}
@@ -176,7 +175,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
           onPointerUp={onFireUp}
           data-fire-button="3"
         >
-          <BsSquare />
+          <span>X</span>
         </button>
         <button
           tabIndex={-1}
@@ -185,7 +184,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
           onPointerUp={onFireUp}
           data-fire-button="4"
         >
-          <BsTriangle />
+          <span>Y</span>
         </button>
       </div>
     </div>
