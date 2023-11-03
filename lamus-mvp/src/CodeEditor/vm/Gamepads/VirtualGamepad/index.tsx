@@ -75,9 +75,10 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
 
       joystickPointerIds.delete(evt.pointerId);
 
+      evt.preventDefault();
+
       if (joystickPointerIds.size > 0) return;
       onJoystickReset();
-      evt.preventDefault();
     }
 
     function onPointerDown(evt: PointerEvent) {
