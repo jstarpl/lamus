@@ -40,6 +40,7 @@ export * from './IGeneralIO'
 export * from './GeneralIORouter'
 export * from './ICryptography'
 export * from './Cryptography'
+export * from './IGamepad'
 
 export default {
 	Console,

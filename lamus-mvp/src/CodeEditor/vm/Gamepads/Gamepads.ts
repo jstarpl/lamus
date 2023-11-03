@@ -1,0 +1,149 @@
+import {
+  GamepadDPadState,
+  GamepadJoystickState,
+  IGamepad,
+} from "@lamus/qbasic-vm";
+import { VirtualGamepadStoreClass } from "../../stores/VirtualGamepadStore";
+
+export class Gamepads implements IGamepad {
+  constructor (private virtualGamepad: VirtualGamepadStoreClass) {
+  }
+  private getHardwareGamepadByIndex(index: number): Gamepad | undefined {
+    const allGamepads = navigator.getGamepads();
+    return allGamepads[index] ?? undefined;
+  }
+  private getVirtualDPad(): GamepadDPadState {
+    let state = GamepadDPadState.NONE;
+
+    if (this.virtualGamepad.fire) {
+      state = state | GamepadDPadState.FIRE;
+    }
+    if (this.virtualGamepad.fire2) {
+      state = state | GamepadDPadState.FIRE2;
+    }
+    if (this.virtualGamepad.fire3) {
+      state = state | GamepadDPadState.FIRE3;
+    }
+    if (this.virtualGamepad.fire4) {
+      state = state | GamepadDPadState.FIRE4;
+    }
+
+    return state;
+  }
+  getDPad(index: number): GamepadDPadState {
+    const gamepad = this.getHardwareGamepadByIndex(index);
+    if (!gamepad) {
+      if (index === 0) return this.getVirtualDPad();
+      return GamepadDPadState.NONE;
+    }
+
+    let state = GamepadDPadState.NONE;
+
+    if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [12]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [15, 13, 14])
+    ) {
+      state = GamepadDPadState.UP;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [12, 15]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [13, 14])
+    ) {
+      state = GamepadDPadState.UP_RIGHT;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [15]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [12, 13, 14])
+    ) {
+      state = GamepadDPadState.RIGHT;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [15, 13]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [12, 14])
+    ) {
+      state = GamepadDPadState.DOWN_RIGHT;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [13]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [12, 15, 14])
+    ) {
+      state = GamepadDPadState.DOWN;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [13, 14]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [12, 15])
+    ) {
+      state = GamepadDPadState.DOWN_LEFT;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [14]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [12, 13, 15])
+    ) {
+      state = GamepadDPadState.LEFT;
+    } else if (
+      this.gamepadButtonsArePressed(gamepad.buttons, [12, 14]) &&
+      this.gamepadButtonsAreNotPressed(gamepad.buttons, [15, 13])
+    ) {
+      state = GamepadDPadState.UP_LEFT;
+    }
+
+    if (gamepad.buttons[0].pressed) {
+      state = state | GamepadDPadState.FIRE;
+    }
+    if (gamepad.buttons[3].pressed) {
+      state = state | GamepadDPadState.FIRE2;
+    }
+    if (gamepad.buttons[2].pressed) {
+      state = state | GamepadDPadState.FIRE3;
+    }
+    if (gamepad.buttons[1].pressed) {
+      state = state | GamepadDPadState.FIRE4;
+    }
+
+    return state;
+  }
+  private gamepadButtonsArePressed(
+    gamepadButtons: readonly GamepadButton[],
+    pressedButtons: number[]
+  ): boolean {
+    return this.gamepadButtonsHavePressedState(
+      gamepadButtons,
+      pressedButtons,
+      true
+    );
+  }
+  private gamepadButtonsAreNotPressed(
+    gamepadButtons: readonly GamepadButton[],
+    notPressedButtons: number[]
+  ): boolean {
+    return this.gamepadButtonsHavePressedState(
+      gamepadButtons,
+      notPressedButtons,
+      false
+    );
+  }
+  private gamepadButtonsHavePressedState(
+    gamepadButtons: readonly GamepadButton[],
+    buttonsToCheck: number[],
+    desiredState: boolean
+  ): boolean {
+    for (const buttonIndex of buttonsToCheck) {
+      if (gamepadButtons[buttonIndex]?.pressed !== desiredState) return false;
+    }
+    return true;
+  }
+  private getVirtualJoystick(): GamepadJoystickState {
+    const floatingState = this.virtualGamepad.getGamepadJoystickState()
+    return this.floatsToIntegers(floatingState[0], floatingState[1])
+  }
+  private floatsToIntegers(x: number, y: number): GamepadJoystickState {
+    return [ Math.min(255, Math.round(x * 128 + 128)), Math.min(255, Math.round(y * 128 + 128))];
+  }
+  getJoystick(index: number): GamepadJoystickState {
+    const gamepad = this.getHardwareGamepadByIndex(index);
+    if (!gamepad) {
+      if (index === 0) return this.getVirtualJoystick();
+      return [0,0];
+    }
+
+    return this.floatsToIntegers(gamepad.axes[0], gamepad.axes[1])
+  }
+  reset(): void {
+    
+  }
+}
+7

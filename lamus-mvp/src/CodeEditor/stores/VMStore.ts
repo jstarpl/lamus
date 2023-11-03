@@ -14,6 +14,8 @@ import { LamusStorage } from "../vm/LamusStorage";
 import { AppStore } from "../../stores/AppStore";
 import { ProviderId } from "../../stores/FileSystemStore";
 import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
+import { VirtualGamepadStoreClass } from "./VirtualGamepadStore";
+import { Gamepads } from "../vm/Gamepads/Gamepads";
 
 export enum VMRunState {
   IDLE = "idle",
@@ -42,6 +44,7 @@ export class VMStoreClass {
   outputOrientation: VMOutputOrientation = VMOutputOrientation.PORTRAIT;
   parsingErrors = observable.array<IError>([]);
   runtimeErrors = observable.array<IError>([]);
+  virtualGamepad = new VirtualGamepadStoreClass()
   _viewParent: HTMLElement;
   _vm: VirtualMachine;
   _console: Console;
@@ -91,13 +94,15 @@ export class VMStoreClass {
     );
     const generalIORouter = new GeneralIORouter();
     const crypto = new Cryptography();
+    const gamepads = new Gamepads(this.virtualGamepad);
     const vm = new VirtualMachine(
       cons,
       audio,
       network,
       fileSystem,
       generalIORouter,
-      crypto
+      crypto,
+      gamepads
     );
 
     this._destructors.push(setupGeneralIO(generalIORouter, showModalDialog));

@@ -48,6 +48,7 @@ import { Locus } from './Tokenizer'
 import { EventEmitter } from 'eventemitter3'
 import * as jsonPath from 'jsonpath'
 import { FileAccessMode, IFileSystem } from './IFileSystem'
+import { IGamepad } from './IGamepad'
 
 export enum RuntimeErrorCodes {
 	DIVISION_BY_ZERO = 101,
@@ -149,6 +150,9 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	// The cryptography engine
 	cryptography: ICryptography | undefined
 
+	// The gamepad adapter
+	gamepad: IGamepad | undefined
+
 	// The bytecode (array of Instruction objects)
 	instructions: Instruction[] = []
 
@@ -205,7 +209,8 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		networkAdapter?: INetworkAdapter,
 		fileSystem?: IFileSystem,
 		generalIo?: IGeneralIO,
-		cryptography?: ICryptography
+		cryptography?: ICryptography,
+		gamepad?: IGamepad
 	) {
 		super()
 		this.cons = console
@@ -214,6 +219,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.fileSystem = fileSystem
 		this.generalIo = generalIo
 		this.cryptography = cryptography
+		this.gamepad = gamepad
 
 		if (!DEBUG) {
 			this.trace = {
@@ -256,6 +262,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.networkAdapter?.reset().catch(console.error)
 		this.generalIo?.reset()
 		this.cryptography?.reset().catch(console.error)
+		this.gamepad?.reset()
 
 		this.emit('reset')
 	}
@@ -1931,6 +1938,56 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
+			}
+		},
+	},
+
+	JOY: {
+		// gamepadIndex%
+		type: 'INTEGER',
+		args: ['INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const gamepadIndex = vm.stack.pop() - 1
+
+			if (!vm.gamepad) {
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Gamepads not available`)
+			}
+
+			try {
+				const dpadState = vm.gamepad.getDPad(gamepadIndex)
+				vm.stack.push(dpadState)
+			} catch (e) {
+				vm.stack.push(0)
+			}
+		},
+	},
+
+	POT: {
+		// axisIndex% [, gamepadIndex%]
+		type: 'DOUBLE',
+		args: ['INTEGER', 'INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const numArgs = vm.stack.pop()
+
+			let gamepadIndex = 0
+
+			if (numArgs > 1) {
+				gamepadIndex = vm.stack.pop() - 1
+			}
+
+			const axisIndex = vm.stack.pop() - 1
+
+			if (!vm.gamepad) {
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Gamepads not available`)
+			}
+
+			try {
+				const axisValues = vm.gamepad.getJoystick(gamepadIndex)
+				vm.stack.push(axisValues[axisIndex] ?? 0)
+			} catch (e) {
+				vm.stack.push(0)
 			}
 		},
 	},

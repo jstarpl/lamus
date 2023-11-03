@@ -48,6 +48,7 @@ import {
   PROVIDER_SEPARATOR,
 } from "../stores/fileSystem/IFileSystemProvider";
 import { useFragmentRoute } from "../helpers/useFragmentRoute";
+import VirtualGamepad from "./vm/Gamepads/VirtualGamepad";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -481,6 +482,7 @@ const CodeEditor = observer(function CodeEditor() {
         <div className="Output" onClick={onOutputClick}>
           <div className="Output__Canvas" ref={consoleViewParent} />
         </div>
+        <VirtualGamepad />
       </div>
       {!hasDialogOpen && (
         <CommandBar.Nav key="command-bar">

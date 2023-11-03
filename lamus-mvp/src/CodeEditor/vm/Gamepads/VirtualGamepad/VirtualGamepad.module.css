@@ -1,0 +1,101 @@
+.virtualGamepad :global {
+  display: grid;
+  grid-template-columns: [joystick-area] 7em auto [buttons] 7em;
+  grid-area: Output;
+  height: 7em;
+  align-self: end;
+  margin-block-end: 2em;
+  margin-inline: 2em;
+  z-index: 1;
+  --button-size: 3em;
+}
+
+.joystickArea {
+  position: relative;
+  grid-column: joystick-area;
+  background-color: #80808039;
+  border-radius: calc(var(--button-size) / 2);
+}
+
+.joystick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: #ffffff3d;
+  border: 1px solid #80808071;
+  box-sizing: border-box;
+  border-radius: 100%;
+  width: var(--button-size);
+  height: var(--button-size);
+}
+
+.buttons {
+  grid-column: buttons;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-template-columns: subgrid;
+}
+
+.fire {
+  display: block;
+  border: none;
+  background-color: #80808080;
+  border: 1px solid #808080ff;
+  color: #fff;
+  width: var(--button-size);
+  height: var(--button-size);
+  border-radius: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.fire:active {
+  background-color: var(--button-color, #fff);
+  border-color: var(--button-color, #fff);
+  color: #000;
+}
+
+.fire > svg {
+  position: absolute;
+  top: 0.45em;
+  left: 0.45em;
+  stroke-width: 1px;
+  font-size: 1.5em;
+}
+
+.fire1 {
+  composes: fire;
+  justify-self: center;
+  align-self: end;
+  --button-color: #acd0ff;
+  color: var(--button-color);
+}
+
+.fire1 > svg {
+  stroke-width: 0;
+}
+
+.fire2 {
+  composes: fire;
+  justify-self: end;
+  align-self: center;
+  --button-color: #ffc6ba;
+  color: var(--button-color);
+}
+
+.fire3 {
+  composes: fire;
+  justify-self: start;
+  align-self: center;
+  --button-color: #ffc0f4;
+  color: var(--button-color);
+}
+
+.fire4 {
+  composes: fire;
+  justify-self: center;
+  align-self: start;
+  --button-color: #d1ffbb;
+  color: var(--button-color);
+}

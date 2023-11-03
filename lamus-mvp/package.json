@@ -114,6 +114,8 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "patch-package": "^6.4.7",
+    "postcss": "^8.0.0",
+    "postcss-modules": "^4.3.0",
     "prettier": "^2.6.2",
     "rimraf": "^5.0.0",
     "typescript-plugin-css-modules": "^5.0.1"
