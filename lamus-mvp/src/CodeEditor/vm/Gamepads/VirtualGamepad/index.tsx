@@ -11,7 +11,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
   useEffect(() => {
     if (!joystickEl.current || !joystickAreaEl.current) return;
 
-    let joystickPointerId: number | null = null;
+    let joystickPointerIds: Set<number> = new Set();
     let joystickAreaRect: DOMRect | null = null;
     let joystickKnobRect: DOMRect | null = null;
     let pointerOffset: { top: number; left: number } | null = null;
@@ -71,17 +71,18 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
     }
 
     function onPointerUp(evt: PointerEvent) {
-      if (joystickPointerId !== evt.pointerId) return;
+      if (!joystickPointerIds.has(evt.pointerId)) return;
 
-      joystickPointerId = null;
+      joystickPointerIds.delete(evt.pointerId);
+
+      if (joystickPointerIds.size > 0) return;
       onJoystickReset();
       evt.preventDefault();
     }
 
     function onPointerDown(evt: PointerEvent) {
       if (!joystickAreaEl.current || !joystickEl.current) return;
-      if (joystickPointerId !== null) return;
-      joystickPointerId = evt.pointerId;
+      joystickPointerIds.add(evt.pointerId);
 
       joystickAreaRect = joystickAreaEl.current.getBoundingClientRect();
       joystickKnobRect = joystickEl.current.getBoundingClientRect();
@@ -96,18 +97,18 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
     }
 
     function onPageFocusLost() {
-      joystickPointerId = null;
+      joystickPointerIds.clear();
       onJoystickReset();
     }
 
     function onPointerLeave(evt: PointerEvent) {
-      if (joystickPointerId !== evt.pointerId) return;
-      joystickPointerId = null;
+      if (!joystickPointerIds.has(evt.pointerId)) return;
+      joystickPointerIds.delete(evt.pointerId);
       onJoystickReset();
     }
 
     function onPointerMove(evt: PointerEvent) {
-      if (joystickPointerId !== evt.pointerId) return;
+      if (!joystickPointerIds.has(evt.pointerId)) return;
       onJoystickMove(evt.clientX, evt.clientY);
       evt.preventDefault();
     }
