@@ -28,6 +28,7 @@
   align-items: center;
   background-color: var(--qbasic-interpreter-screen-border-color, #afafaf);
   zoom: var(--output-zoom);
+  touch-action: none;
 }
 
 .CodeEditor .Output__Canvas {
