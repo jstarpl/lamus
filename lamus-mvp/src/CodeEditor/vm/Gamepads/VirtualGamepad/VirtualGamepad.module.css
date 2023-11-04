@@ -10,6 +10,10 @@
   --button-size: 3em;
 }
 
+.virtualGamepad > * :global {
+  touch-action: none;
+}
+
 .joystickArea {
   position: relative;
   grid-column: joystick-area;
