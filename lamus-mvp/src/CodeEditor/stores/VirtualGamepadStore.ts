@@ -1,21 +1,27 @@
 import { GamepadDPadState, GamepadJoystickState } from "@lamus/qbasic-vm";
 import { makeAutoObservable } from "mobx";
 
+const GAMEPAD_TIMEOUT = 2000;
+
 export class VirtualGamepadStoreClass {
   isVisible: boolean = false;
 
   x: number | null = null;
   y: number | null = null;
 
-  fire = false;
-  fire2 = false;
-  fire3 = false;
-  fire4 = false;
+  _fire = false;
+  _fire2 = false;
+  _fire3 = false;
+  _fire4 = false;
+
+  _pingTimeout: number | null = null;
 
   constructor() {
     makeAutoObservable(
       this,
-      {},
+      {
+        _pingTimeout: false,
+      },
       {
         autoBind: true,
       }
@@ -33,32 +39,72 @@ export class VirtualGamepadStoreClass {
   }
 
   setFire(button: number, state: boolean): void {
-    console.log({button, state})
     switch (button) {
       case 0:
-        this.fire = state
+        this._fire = state
         break;
       case 1:
-        this.fire2 = state;
+        this._fire2 = state;
         break;
       case 2:
-        this.fire3 = state;
+        this._fire3 = state;
         break;
       case 3:
-        this.fire4 = state;
+        this._fire4 = state;
         break;
     }
   }
 
+  getFireState(): [boolean, boolean, boolean, boolean] {
+    this._ping();
+    return [this._fire, this._fire2, this._fire3, this._fire4]
+  }
+
   getGamepadDPadState(): GamepadDPadState {
+    this._ping();
     return GamepadDPadState.NONE;
   }
 
   getGamepadJoystickState(): GamepadJoystickState {
+    this._ping();
     return [this.x ?? 0, this.y ?? 0];
   }
 
   setVisible(visible: boolean): void {
     this.isVisible = visible;
+  }
+
+  _hideVirtualGamepad(): void {
+    if (this._pingTimeout !== null) {
+      window.clearTimeout(this._pingTimeout)
+      this._pingTimeout = null
+    }
+    
+    this._reset();
+    this.setVisible(false);
+  }
+
+  _showVirtualGamepad(): void {
+    this.setVisible(true);
+  }
+
+  _ping(): void {
+    if (this._pingTimeout !== null) {
+      window.clearTimeout(this._pingTimeout)
+    }
+
+    this._showVirtualGamepad();
+
+    this._pingTimeout = window.setTimeout(this._hideVirtualGamepad, GAMEPAD_TIMEOUT)
+  }
+
+  _reset(): void {
+    this._fire = false;
+    this._fire2 = false;
+    this._fire3 = false;
+    this._fire4 = false;
+
+    this.x = 0;
+    this.y = 0;
   }
 }

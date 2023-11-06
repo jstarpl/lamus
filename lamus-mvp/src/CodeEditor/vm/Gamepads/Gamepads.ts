@@ -15,16 +15,18 @@ export class Gamepads implements IGamepad {
   private getVirtualDPad(): GamepadDPadState {
     let state = GamepadDPadState.NONE;
 
-    if (this.virtualGamepad.fire) {
+    const fireState = this.virtualGamepad.getFireState()
+
+    if (fireState[0]) {
       state = state | GamepadDPadState.FIRE;
     }
-    if (this.virtualGamepad.fire2) {
+    if (fireState[1]) {
       state = state | GamepadDPadState.FIRE2;
     }
-    if (this.virtualGamepad.fire3) {
+    if (fireState[2]) {
       state = state | GamepadDPadState.FIRE3;
     }
-    if (this.virtualGamepad.fire4) {
+    if (fireState[3]) {
       state = state | GamepadDPadState.FIRE4;
     }
 

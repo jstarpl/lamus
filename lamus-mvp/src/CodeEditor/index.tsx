@@ -482,10 +482,13 @@ const CodeEditor = observer(function CodeEditor() {
         <div className="Output" onClick={onOutputClick}>
           <div className="Output__Canvas" ref={consoleViewParent} />
         </div>
-        {EditorStore.vm?.runState === VMRunState.RUNNING &&
-        EditorStore.displayFocus === "output" ? (
-          <VirtualGamepad />
-        ) : null}
+        <AnimatePresence>
+          {EditorStore.vm?.runState === VMRunState.RUNNING &&
+          EditorStore.displayFocus === "output" &&
+          EditorStore.vm?.virtualGamepad?.isVisible ? (
+            <VirtualGamepad />
+          ) : null}
+        </AnimatePresence>
       </div>
       {!hasDialogOpen && (
         <CommandBar.Nav key="command-bar">

@@ -3,6 +3,7 @@ import * as classes from "./VirtualGamepad.module.css";
 import { observer } from "mobx-react-lite";
 import { EditorStore } from "../../../stores/EditorStore";
 import { BsCircle, BsSquare, BsTriangle, BsXLg } from "react-icons/bs";
+import { motion } from "framer-motion";
 
 const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
   const joystickEl = useRef<HTMLDivElement>(null);
@@ -149,8 +150,23 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
     EditorStore.vm?.virtualGamepad?.setFire(Number(fireButtonId) - 1, false);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      EditorStore.vm?.virtualGamepad?.setFire(0, false);
+      EditorStore.vm?.virtualGamepad?.setFire(1, false);
+      EditorStore.vm?.virtualGamepad?.setFire(2, false);
+      EditorStore.vm?.virtualGamepad?.setFire(3, false);
+      EditorStore.vm?.virtualGamepad?.releaseDPad();
+    };
+  });
+
   return (
-    <div className={classes.virtualGamepad}>
+    <motion.div
+      className={classes.virtualGamepad}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.1 } }}
+      exit={{ opacity: 0, transition: { duration: 0.5 } }}
+    >
       <div className={classes.joystickArea} ref={joystickAreaEl}>
         <div className={classes.joystick} ref={joystickEl}></div>
       </div>
@@ -192,7 +208,7 @@ const VirtualGamepad = observer(function VirtualGamepad(): JSX.Element {
           <BsTriangle />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 });
 VirtualGamepad.displayName = "VirtualGamepad";
