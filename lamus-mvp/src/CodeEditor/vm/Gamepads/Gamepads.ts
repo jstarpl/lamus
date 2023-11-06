@@ -86,13 +86,13 @@ export class Gamepads implements IGamepad {
     if (gamepad.buttons[0].pressed) {
       state = state | GamepadDPadState.FIRE;
     }
-    if (gamepad.buttons[3].pressed) {
+    if (gamepad.buttons[1].pressed) {
       state = state | GamepadDPadState.FIRE2;
     }
     if (gamepad.buttons[2].pressed) {
       state = state | GamepadDPadState.FIRE3;
     }
-    if (gamepad.buttons[1].pressed) {
+    if (gamepad.buttons[3].pressed) {
       state = state | GamepadDPadState.FIRE4;
     }
 
