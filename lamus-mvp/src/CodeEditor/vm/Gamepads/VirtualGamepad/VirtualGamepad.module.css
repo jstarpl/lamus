@@ -8,6 +8,7 @@
   margin-inline: 2em;
   z-index: 1;
   --button-size: 3em;
+  touch-action: none;
 }
 
 .virtualGamepad > * :global {
@@ -65,7 +66,7 @@
   top: 0.45em;
   left: 0.45em;
   stroke-width: 1px;
-  font-size: 1.5em;
+  font-size: calc(var(--button-size) / 2);
 }
 
 .fire1 {
@@ -102,4 +103,24 @@
   align-self: start;
   --button-color: #d1ffbb;
   color: var(--button-color);
+}
+
+@media screen and (max-width: 320px) and (orientation: portrait) {
+  .virtualGamepad :global {
+    --button-size: 2em;
+    grid-template-columns: [joystick-area] 5em auto [buttons] 5em;
+    height: 5em;
+    margin-block-end: 1em;
+    margin-inline: 1em;
+  }
+}
+
+@media screen and ((max-width: 750px) or (max-height: 500px)) and (orientation: landscape) {
+  .virtualGamepad :global {
+    --button-size: 1.8em;
+    grid-template-columns: [joystick-area] 4em auto [buttons] 4em;
+    height: 4em;
+    margin-block-end: 1em;
+    margin-inline: 1em;
+  }
 }
