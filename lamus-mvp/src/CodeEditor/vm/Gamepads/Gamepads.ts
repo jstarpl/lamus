@@ -9,7 +9,7 @@ export class Gamepads implements IGamepad {
   constructor (private virtualGamepad: VirtualGamepadStoreClass) {
   }
   private getHardwareGamepadByIndex(index: number): Gamepad | undefined {
-    const allGamepads = navigator.getGamepads();
+    const allGamepads = navigator.getGamepads().filter(Boolean);
     return allGamepads[index] ?? undefined;
   }
   private getVirtualDPad(): GamepadDPadState {
