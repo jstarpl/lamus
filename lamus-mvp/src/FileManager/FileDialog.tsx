@@ -33,6 +33,14 @@ import { Spinner } from "../components/Spinner";
 import { CSSTransition } from "react-transition-group";
 import { SelectStorageDialog } from "./SelectStorageDialog";
 import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
+import {
+  CHANGE_STORAGE_PRIMARY,
+  RENAME_COMBO,
+  MK_DIR_COMBO,
+  CANCEL_COMBO,
+  CONFIRM_COMBO,
+} from "../lib/commonHotkeys";
+import { LoadStatus } from "./LoadStatus";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -63,18 +71,6 @@ type IProps = IBaseProps &
         scoped?: false;
       }
   );
-
-const CHANGE_STORAGE = ["Control", "F1"];
-const RENAME_COMBO = ["F2"];
-const MK_DIR_COMBO = ["F7"];
-const CANCEL_COMBO = ["Escape"];
-const CONFIRM_COMBO = ["Enter"];
-
-enum LoadStatus {
-  LOADING = "loading",
-  ERROR = "error",
-  OK = "ok",
-}
 
 const SELECT_THIS_DIR: IFileEntryEx = {
   guid: uuidv4(),
@@ -518,7 +514,7 @@ export const FileDialog = observer(function FileDialog({
           {!isAnyDialogOpen && (
             <CommandBar.Nav>
               <CommandBar.Button
-                combo={CHANGE_STORAGE}
+                combo={CHANGE_STORAGE_PRIMARY}
                 position={1}
                 showOnlyWhenModifiersActive
                 onClick={onOpenChangeStorageDialog}

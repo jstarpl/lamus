@@ -1,0 +1,19 @@
+.PaneList > :global(.list-view) {
+  overflow: auto;
+  scroll-behavior: auto;
+  scroll-padding: 2.5em;
+  padding: 0 0.5em 0 0;
+  height: 100%;
+}
+
+.PanePath {
+  padding-bottom: 1em;
+}
+
+.PaneList > :global(.Spinner) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--color-tone);
+}

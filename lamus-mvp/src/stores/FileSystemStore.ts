@@ -14,9 +14,12 @@ import {
 
 export type ProviderId = string;
 
-export interface FileHandle {
+export interface FileSystemLocation {
   providerId: ProviderId;
   path: Path;
+}
+
+export interface FileHandle extends FileSystemLocation {
   fileName: FileName;
   meta?: any;
 }

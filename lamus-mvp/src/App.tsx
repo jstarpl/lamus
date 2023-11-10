@@ -20,6 +20,7 @@ import { ModalDialogContextProvider } from "./helpers/useModalDialog";
 import { AdminCode } from "./AdminCode/AdminCode";
 import { autorun } from "mobx";
 import Home from "./Home";
+import FileManager from "./FileManager";
 import TextEditor from "./TextEditor";
 import CodeEditor from "./CodeEditor";
 import CodeIOOAuth2 from "./CodeEditor/vm/GeneralIO/OAuth2/code";
@@ -124,6 +125,7 @@ export function App() {
                     <Route path="oauth2" element={<CodeIOOAuth2 />} />
                   </Route>
                   <Route path="/code" element={<CodeEditor />} />
+                  <Route path="/files" element={<FileManager />} />
                   <Route path="*" element={<Navigate to={"/"} />} />
                 </Routes>
               </AnimatePresence>
