@@ -38,7 +38,7 @@
     "docs:publish": "yarn docs:html && gh-pages -d docs"
   },
   "devDependencies": {
-    "@sofie-automation/code-standard-preset": "^2.0.0",
+    "@sofie-automation/code-standard-preset": "^2.5.2",
     "@types/jsonpath": "^0.2.0",
     "@types/node": "^12.12.7",
     "@webpack-cli/serve": "^1.5.1",

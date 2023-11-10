@@ -1,17 +1,58 @@
 .Document {
-  --some-var: "Dummy";
+  display: flex;
+  max-height: 100%;
+  flex-direction: column;
+}
+
+.PaneTabs {
+  display: none;
+  /* display: grid; */
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--color-tint-1);
+  overflow: hidden;
+  margin-bottom: -1.5em;
+  z-index: 1;
+}
+
+@media screen and (orientation: portrait) {
+  .PaneTabs {
+    display: grid;
+  }
+}
+
+.PaneTab {
+  background: none;
+  border: none;
+  display: block;
+  font-size: 1em;
+  line-height: 2.5em;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.PaneTabSelected {
+  composes: PaneTab;
+  background: var(--color-tint-2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.75);
 }
 
 .DualPanes {
   display: grid;
   grid-template-rows: 100%;
-  grid-template-columns: auto [pane-left] 1fr [pane-right] 1fr auto;
+  grid-template-columns: [pane-left] 1fr [pane-right] 1fr;
   gap: 1em;
-  height: 100%;
+  width: 100%;
   max-width: 80em;
   margin: 0 auto;
   padding: 2em 1em 1em;
   box-sizing: border-box;
+  flex: 0 1 100%;
+  min-height: 0;
 }
 
 .Pane {

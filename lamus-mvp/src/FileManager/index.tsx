@@ -16,7 +16,8 @@ import {
 } from "../lib/commonHotkeys";
 import { FileManagerStore } from "./stores/FileManagerStore";
 import FileManagerPane from "./FileManagerPane";
-import classNames from "./FileManager.module.css";
+import * as classNames from "./FileManager.module.css";
+import { serializePath } from "../lib/fsUtils";
 
 const MENU_COMBO = ["F9"];
 
@@ -73,9 +74,29 @@ const FileManager = observer(function FileManager() {
 
   const hasDialogOpen = false;
 
+  const leftPaneLocation = FileManagerStore.leftPane.location
+    ? serializePath(
+        FileManagerStore.leftPane.location.providerId,
+        FileManagerStore.leftPane.location.path
+      )
+    : null;
+
+  const rightPaneLocation = FileManagerStore.leftPane.location
+    ? serializePath(
+        FileManagerStore.leftPane.location.providerId,
+        FileManagerStore.leftPane.location.path
+      )
+    : null;
+
   return (
-    <div className={`${classNames.FileManager} sdi-app`}>
+    <div className={`sdi-app`}>
       <div className={`${classNames.Document} sdi-app-workspace bg-files`}>
+        <div className={classNames.PaneTabs}>
+          <button className={classNames.PaneTab}>{leftPaneLocation}</button>
+          <button className={classNames.PaneTabSelected}>
+            {rightPaneLocation}
+          </button>
+        </div>
         <div className={classNames.DualPanes}>
           <FileManagerPane
             className={classNames.PaneLeft}
@@ -108,7 +129,7 @@ const FileManager = observer(function FileManager() {
             position={6}
             showOnlyWhenModifiersActive
           >
-            RenMov
+            RnMov
           </CommandBar.Button>
           <CommandBar.Button
             combo={MK_DIR_COMBO}

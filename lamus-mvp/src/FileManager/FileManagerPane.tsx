@@ -6,7 +6,7 @@ import { ListView } from "../components/ListView";
 import { LoadStatus } from "./LoadStatus";
 import { Spinner } from "../components/Spinner";
 import { FileListItem } from "./FileListItem";
-import classNames from "./FileManagerPane.module.css";
+import * as classNames from "./FileManagerPane.module.css";
 import { useCallback, useState } from "react";
 import { FileName } from "../stores/fileSystem/IFileSystemProvider";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
