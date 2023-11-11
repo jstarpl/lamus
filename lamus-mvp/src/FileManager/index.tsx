@@ -33,10 +33,6 @@ const FileManager = observer(function FileManager() {
 
   const onInitialize = useCallback(() => {
     AppStore.setUIReady();
-
-    setTimeout(() => {
-      // noop
-    }, 1000);
   }, []);
 
   useEffect(() => {

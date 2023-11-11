@@ -3,10 +3,9 @@ import picomatch from "picomatch";
 import { assertNever } from "../../helpers/util";
 import {
   FileName,
-  FILE_PATH_SEPARATOR,
   IAccessResult,
   Path,
-  PROVIDER_SEPARATOR,
+  FILE_PATH_SEPARATOR,
 } from "../../stores/fileSystem/IFileSystemProvider";
 import { FileSystemStoreClass, ProviderId } from "../../stores/FileSystemStore";
 import { deserializePath, normalizePath } from "../../lib/fsUtils";
@@ -70,7 +69,7 @@ type FileHandleBinary = FileHandleBase<
 type FileHandle = FileHandleText | FileHandleObject | FileHandleBinary;
 
 export class LamusStorage implements IFileSystem {
-  readonly pathSeparator: string = "/";
+  readonly pathSeparator: string = FILE_PATH_SEPARATOR;
   private fileHandles: (FileHandle | undefined)[] = [];
   private csvMatch = new RegExp(STRUCTURED_INPUT_MATCH);
 

@@ -44,7 +44,7 @@ export class VMStoreClass {
   outputOrientation: VMOutputOrientation = VMOutputOrientation.PORTRAIT;
   parsingErrors = observable.array<IError>([]);
   runtimeErrors = observable.array<IError>([]);
-  virtualGamepad = new VirtualGamepadStoreClass()
+  virtualGamepad = new VirtualGamepadStoreClass();
   _viewParent: HTMLElement;
   _vm: VirtualMachine;
   _console: Console;
@@ -229,7 +229,7 @@ export class VMStoreClass {
     this.runtimeErrors.replace([]);
     this.runState = VMRunState.RUNNING;
     const program = this._program;
-    setImmediate(() => {
+    setTimeout(() => {
       this._vm.run(program, false);
     });
   }

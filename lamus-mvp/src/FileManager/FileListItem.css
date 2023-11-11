@@ -1,6 +1,13 @@
 .FileListItem {
   display: grid;
-  grid-template: auto / 1em 3fr 1fr 1.5fr;
+  grid-template: auto / 0.6em 2fr 1fr 1.5fr;
+  gap: 3px;
+}
+
+.FileListItem > .FileListItem__fileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .FileListItem > .FileListItem__size {
@@ -11,4 +18,8 @@
 .FileListItem > .FileListItem__modified {
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.FileListItem > .FileListItem__modified--short {
+  display: none;
 }

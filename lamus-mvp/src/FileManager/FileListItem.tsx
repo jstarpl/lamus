@@ -23,7 +23,7 @@ export function FileListItem({ file, disabled }: IProps) {
     }
   }, [file.dir, file.parentDir, file.size, file.virtual]);
 
-  const listItemModifiedLabel = useMemo(() => {
+  const listItemModifiedLongLabel = useMemo(() => {
     return (
       file.modified &&
       DateTime.fromJSDate(file.modified).toLocaleString({
@@ -32,6 +32,32 @@ export function FileListItem({ file, disabled }: IProps) {
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+      })
+    );
+  }, [file.modified]);
+
+  const listItemModifiedShortLabel = useMemo(() => {
+    const today = new Date();
+
+    if (!file.modified) return null;
+
+    if (
+      file.modified.getUTCFullYear() === today.getUTCFullYear() &&
+      file.modified.getUTCMonth() === today.getUTCMonth() &&
+      file.modified.getUTCDate() === today.getUTCDate()
+    ) {
+      return DateTime.fromJSDate(file.modified).toLocaleString({
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    return (
+      file.modified &&
+      DateTime.fromJSDate(file.modified).toLocaleString({
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       })
     );
   }, [file.modified]);
@@ -47,7 +73,10 @@ export function FileListItem({ file, disabled }: IProps) {
       </div>
       <div className="FileListItem__fileName">{file.fileName}</div>
       <div className="FileListItem__size">{listItemSizeLabel}</div>
-      <div className="FileListItem__modified">{listItemModifiedLabel}</div>
+      <div className="FileListItem__modified">{listItemModifiedLongLabel}</div>
+      <div className="FileListItem__modified FileListItem__modified--short">
+        {listItemModifiedShortLabel}
+      </div>
     </div>
   );
 }
