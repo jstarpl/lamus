@@ -13,8 +13,8 @@ export const MOVE_COMBO = ["F6"];
 export const MK_DIR_COMBO = ["F7"];
 export const DELETE_COMBO = ["F8"];
 
-export const CHANGE_STORAGE_PRIMARY = ["Control", "F1"];
-export const CHANGE_STORAGE_SECONDARY = ["Control", "F1"];
+export const CHANGE_STORAGE_PRIMARY = ["Alt", "F1"];
+export const CHANGE_STORAGE_SECONDARY = ["Alt", "F2"];
 
 export const CANCEL_COMBO = ["Escape"];
 export const CONFIRM_COMBO = ["Enter"];

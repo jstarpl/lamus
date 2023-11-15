@@ -242,6 +242,11 @@ export const ListViewList = function ListViewList({
       ) as NodeListOf<HTMLElement>;
       const thisIndex = Array.from(allItems).indexOf(e.target);
 
+      for (const item of allItems) {
+        delete item.dataset["lastFocus"];
+      }
+      e.target.dataset["lastFocus"] = "";
+
       let newValue = testedValue;
       if (multiple && ctrlState.current) {
         if (!inPointerEvent.current && !shiftState.current) return;

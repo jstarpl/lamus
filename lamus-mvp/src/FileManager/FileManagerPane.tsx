@@ -14,11 +14,13 @@ import { ListViewChangeEvent } from "../components/ListView/ListViewList";
 const FileManagerPane = observer(function FileManagerPane({
   pane,
   className,
+  itemClassName,
   onFocus,
   onBlur,
 }: {
   pane: FileManagerPaneState;
   className?: string;
+  itemClassName?: string;
   onFocus?: EventHandler<FocusEvent>;
   onBlur?: EventHandler<FocusEvent>;
 }) {
@@ -44,6 +46,7 @@ const FileManagerPane = observer(function FileManagerPane({
       <ListView.Item
         key={file.guid}
         value={file.guid}
+        className={itemClassName}
         data-guid={file.guid}
         data-focus-initial={focusThisOneAfterLoad}
         // onDoubleClick={onFileEntryDoubleClick}

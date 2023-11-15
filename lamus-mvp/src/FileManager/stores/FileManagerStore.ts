@@ -14,6 +14,8 @@ class FileManagerStoreClass {
   leftPane = new FileManagerPane(this);
   rightPane = new FileManagerPane(this);
 
+  displayFocus: "left" | "right" = "left";
+
   constructor() {
     makeAutoObservable(
       this,

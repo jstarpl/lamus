@@ -419,21 +419,22 @@ export const FileDialog = observer(function FileDialog({
   }, [fileList, onFileEntryDoubleClick, disableFileSelection]);
 
   useLayoutEffect(() => {
-    if (status !== LoadStatus.OK) return;
+    if (!show || status !== LoadStatus.OK) return;
 
     const timeout = setTimeout(() => {
       const elementToFocus = document.querySelector(
         ".FileDialog__pane [data-focus-initial]"
       );
+      console.log(`elementToFocus`, elementToFocus);
       if (!elementToFocus || !(elementToFocus instanceof HTMLElement)) return;
       elementToFocus.scrollIntoView();
       elementToFocus.focus();
-    });
+    }, 200);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [status]);
+  }, [status, show]);
 
   const isAnyDialogOpen = isChangeStorageDialogOpen;
 

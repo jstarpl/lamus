@@ -15,12 +15,6 @@
   z-index: 1;
 }
 
-@media screen and (orientation: portrait) {
-  .PaneTabs {
-    display: grid;
-  }
-}
-
 .PaneTab {
   background: none;
   border: none;
@@ -69,4 +63,22 @@
 .PaneRight {
   composes: Pane;
   grid-column: pane-right;
+}
+
+@media screen and (orientation: portrait) {
+  .PaneTabs {
+    display: grid;
+  }
+
+  .Pane:not(.PaneFocus) {
+    display: none;
+  }
+
+  .Pane.PaneFocus {
+    grid-column: 1;
+  }
+
+  .DualPanes {
+    grid-template-columns: [pane-single] 1fr;
+  }
 }

@@ -2,6 +2,8 @@
   display: grid;
   grid-template: auto / 0.6em 2fr 1fr 1.5fr;
   gap: 3px;
+  container-name: FileList;
+  container-type: inline-size;
 }
 
 .FileListItem > .FileListItem__fileName {
@@ -22,4 +24,14 @@
 
 .FileListItem > .FileListItem__modified--short {
   display: none;
+}
+
+@container FileList (max-width: 30em) {
+  .FileListItem > .FileListItem__modified {
+    display: none;
+  }
+
+  .FileListItem > .FileListItem__modified--short {
+    display: block;
+  }
 }

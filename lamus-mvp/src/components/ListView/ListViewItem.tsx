@@ -6,12 +6,13 @@ type IProps = {
   value?: string;
 } & Omit<
   React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>,
-  "className" | "aria-selected" | "tabIndex" | "key"
+  "aria-selected" | "tabIndex" | "key"
 >;
 
 export const ListViewItem = React.memo(function ListViewItem({
   value,
   children,
+  className,
   ...props
 }: IProps): JSX.Element {
   const id = useId();
@@ -20,7 +21,7 @@ export const ListViewItem = React.memo(function ListViewItem({
   const item = (
     <li
       key={itemValue}
-      className={classNames("list-view-item", {
+      className={classNames("list-view-item", className, {
         selected: !!selected,
         "selected--first": selected === SelectedState.First,
         "selected--last": selected === SelectedState.Last,
