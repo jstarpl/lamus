@@ -19,12 +19,30 @@ import FileManagerPane from "./FileManagerPane";
 import * as classNames from "./FileManager.module.css";
 import { serializePath } from "../lib/fsUtils";
 import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
+import { FileSystemLocation } from "../stores/FileSystemStore";
+import {
+  PROVIDER_SEPARATOR,
+  FILE_PATH_SEPARATOR,
+} from "../stores/fileSystem/IFileSystemProvider";
+import { sleep } from "../lib/lib";
 
 const MENU_COMBO = ["F9"];
 const SWITCH_PANE_COMBO = "Tab";
 
 const FILE_MANAGER_ITEM_LEFT = "file-manager-item-left";
 const FILE_MANAGER_ITEM_RIGHT = "file-manager-item-right";
+
+function getLocationLabel(location: FileSystemLocation | null): string | null {
+  if (!location) return null;
+
+  if (location.path.length === 0) {
+    const provider = AppStore.fileSystem.providers.get(location.providerId);
+    if (!provider) return "(unknown)";
+    return `${provider.name}${PROVIDER_SEPARATOR}`;
+  }
+
+  return location.path[location.path.length - 1];
+}
 
 const FileManager = observer(function FileManager() {
   const navigate = useNavigate();
@@ -77,19 +95,11 @@ const FileManager = observer(function FileManager() {
 
   const hasDialogOpen = false;
 
-  const leftPaneLocation = FileManagerStore.leftPane.location
-    ? serializePath(
-        FileManagerStore.leftPane.location.providerId,
-        FileManagerStore.leftPane.location.path
-      )
-    : null;
+  const leftPaneLocation = getLocationLabel(FileManagerStore.leftPane.location);
 
-  const rightPaneLocation = FileManagerStore.leftPane.location
-    ? serializePath(
-        FileManagerStore.leftPane.location.providerId,
-        FileManagerStore.leftPane.location.path
-      )
-    : null;
+  const rightPaneLocation = getLocationLabel(
+    FileManagerStore.rightPane.location
+  );
 
   useEffect(() => {
     if (!keyboardHandler) return;
@@ -111,13 +121,17 @@ const FileManager = observer(function FileManager() {
       return;
     }
 
-    function onTab(e: KeyboardEvent) {
+    async function onTab(e: KeyboardEvent) {
       if (e.repeat) return;
       if (!(e.target instanceof HTMLElement)) return;
 
       if (e.target.classList.contains(FILE_MANAGER_ITEM_LEFT)) {
+        FileManagerStore.displayFocus = "right";
+        await sleep(10);
         focusFrom(FILE_MANAGER_ITEM_RIGHT);
       } else {
+        FileManagerStore.displayFocus = "left";
+        await sleep(10);
         focusFrom(FILE_MANAGER_ITEM_LEFT);
       }
     }

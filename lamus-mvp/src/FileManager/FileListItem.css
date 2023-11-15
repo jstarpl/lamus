@@ -15,6 +15,7 @@
 .FileListItem > .FileListItem__size {
   font-variant-numeric: tabular-nums;
   text-align: right;
+  white-space: nowrap;
 }
 
 .FileListItem > .FileListItem__modified {
