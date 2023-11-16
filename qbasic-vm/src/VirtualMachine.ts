@@ -2058,11 +2058,12 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		action: function (vm) {
 			const argCount = vm.stack.pop()
 			let repeat: number | undefined = undefined
-			const music = getArgValue(vm.stack.pop())
 
 			if (argCount > 1) {
 				repeat = getArgValue(vm.stack.pop())
 			}
+
+			const music = getArgValue(vm.stack.pop())
 
 			if (vm.audio) {
 				vm.suspend()
@@ -2083,11 +2084,12 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			// BGMPLAY is the same as PLAY, it just doesn't suspend the VM
 			const argCount = vm.stack.pop()
 			let repeat: number | undefined = undefined
-			const music = getArgValue(vm.stack.pop())
 
 			if (argCount > 1) {
 				repeat = getArgValue(vm.stack.pop())
 			}
+
+			const music = getArgValue(vm.stack.pop())
 
 			if (vm.audio) {
 				vm.audio.playMusic(music, repeat).catch((e) => console.error(e))
