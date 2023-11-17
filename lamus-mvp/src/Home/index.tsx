@@ -38,19 +38,19 @@ const Home = function Home() {
       ) as HTMLElement;
       if (!el) return;
       el.focus();
-      if (sfxContext && !FIRST_SHOW) {
-        sfxContext.playEffect(10);
-      }
+      // if (sfxContext && !FIRST_SHOW) {
+      //   sfxContext.playEffect(10);
+      // }
     });
   }
 
-  useEffect(() => {
-    return () => {
-      if (!sfxContext) return;
+  // useEffect(() => {
+  //   return () => {
+  //     if (!sfxContext) return;
 
-      sfxContext.playEffect(9);
-    };
-  }, [sfxContext]);
+  //     sfxContext.playEffect(9);
+  //   };
+  // }, [sfxContext]);
 
   useEffect(() => {
     FIRST_SHOW = false;
@@ -95,16 +95,13 @@ const Home = function Home() {
     >
       <picture>
         <source
-          srcSet={`${new URL(
-            "./img/bkg_480.webp",
-            import.meta.url
-          ).href} 853w, ${new URL(
-            "./img/bkg_720.webp",
-            import.meta.url
-          ).href} 1280w, ${new URL(
-            "./img/bkg_1440.webp",
-            import.meta.url
-          ).href} 2560w`}
+          srcSet={`${
+            new URL("./img/bkg_480.webp", import.meta.url).href
+          } 853w, ${
+            new URL("./img/bkg_720.webp", import.meta.url).href
+          } 1280w, ${
+            new URL("./img/bkg_1440.webp", import.meta.url).href
+          } 2560w`}
           type="image/webp"
         />
         <source

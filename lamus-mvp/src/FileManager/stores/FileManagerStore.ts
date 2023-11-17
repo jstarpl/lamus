@@ -1,5 +1,7 @@
 import {
   IReactionDisposer,
+  action,
+  flow,
   makeAutoObservable,
   observable,
   reaction,
@@ -9,25 +11,37 @@ import { LoadStatus } from "../LoadStatus";
 import { IFileEntryEx } from "../FileList";
 import { AppStore } from "../../stores/AppStore";
 import { v4 as uuidv4 } from "uuid";
+import {
+  IFileEntry,
+  IListResult,
+} from "../../stores/fileSystem/IFileSystemProvider";
 
 class FileManagerStoreClass {
   leftPane = new FileManagerPane(this);
   rightPane = new FileManagerPane(this);
 
-  displayFocus: "left" | "right" = "left";
+  displayFocus: DisplayFocus = "left";
 
   constructor() {
     makeAutoObservable(
       this,
-      {},
+      {
+        setDisplayFocus: action,
+      },
       {
         autoBind: true,
       }
     );
   }
 
+  setDisplayFocus(focus: DisplayFocus) {
+    this.displayFocus = focus;
+  }
+
   dispose() {}
 }
+
+type DisplayFocus = "left" | "right";
 
 export class FileManagerPane {
   location: FileSystemLocation | null = null;
@@ -49,7 +63,10 @@ export class FileManagerPane {
     );
   }
 
-  async loadContentsFrom(location: FileSystemLocation | null): Promise<void> {
+  loadContentsFrom = flow(function* (
+    this: FileManagerPane,
+    location: FileSystemLocation | null
+  ) {
     this.status = LoadStatus.LOADING;
     this.items.clear();
     if (location === null) {
@@ -57,7 +74,7 @@ export class FileManagerPane {
       return;
     }
 
-    const listFilesRequest = await AppStore.fileSystem.listFiles(
+    const listFilesRequest: IListResult = yield AppStore.fileSystem.listFiles(
       location.providerId,
       location.path
     );
@@ -68,7 +85,7 @@ export class FileManagerPane {
       return;
     }
 
-    const fileEntries = await listFilesRequest.files;
+    const fileEntries: IFileEntry[] = yield listFilesRequest.files;
     fileEntries.forEach((entry) => {
       this.items.push({
         ...entry,
@@ -87,11 +104,11 @@ export class FileManagerPane {
     }
 
     this.status = LoadStatus.OK;
-  }
+  });
 
-  async refresh() {
+  refresh = flow(function* (this: FileManagerPane) {
     return this.loadContentsFrom(this.location);
-  }
+  });
 
   dispose() {
     this.navigateHandler();

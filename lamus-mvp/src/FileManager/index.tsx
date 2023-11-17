@@ -126,11 +126,11 @@ const FileManager = observer(function FileManager() {
       if (!(e.target instanceof HTMLElement)) return;
 
       if (e.target.classList.contains(FILE_MANAGER_ITEM_LEFT)) {
-        FileManagerStore.displayFocus = "right";
+        FileManagerStore.setDisplayFocus("right");
         await sleep(10);
         focusFrom(FILE_MANAGER_ITEM_RIGHT);
       } else {
-        FileManagerStore.displayFocus = "left";
+        FileManagerStore.setDisplayFocus("left");
         await sleep(10);
         focusFrom(FILE_MANAGER_ITEM_LEFT);
       }
@@ -153,7 +153,7 @@ const FileManager = observer(function FileManager() {
     )
       return;
 
-    FileManagerStore.displayFocus = e.target.dataset["pane"];
+    FileManagerStore.setDisplayFocus(e.target.dataset["pane"]);
   };
 
   return (
