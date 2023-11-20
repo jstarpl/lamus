@@ -6,8 +6,7 @@ import {
 import { VirtualGamepadStoreClass } from "../../stores/VirtualGamepadStore";
 
 export class Gamepads implements IGamepad {
-  constructor (private virtualGamepad: VirtualGamepadStoreClass) {
-  }
+  constructor(private virtualGamepad: VirtualGamepadStoreClass) {}
   private getHardwareGamepadByIndex(index: number): Gamepad | undefined {
     const allGamepads = navigator.getGamepads().filter(Boolean);
     return allGamepads[index] ?? undefined;
@@ -15,7 +14,7 @@ export class Gamepads implements IGamepad {
   private getVirtualDPad(): GamepadDPadState {
     let state = GamepadDPadState.NONE;
 
-    const fireState = this.virtualGamepad.getFireState()
+    const fireState = this.virtualGamepad.getFireState();
 
     if (fireState[0]) {
       state = state | GamepadDPadState.FIRE;
@@ -28,6 +27,42 @@ export class Gamepads implements IGamepad {
     }
     if (fireState[3]) {
       state = state | GamepadDPadState.FIRE4;
+    }
+
+    if (this.virtualGamepad.x === null || this.virtualGamepad.y === null)
+      return state;
+
+    if (this.virtualGamepad.y < -0.6) {
+      // Y-axis is up
+
+      if (this.virtualGamepad.x < -0.6) {
+        // X-axis is left
+        state = state | GamepadDPadState.UP_LEFT;
+      } else if (this.virtualGamepad.x > 0.6) {
+        state = state | GamepadDPadState.UP_RIGHT;
+      } else {
+        state = state | GamepadDPadState.UP;
+      }
+    } else if (this.virtualGamepad.y > 0.6) {
+      // Y-axis is down
+
+      if (this.virtualGamepad.x < -0.6) {
+        // X-axis is left
+        state = state | GamepadDPadState.DOWN_LEFT;
+      } else if (this.virtualGamepad.x > 0.6) {
+        state = state | GamepadDPadState.DOWN_RIGHT;
+      } else {
+        state = state | GamepadDPadState.DOWN;
+      }
+    } else {
+      // Y-axis is center
+
+      if (this.virtualGamepad.x < -0.6) {
+        // X-axis is left
+        state = state | GamepadDPadState.LEFT;
+      } else if (this.virtualGamepad.x > 0.6) {
+        state = state | GamepadDPadState.RIGHT;
+      }
     }
 
     return state;
@@ -129,23 +164,24 @@ export class Gamepads implements IGamepad {
     return true;
   }
   private getVirtualJoystick(): GamepadJoystickState {
-    const floatingState = this.virtualGamepad.getGamepadJoystickState()
-    return this.floatsToIntegers(floatingState[0], floatingState[1])
+    const floatingState = this.virtualGamepad.getGamepadJoystickState();
+    return this.floatsToIntegers(floatingState[0], floatingState[1]);
   }
   private floatsToIntegers(x: number, y: number): GamepadJoystickState {
-    return [ Math.min(255, Math.round(x * 128 + 128)), Math.min(255, Math.round(y * 128 + 128))];
+    return [
+      Math.min(255, Math.round(x * 128 + 128)),
+      Math.min(255, Math.round(y * 128 + 128)),
+    ];
   }
   getJoystick(index: number): GamepadJoystickState {
     const gamepad = this.getHardwareGamepadByIndex(index);
     if (!gamepad) {
       if (index === 0) return this.getVirtualJoystick();
-      return [0,0];
+      return [0, 0];
     }
 
-    return this.floatsToIntegers(gamepad.axes[0], gamepad.axes[1])
+    return this.floatsToIntegers(gamepad.axes[0], gamepad.axes[1]);
   }
-  reset(): void {
-    
-  }
+  reset(): void {}
 }
-7
+7;
