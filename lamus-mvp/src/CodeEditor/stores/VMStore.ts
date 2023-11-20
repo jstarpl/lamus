@@ -111,6 +111,7 @@ export class VMStoreClass {
       cons.print("\nREADY.");
     }, 1000);
 
+    vm.addListener("running", this._onRunning);
     vm.addListener("error", this._onError);
     vm.addListener("finished", this._onFinished);
     vm.addListener("reset", this._onReset);
@@ -145,6 +146,10 @@ export class VMStoreClass {
 
   _onFinished() {
     this.runState = VMRunState.STOPPED;
+  }
+
+  _onRunning() {
+    this.runState = VMRunState.RUNNING;
   }
 
   _onOrientationChange(evt: Event) {
