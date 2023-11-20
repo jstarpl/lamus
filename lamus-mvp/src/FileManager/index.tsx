@@ -17,32 +17,16 @@ import {
 import { FileManagerStore } from "./stores/FileManagerStore";
 import FileManagerPane from "./FileManagerPane";
 import * as classNames from "./FileManager.module.css";
-import { serializePath } from "../lib/fsUtils";
 import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
-import { FileSystemLocation } from "../stores/FileSystemStore";
-import {
-  PROVIDER_SEPARATOR,
-  FILE_PATH_SEPARATOR,
-} from "../stores/fileSystem/IFileSystemProvider";
 import { sleep } from "../lib/lib";
+import { FileManagerTabs } from "./FileManagerTabs";
 
 const MENU_COMBO = ["F9"];
 const SWITCH_PANE_COMBO = "Tab";
+const GO_COMBO = "AnyEnter";
 
 const FILE_MANAGER_ITEM_LEFT = "file-manager-item-left";
 const FILE_MANAGER_ITEM_RIGHT = "file-manager-item-right";
-
-function getLocationLabel(location: FileSystemLocation | null): string | null {
-  if (!location) return null;
-
-  if (location.path.length === 0) {
-    const provider = AppStore.fileSystem.providers.get(location.providerId);
-    if (!provider) return "(unknown)";
-    return `${provider.name}${PROVIDER_SEPARATOR}`;
-  }
-
-  return location.path[location.path.length - 1];
-}
 
 const FileManager = observer(function FileManager() {
   const navigate = useNavigate();
@@ -82,6 +66,14 @@ const FileManager = observer(function FileManager() {
       }
     );
 
+    if (FileManagerStore.leftPane.location !== null) {
+      FileManagerStore.leftPane.refresh().catch(console.error);
+    }
+
+    if (FileManagerStore.leftPane.location !== null) {
+      FileManagerStore.rightPane.refresh().catch(console.error);
+    }
+
     onInitialize();
 
     return () => {
@@ -94,12 +86,6 @@ const FileManager = observer(function FileManager() {
   }, [navigate]);
 
   const hasDialogOpen = false;
-
-  const leftPaneLocation = getLocationLabel(FileManagerStore.leftPane.location);
-
-  const rightPaneLocation = getLocationLabel(
-    FileManagerStore.rightPane.location
-  );
 
   useEffect(() => {
     if (!keyboardHandler) return;
@@ -136,53 +122,27 @@ const FileManager = observer(function FileManager() {
       }
     }
 
+    async function onEnter(e: KeyboardEvent) {
+      console.log(e);
+    }
+
     keyboardHandler.bind(SWITCH_PANE_COMBO, onTab, {
+      exclusive: true,
+    });
+    keyboardHandler.bind(GO_COMBO, onEnter, {
       exclusive: true,
     });
 
     return () => {
       keyboardHandler.unbind(SWITCH_PANE_COMBO, onTab);
+      keyboardHandler.unbind(GO_COMBO, onEnter);
     };
   }, [keyboardHandler]);
-
-  const onChangePane = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!(e.target instanceof HTMLButtonElement)) return;
-    if (
-      e.target.dataset["pane"] !== "left" &&
-      e.target.dataset["pane"] !== "right"
-    )
-      return;
-
-    FileManagerStore.setDisplayFocus(e.target.dataset["pane"]);
-  };
 
   return (
     <div className={`sdi-app`}>
       <div className={`${classNames.Document} sdi-app-workspace bg-files`}>
-        <div className={classNames.PaneTabs}>
-          <button
-            className={
-              FileManagerStore.displayFocus === "left"
-                ? classNames.PaneTabSelected
-                : classNames.PaneTab
-            }
-            data-pane="left"
-            onClick={onChangePane}
-          >
-            {leftPaneLocation}
-          </button>
-          <button
-            className={
-              FileManagerStore.displayFocus === "right"
-                ? classNames.PaneTabSelected
-                : classNames.PaneTab
-            }
-            data-pane="right"
-            onClick={onChangePane}
-          >
-            {rightPaneLocation}
-          </button>
-        </div>
+        <FileManagerTabs className={classNames.PaneTabs} />
         <div className={classNames.DualPanes}>
           <FileManagerPane
             className={`${classNames.PaneLeft}  ${
@@ -192,6 +152,8 @@ const FileManager = observer(function FileManager() {
             }`}
             itemClassName={FILE_MANAGER_ITEM_LEFT}
             pane={FileManagerStore.leftPane}
+            onFileEntryDoubleClick={console.log}
+            onGoToPath={console.log}
           />
           <FileManagerPane
             className={`${classNames.PaneRight} ${
@@ -201,6 +163,8 @@ const FileManager = observer(function FileManager() {
             }`}
             pane={FileManagerStore.rightPane}
             itemClassName={FILE_MANAGER_ITEM_RIGHT}
+            onFileEntryDoubleClick={console.log}
+            onGoToPath={console.log}
           />
         </div>
       </div>

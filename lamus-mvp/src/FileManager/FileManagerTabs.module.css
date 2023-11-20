@@ -1,0 +1,29 @@
+.PaneTabs {
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--color-tint-1);
+  overflow: hidden;
+  margin-bottom: -1.5em;
+  z-index: 1;
+}
+
+.PaneTab {
+  background: none;
+  border: none;
+  display: block;
+  font-size: 1em;
+  line-height: 2.5em;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.PaneTabSelected {
+  composes: PaneTab;
+  background: var(--color-tint-2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.75);
+}

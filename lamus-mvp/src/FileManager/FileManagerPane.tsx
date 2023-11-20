@@ -17,12 +17,16 @@ const FileManagerPane = observer(function FileManagerPane({
   itemClassName,
   onFocus,
   onBlur,
+  onFileEntryDoubleClick,
+  onGoToPath,
 }: {
   pane: FileManagerPaneState;
   className?: string;
   itemClassName?: string;
   onFocus?: EventHandler<FocusEvent>;
   onBlur?: EventHandler<FocusEvent>;
+  onFileEntryDoubleClick?: React.MouseEventHandler<HTMLLIElement>;
+  onGoToPath?: React.MouseEventHandler<HTMLButtonElement>;
 }) {
   const [selectedFiles, setSelectedFiles] = useState<undefined | FileName[]>(
     undefined
@@ -49,7 +53,7 @@ const FileManagerPane = observer(function FileManagerPane({
         className={itemClassName}
         data-guid={file.guid}
         data-focus-initial={focusThisOneAfterLoad}
-        // onDoubleClick={onFileEntryDoubleClick}
+        onDoubleClick={onFileEntryDoubleClick}
       >
         <FileListItem file={file} />
       </ListView.Item>
@@ -65,7 +69,7 @@ const FileManagerPane = observer(function FileManagerPane({
               AppStore.fileSystem.providers.get(pane.location.providerId)?.name
             }
             currentPath={pane.location.path}
-            // onGoToPath={onGoToPath}
+            onGoToPath={onGoToPath}
             // onStorageContextMenu={onStorageProviderCrumbContextMenu}
             // onFocus={() => setPathFocused(true)}
             // onBlur={() => setPathFocused(false)}
