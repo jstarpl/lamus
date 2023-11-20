@@ -184,6 +184,8 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	// Number of milliseconds between intervals
 	private readonly INTERVAL_MS = 66 // ~15 fps
 
+	private readonly MAX_RUN_SOME_BUDGET = 150
+
 	// Number of instructions to run in an interval
 	instructionsPerInterval = 32 * 1024
 
@@ -329,8 +331,16 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	 Runs some instructions during asynchronous mode.
 	*/
 	public runSome(): void {
+		const startTime = Date.now()
 		try {
-			for (let i = 0; i < this.instructionsPerInterval && this.pc < this.instructions.length && !this.suspended; i++) {
+			for (
+				let i = 0;
+				i < this.instructionsPerInterval &&
+				this.pc < this.instructions.length &&
+				Date.now() - startTime < this.MAX_RUN_SOME_BUDGET &&
+				!this.suspended;
+				i++
+			) {
 				this.runOneInstruction()
 			}
 		} catch (e) {
