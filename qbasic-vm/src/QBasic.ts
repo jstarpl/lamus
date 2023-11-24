@@ -1269,6 +1269,12 @@ export class QBasicProgram {
 				return new AstUnaryOperator(locus, 'NOT', args[1])
 			})
 			rules.addRule('expr8: expr9')
+			rules.addRule('expr9: EOF FileItem', function (args, locus) {
+				return new AstArrayDeref(locus, new AstVariableReference(locus, args[0], args[0]), [args[1]])
+			})
+			rules.addRule('expr9: LOC FileItem', function (args, locus) {
+				return new AstArrayDeref(locus, new AstVariableReference(locus, args[0], args[0]), [args[1]])
+			})
 			rules.addRule('expr9: constant')
 			rules.addRule('expr9: expr10')
 			rules.addRule('expr10: ReferenceList')
@@ -1283,12 +1289,6 @@ export class QBasicProgram {
 
 			rules.addRule("ReferenceList: ReferenceList '\\(' ParameterList '\\)'", function (args, locus) {
 				return new AstArrayDeref(locus, args[0], args[2])
-			})
-			rules.addRule('ReferenceList: EOF FileItem', function (args, locus) {
-				return new AstArrayDeref(locus, new AstVariableReference(locus, args[0], args[0]), [args[1]])
-			})
-			rules.addRule('ReferenceList: LOC FileItem', function (args, locus) {
-				return new AstArrayDeref(locus, new AstVariableReference(locus, args[0], args[0]), [args[1]])
 			})
 			rules.addRule('ReferenceList: Reference')
 			rules.addRule('Reference: identifier', function (args, locus) {

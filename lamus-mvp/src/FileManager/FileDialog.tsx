@@ -240,9 +240,10 @@ export const FileDialog = observer(function FileDialog({
   useEffect(
     () =>
       autorun(() => {
+        if (!show) return;
         refreshList();
       }),
-    [refreshList]
+    [refreshList, show]
   );
 
   const onListChange = useCallback(

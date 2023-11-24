@@ -11,6 +11,7 @@
       "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}",
       "pathMapping": {
+        "__parcel_source_root/qbasic-vm/dist/webpack:/qbasic-vm/src": "${workspaceFolder}/qbasic-vm/src",
         "__parcel_source_root": "${workspaceFolder}"
       }
     }
