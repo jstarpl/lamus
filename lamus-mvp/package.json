@@ -23,6 +23,7 @@
     "@lamus/qbasic-vm": "*",
     "@meshtastic/meshtasticjs": "^0.9.8",
     "@parcel/service-worker": "^2.8.3",
+    "@sentry/cli": "^2.21.5",
     "@sentry/react": "^7.81.1",
     "@sofie-automation/sorensen": "^1.4.2",
     "@svgr/webpack": "^6.2.1",
@@ -75,9 +76,10 @@
     "start": "parcel ./public/index.html --dist-dir ./build",
     "clean": "rimraf ./build",
     "build:app": "parcel build ./public/index.html --dist-dir ./build",
-    "build": "yarn clean && yarn build:app",
+    "build": "yarn clean && yarn build:app && npm run sentry:sourcemaps",
     "format": "prettier --write src/**/*.ts{,x}",
-    "lint": "tsc --noEmit && eslint src/**/*.ts{,x}"
+    "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org jsbg --project lamus-mvp ./build && sentry-cli sourcemaps upload --org jsbg --project lamus-mvp ./build"
   },
   "eslintConfig": {
     "extends": [
