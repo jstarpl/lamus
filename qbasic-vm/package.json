@@ -5,6 +5,11 @@
   "main": "dist/qbasic-vm.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
+  "files": [
+    "README.md",
+    "LICENSE",
+    "dist"
+  ],
   "repository": "https://github.com/jstarpl/qbasic-vm",
   "author": "Jan Starzak <jan.starzak@gmail.com>",
   "contributors": [
@@ -29,7 +34,8 @@
     "lint-fix": "",
     "format": "prettier --write --config \"./.prettierrc.json\" \"src/**\"",
     "build": "rimraf ./dist && webpack",
-    "bundle": "npm run build",
+    "qbasic-docs": "node ./scripts/extract-subroutines.mjs ./src/VirtualMachine.ts ./dist/allCommands.json",
+    "bundle": "npm run build && npm run qbasic-docs",
     "api-docs": "yarn api-docs:html && opn api-docs/index.html",
     "api-docs:html": "typedoc",
     "api-docs:json": "typedoc --json api-docs/typedoc.json",

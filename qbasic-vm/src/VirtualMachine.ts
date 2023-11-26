@@ -473,6 +473,13 @@ type SystemFunctionsDefinition = {
 	to the function.
  */
 export const SystemFunctions: SystemFunctionsDefinition = {
+	/**
+	 * Return the value of the status flag.
+	 *
+	 * The status flag is set by certain operations. This allows you to check the status of those operations.
+	 *
+	 * @group system
+	 */
 	ST: {
 		type: 'INTEGER',
 		args: [],
@@ -482,6 +489,13 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	/**
+	 * Return a random number.
+	 *
+	 * If a non-zero argument is provided, generate a new random number.
+	 *
+	 * @group math
+	 */
 	RND: {
 		type: 'SINGLE',
 		args: ['INTEGER'],
@@ -500,6 +514,11 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	/**
+	 * CHR$ converts a number between 0 and 255 into a character (of STRING type) and is the inverse function of ASC.
+	 *
+	 * @group strings
+	 */
 	CHR$: {
 		type: 'STRING',
 		args: ['INTEGER'],
@@ -2376,6 +2395,12 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		},
 	},
 
+	/**
+	 * Change the screen mode
+	 *
+	 * @args INTEGER
+	 * @minArgs 1
+	 */
 	SCREEN: {
 		action: function (vm) {
 			const mode = getArgValue(vm.stack.pop())

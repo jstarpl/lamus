@@ -6,10 +6,21 @@ import {
 import { VirtualGamepadStoreClass } from "../../stores/VirtualGamepadStore";
 
 export class Gamepads implements IGamepad {
-  constructor(private virtualGamepad: VirtualGamepadStoreClass) {}
+  private hasCoarsePointer: boolean = false;
+  private forceVirtualGamepad: boolean = false;
+  constructor(private virtualGamepad: VirtualGamepadStoreClass) {
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      this.hasCoarsePointer = true;
+    }
+    this.forceVirtualGamepad =
+      localStorage.getItem("gamepads:forceVirtualGamepad") !== null;
+  }
   private getHardwareGamepadByIndex(index: number): Gamepad | undefined {
     const allGamepads = navigator.getGamepads().filter(Boolean);
     return allGamepads[index] ?? undefined;
+  }
+  private shouldUseVirtualDPad(): boolean {
+    return this.hasCoarsePointer || this.forceVirtualGamepad;
   }
   private getVirtualDPad(): GamepadDPadState {
     let state = GamepadDPadState.NONE;
@@ -70,7 +81,8 @@ export class Gamepads implements IGamepad {
   getDPad(index: number): GamepadDPadState {
     const gamepad = this.getHardwareGamepadByIndex(index);
     if (!gamepad) {
-      if (index === 0) return this.getVirtualDPad();
+      if (index === 0 && this.shouldUseVirtualDPad())
+        return this.getVirtualDPad();
       return GamepadDPadState.NONE;
     }
 
@@ -176,7 +188,8 @@ export class Gamepads implements IGamepad {
   getJoystick(index: number): GamepadJoystickState {
     const gamepad = this.getHardwareGamepadByIndex(index);
     if (!gamepad) {
-      if (index === 0) return this.getVirtualJoystick();
+      if (index === 0 && this.shouldUseVirtualDPad())
+        return this.getVirtualJoystick();
       return [0, 0];
     }
 
