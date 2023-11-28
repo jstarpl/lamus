@@ -1,14 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Dialog } from "../../components/Dialog";
 import { COMBO_SHORTHAND, parseCombo } from "../combos";
-import { IDialogChoice } from "../useModalDialog";
+import { DialogButtonRole, IDialogChoice } from "../useModalDialog";
 
 export function ModalDialog({
+  className,
   children,
   choices,
   onUserChoice,
 }: React.PropsWithChildren<{
+  className?: string;
   choices: IDialogChoice<string>[];
   onUserChoice?: (result: string) => void;
 }>) {
@@ -62,7 +64,11 @@ export function ModalDialog({
 
   const renderMessage = useMemo(() => {
     if (typeof children !== "string") return children;
-    return <ReactMarkdown>{children}</ReactMarkdown>;
+    return (
+      <ReactMarkdown skipHtml transformLinkUri={transformLinkUri}>
+        {children}
+      </ReactMarkdown>
+    );
   }, [children]);
 
   const renderButtons = choices.map((choice, index) => {
@@ -73,6 +79,9 @@ export function ModalDialog({
     return (
       <button
         key={`${choice.value}_${index}`}
+        className={
+          choice.role === DialogButtonRole.REJECT ? "reject" : undefined
+        }
         tabIndex={choice.default ? 1 : 2}
         data-accept={choice.default}
         data-focus={choice.default}
@@ -90,9 +99,17 @@ export function ModalDialog({
   });
 
   return (
-    <Dialog onKeyDown={onKeyDown}>
+    <Dialog className={className} onKeyDown={onKeyDown}>
       {renderMessage}
       <div className="buttons">{renderButtons}</div>
     </Dialog>
   );
+}
+
+function transformLinkUri(
+  href: string,
+  children: unknown,
+  title: string | null
+): string {
+  return "#";
 }

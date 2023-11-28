@@ -35,14 +35,16 @@ export const Dialog: React.FC<
   const focusButton = useCallback(() => {
     if (!dialogRef.current) return;
 
-    const button =
-      dialogRef.current.querySelector<HTMLElement>("button[data-focus]");
+    const button = dialogRef.current.querySelector<HTMLElement>(
+      "input[data-focus], textarea[data-focus], button[data-focus]"
+    );
     if (button) {
       button.focus();
       return;
     }
-    const focusableElement =
-      dialogRef.current.querySelector<HTMLElement>("button, input");
+    const focusableElement = dialogRef.current.querySelector<HTMLElement>(
+      "button, input, textarea"
+    );
     if (!focusableElement) return;
     focusableElement.focus();
   }, [dialogRef]);

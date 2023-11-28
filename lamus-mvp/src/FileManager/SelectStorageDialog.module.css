@@ -8,7 +8,7 @@
   max-width: min(25ch, 75vw);
 }
 
-.SelectStorageDialog__StorageList {
+.StorageList {
   display: flex;
   padding: 0;
   margin: 0.55em 0.882em 0.88em;
@@ -17,7 +17,7 @@
   flex-wrap: wrap;
 }
 
-.SelectStorageDialog__StorageList li {
+.StorageList li {
   display: block;
   padding: 0;
   margin: 0;
@@ -25,6 +25,6 @@
   flex: 0 0;
 }
 
-.SelectStorageDialog__StorageList li button {
+.StorageList li button {
   min-width: 2em;
 }

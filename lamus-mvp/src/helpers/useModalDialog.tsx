@@ -234,7 +234,6 @@ const DialogButtonsImpl = {
     {
       label: "Cancel",
       value: DialogButtonResult.CANCEL,
-      default: true,
       role: DialogButtonRole.REJECT,
       combo: ["Escape"],
     },

@@ -5,7 +5,7 @@ import { AppStore } from "../stores/AppStore";
 import { Dialog } from "../components/Dialog";
 import classNames from "classnames";
 
-import "./SelectStorageDialog.css";
+import classes from "./SelectStorageDialog.module.css";
 
 interface IProps {
   className?: string;
@@ -45,13 +45,13 @@ export const SelectStorageDialog = observer(function SelectStorageDialog({
 
   return (
     <Dialog
-      className={`SelectStorageDialog bg-files ${className ?? ""}`}
+      className={`${classes.SelectStorageDialog} bg-files ${className ?? ""}`}
       onClickBackdrop={onDismiss}
       onKeyDown={onKeyDown}
       top
     >
       {label ? <p>{label}</p> : null}
-      <ul className="SelectStorageDialog__StorageList">
+      <ul className={classes.StorageList}>
         {availableStorages.map(([storageId, provider]) => (
           <li key={storageId}>
             <button

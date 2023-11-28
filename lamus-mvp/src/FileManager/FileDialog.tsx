@@ -41,6 +41,7 @@ import {
   CONFIRM_COMBO,
 } from "../lib/commonHotkeys";
 import { LoadStatus } from "./LoadStatus";
+import { MkDirDialog } from "./MkDirDialog";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -107,6 +108,7 @@ export const FileDialog = observer(function FileDialog({
   const [isPathFocused, setPathFocused] = useState(false);
   const [isChangeStorageDialogOpen, setChangeStorageDialogOpen] =
     useState(false);
+  const [isMkDirDialogOpen, setMkDirDialogOpen] = useState(false);
   const [isSelectThisDirSelected, setIsSelectThisFolderSelected] =
     useState(false);
   const sfxContext = useContext(SoundEffectsContext);
@@ -365,6 +367,14 @@ export const FileDialog = observer(function FileDialog({
     setChangeStorageDialogOpen(false);
   }
 
+  function onOpenMkDirDialog() {
+    setMkDirDialogOpen(true);
+  }
+
+  function onCloseMkDirDialog() {
+    setMkDirDialogOpen(false);
+  }
+
   function onChangeStorage(storageId: ProviderId) {
     setChangeStorageDialogOpen(false);
     if (storageId === currentStorage) return;
@@ -437,7 +447,7 @@ export const FileDialog = observer(function FileDialog({
     };
   }, [status, show]);
 
-  const isAnyDialogOpen = isChangeStorageDialogOpen;
+  const isAnyDialogOpen = isChangeStorageDialogOpen || isMkDirDialogOpen;
 
   return (
     <>
@@ -511,6 +521,11 @@ export const FileDialog = observer(function FileDialog({
               onChangeStorage={onChangeStorage}
               onDismiss={onCloseChangeStorageDialog}
             />
+            <MkDirDialog
+              show={show && isMkDirDialogOpen}
+              label="Create a new Directory"
+              onDismiss={onCloseMkDirDialog}
+            />
             <FocusTrapEnd />
           </div>
           {!isAnyDialogOpen && (
@@ -537,7 +552,7 @@ export const FileDialog = observer(function FileDialog({
                   combo={MK_DIR_COMBO}
                   position={7}
                   showOnlyWhenModifiersActive
-                  onClick={() => {}}
+                  onClick={onOpenMkDirDialog}
                 >
                   MkDir
                 </CommandBar.Button>

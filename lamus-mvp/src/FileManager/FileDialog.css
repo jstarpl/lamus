@@ -7,7 +7,7 @@
   grid-template-columns: 100%;
   grid-template-rows: min-content minmax(0, 100%) min-content;
   height: 100%;
-  max-width: 50em;
+  max-width: 50rem;
   margin: 0 auto;
   padding: 2em 1em 1em;
   box-sizing: border-box;
