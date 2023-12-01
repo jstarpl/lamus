@@ -1,5 +1,5 @@
 import { TargetAndTransition } from "framer-motion";
-import { autorun } from "mobx";
+import { action, autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, {
   useCallback,
@@ -389,6 +389,27 @@ export const FileDialog = observer(function FileDialog({
     onOpenChangeStorageDialog();
   }
 
+  function onCreateNewDir(newDirName: string) {
+    setMkDirDialogOpen(false);
+
+    if (!currentStorage) return;
+    const provider = AppStore.fileSystem.providers.get(currentStorage);
+    if (!provider) return;
+    setStatus(LoadStatus.LOADING);
+    provider
+      .mkdir(currentPath, newDirName)
+      .then(
+        action(() => {
+          setStatus(LoadStatus.OK);
+          refreshList();
+        })
+      )
+      .catch(() => {
+        setStatus(LoadStatus.OK);
+        console.error;
+      });
+  }
+
   const { FocusTrapStart, FocusTrapEnd } = useFocusTrap();
 
   const canGo = (isDirSelected && isListFocused) || isPathFocused;
@@ -525,6 +546,7 @@ export const FileDialog = observer(function FileDialog({
               show={show && isMkDirDialogOpen}
               label="Create a new Directory"
               onDismiss={onCloseMkDirDialog}
+              onAccept={onCreateNewDir}
             />
             <FocusTrapEnd />
           </div>

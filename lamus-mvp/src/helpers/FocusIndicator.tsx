@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import React, { useEffect, useState } from "react";
 import "./FocusIndicator.css";
+import { debounce } from "lodash";
 
 type Rect = {
   top: number;
@@ -14,7 +15,7 @@ export const FocusIndicator: React.FC = function FocusIndicator() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    function highlightTarget(target: HTMLElement) {
+    function actualHighlightTarget(target: HTMLElement) {
       const boundingRect = target.getBoundingClientRect();
       let visible = true;
       if (target.dataset["ownFocus"]) visible = false;
@@ -30,15 +31,18 @@ export const FocusIndicator: React.FC = function FocusIndicator() {
       }
       setVisible(visible);
     }
+    const highlightTarget = debounce(actualHighlightTarget, 10, {
+      trailing: true,
+    });
     function onResize() {
       if (!(document.activeElement instanceof HTMLElement)) return;
       highlightTarget(document.activeElement);
     }
-    function onFocusIn(ev: FocusEvent) {
-      if (!(ev.target instanceof HTMLElement)) return;
-      highlightTarget(ev.target);
+    function onFocusIn() {
+      if (!(document.activeElement instanceof HTMLElement)) return;
+      highlightTarget(document.activeElement);
     }
-    function onFocusOut(ev: FocusEvent) {
+    function onFocusOut() {
       setVisible(false);
     }
 

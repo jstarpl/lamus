@@ -8,7 +8,8 @@
   "files": [
     "README.md",
     "LICENSE",
-    "dist"
+    "dist",
+    "assets/charmap.png"
   ],
   "repository": "https://github.com/jstarpl/qbasic-vm",
   "author": "Jan Starzak <jan.starzak@gmail.com>",

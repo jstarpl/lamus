@@ -67,6 +67,9 @@ dialog .buttons > button {
   font-size: 1em;
   padding: 0.44em 0.88em;
   text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 dialog .buttons > button.reject {

@@ -8,5 +8,9 @@
   max-width: min(50rem, 75vw);
 }
 
-.MkDirDialog :global(.buttons) {
+@media screen and (max-width: 620px) {
+  .MkDirDialog {
+    max-width: 100%;
+    width: 100%;
+  }
 }
