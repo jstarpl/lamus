@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import "./CommandBar.css";
+import { useHasModalDialogsOpen } from "../../helpers/useModalDialog";
 
 export const AltDown = React.createContext<boolean>(false);
 export const CtrlDown = React.createContext<boolean>(false);
@@ -14,8 +15,11 @@ export const CommandBar: React.FC<React.PropsWithChildren<{}>> =
     const [isCtrlDown, setCtrlDown] = useState(false);
     const [isShiftDown, setShiftDown] = useState(false);
     const [isMetaDown, setMetaDown] = useState(false);
+    const hasModalDialogsOpen = useHasModalDialogsOpen();
 
     useEffect(() => {
+      if (hasModalDialogsOpen) return;
+
       function onKeyDown(e: KeyboardEvent) {
         setAltDown(e.altKey);
         setCtrlDown(e.ctrlKey);
@@ -36,7 +40,9 @@ export const CommandBar: React.FC<React.PropsWithChildren<{}>> =
         document.removeEventListener("keydown", onKeyDown);
         document.removeEventListener("keyup", onKeyUp);
       };
-    }, []);
+    }, [hasModalDialogsOpen]);
+
+    if (hasModalDialogsOpen) return null;
 
     return (
       <div className="CommandBar sdi-app-cmdbar">

@@ -14,6 +14,14 @@ const ModalDialogContext = React.createContext<IModalDialogContext>({
   show: () => Promise.reject(),
 });
 
+const ModalDialogsStateContext = React.createContext<boolean>(false);
+
+export function useHasModalDialogsOpen() {
+  const modalDialogsContext = useContext(ModalDialogsStateContext);
+
+  return modalDialogsContext;
+}
+
 export function useModalDialog() {
   const modalContext = useContext(ModalDialogContext);
 
@@ -84,15 +92,17 @@ export function ModalDialogContextProvider({
 
   return (
     <ModalDialogContext.Provider value={context}>
-      {topDialogRequest && (
-        <ModalDialog
-          choices={topDialogRequest.dialog.choices}
-          onUserChoice={onUserChoice}
-        >
-          {topDialogRequest.dialog.message}
-        </ModalDialog>
-      )}
-      {children}
+      <ModalDialogsStateContext.Provider value={dialogRequests.length > 0}>
+        {topDialogRequest && (
+          <ModalDialog
+            choices={topDialogRequest.dialog.choices}
+            onUserChoice={onUserChoice}
+          >
+            {topDialogRequest.dialog.message}
+          </ModalDialog>
+        )}
+        {children}
+      </ModalDialogsStateContext.Provider>
     </ModalDialogContext.Provider>
   );
 }
@@ -327,7 +337,52 @@ const DialogTemplatesImpl = {
   overwriteExistingFile: (
     fileName: string
   ): IDialog<DialogButtonResult.NO | DialogButtonResult.YES> => ({
-    message: `File "${fileName}" already exists in this directory.\n\nAre you sure you want to overwrite it?`,
+    message: (
+      <>
+        <p>
+          File <strong>“{fileName}”</strong> already exists in this directory.
+        </p>
+        <p>Are you sure you want to overwrite it?</p>
+      </>
+    ),
+    choices: [
+      {
+        label: "No",
+        value: DialogButtonResult.NO,
+        default: true,
+        role: DialogButtonRole.REJECT,
+        combo: ["N"],
+      },
+      {
+        label: "Yes",
+        value: DialogButtonResult.YES,
+        combo: ["Y"],
+      },
+    ],
+    type: DialogType.WARNING,
+  }),
+  deleteObject: (
+    objectName: string,
+    objectType: "file" | "directory"
+  ): IDialog<DialogButtonResult.NO | DialogButtonResult.YES> => ({
+    message:
+      objectType === "file" ? (
+        <>
+          <p>
+            The file <strong>“{objectName}”</strong> will be permanently
+            removed.
+          </p>
+          <p>Are you sure you want to delete it?</p>
+        </>
+      ) : (
+        <>
+          <p>
+            The directory <strong>“{objectName}”</strong> will be permanently
+            removed.
+          </p>
+          <p>Are you sure you want to delete it?</p>
+        </>
+      ),
     choices: [
       {
         label: "No",
@@ -347,7 +402,12 @@ const DialogTemplatesImpl = {
   saveBeforeExit: (): IDialog<
     DialogButtonResult.NO | DialogButtonResult.CANCEL | DialogButtonResult.YES
   > => ({
-    message: `This file has not been saved.\n\nDo you want to save it before exiting?`,
+    message: (
+      <>
+        <p>This file has not been saved.</p>
+        <p>Do you want to save it before exiting?</p>
+      </>
+    ),
     choices: DialogButtons.NO_CANCEL_YES,
     type: DialogType.WARNING,
   }),
