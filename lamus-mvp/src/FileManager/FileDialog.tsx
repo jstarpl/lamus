@@ -39,9 +39,15 @@ import {
   MK_DIR_COMBO,
   CANCEL_COMBO,
   CONFIRM_COMBO,
+  DELETE_COMBO,
 } from "../lib/commonHotkeys";
 import { LoadStatus } from "./LoadStatus";
 import { MkDirDialog } from "./MkDirDialog";
+import {
+  DialogButtonResult,
+  DialogTemplates,
+  useModalDialog,
+} from "../helpers/useModalDialog";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -55,6 +61,7 @@ interface IBaseProps {
   defaultFileName?: FileName;
   disabledRename?: boolean;
   disabledMkDir?: boolean;
+  disabledDelete?: boolean;
   onCancel?: () => void;
   onAccept?: (props: IAcceptEventProps) => void;
 }
@@ -89,6 +96,7 @@ export const FileDialog = observer(function FileDialog({
   initialPath,
   disabledMkDir,
   disabledRename,
+  disabledDelete,
   onAccept,
   onCancel,
 }: IProps) {
@@ -112,6 +120,9 @@ export const FileDialog = observer(function FileDialog({
   const [isSelectThisDirSelected, setIsSelectThisFolderSelected] =
     useState(false);
   const sfxContext = useContext(SoundEffectsContext);
+  const modalDialog = useModalDialog();
+
+  const exitSignal = useMemo(() => new AbortController(), []);
 
   const onAcceptRef = useRef<IProps["onAccept"] | null>(onAccept);
 
@@ -359,7 +370,7 @@ export const FileDialog = observer(function FileDialog({
     });
   }
 
-  function onOpenChangeStorageDialog() {
+  function onChangeStorageBegin() {
     setChangeStorageDialogOpen(true);
   }
 
@@ -367,7 +378,7 @@ export const FileDialog = observer(function FileDialog({
     setChangeStorageDialogOpen(false);
   }
 
-  function onOpenMkDirDialog() {
+  function onMkDirBegin() {
     setMkDirDialogOpen(true);
   }
 
@@ -382,11 +393,50 @@ export const FileDialog = observer(function FileDialog({
     setCurrentPath([]);
   }
 
+  function onDeleteBegin() {
+    const selectedGuid = selectedFiles?.[0];
+    if (!selectedGuid) return;
+    const item = fileList.find((item) => item.guid === selectedGuid);
+    const fileName = item?.fileName;
+
+    if (!fileName) return;
+
+    if (!currentStorage) return;
+    const provider = AppStore.fileSystem.providers.get(currentStorage);
+    if (!provider) return;
+
+    modalDialog
+      .showDialog(
+        DialogTemplates.deleteObject(
+          fileName,
+          item.dir === true ? "directory" : "file"
+        ),
+        {
+          signal: exitSignal.signal,
+        }
+      )
+      .then(
+        action(async (dialogResult) => {
+          if (dialogResult.result === DialogButtonResult.NO) return;
+
+          setStatus(LoadStatus.LOADING);
+
+          try {
+            await provider.unlink(currentPath, fileName);
+            setStatus(LoadStatus.OK);
+            refreshList();
+          } catch (e) {
+            setStatus(LoadStatus.OK);
+          }
+        })
+      );
+  }
+
   function onStorageProviderCrumbContextMenu(
     e: React.MouseEvent<HTMLButtonElement>
   ) {
     e.preventDefault();
-    onOpenChangeStorageDialog();
+    onChangeStorageBegin();
   }
 
   function onCreateNewDir(newDirName: string) {
@@ -467,6 +517,12 @@ export const FileDialog = observer(function FileDialog({
       clearTimeout(timeout);
     };
   }, [status, show]);
+
+  useEffect(() => {
+    return () => {
+      exitSignal.abort();
+    };
+  }, []);
 
   const isAnyDialogOpen = isChangeStorageDialogOpen || isMkDirDialogOpen;
 
@@ -556,7 +612,7 @@ export const FileDialog = observer(function FileDialog({
                 combo={CHANGE_STORAGE_PRIMARY}
                 position={1}
                 showOnlyWhenModifiersActive
-                onClick={onOpenChangeStorageDialog}
+                onClick={onChangeStorageBegin}
               >
                 Storage
               </CommandBar.Button>
@@ -574,9 +630,19 @@ export const FileDialog = observer(function FileDialog({
                   combo={MK_DIR_COMBO}
                   position={7}
                   showOnlyWhenModifiersActive
-                  onClick={onOpenMkDirDialog}
+                  onClick={onMkDirBegin}
                 >
                   MkDir
+                </CommandBar.Button>
+              )}
+              {!disabledDelete && isListFocused && (
+                <CommandBar.Button
+                  combo={DELETE_COMBO}
+                  position={8}
+                  showOnlyWhenModifiersActive
+                  onClick={onDeleteBegin}
+                >
+                  Delete
                 </CommandBar.Button>
               )}
               <CommandBar.Button
