@@ -129,6 +129,9 @@ export const FileDialog = observer(function FileDialog({
   useEffect(() => {
     setChangeStorageDialogOpen(false);
     setIsSelectThisFolderSelected(false);
+
+    setLocalFileName("");
+    setSelectedFiles([]);
   }, [show]);
 
   useEffect(() => {
