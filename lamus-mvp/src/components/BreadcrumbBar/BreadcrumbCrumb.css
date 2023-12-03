@@ -1,6 +1,7 @@
 .BreadcrumbBar__Crumb {
   flex: 0 0;
   display: block;
+  color: var(--color-black);
   background: var(--color-tint-1);
   background-clip: padding-box;
   padding: 0.5em;

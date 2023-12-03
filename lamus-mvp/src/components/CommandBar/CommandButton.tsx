@@ -76,6 +76,10 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
           }
           setActive(false);
         }
+
+        if (e.code === "AltLeft" || e.code === "AltRight") {
+          e.preventDefault();
+        }
       }
 
       document.addEventListener("keydown", onKeyDown);

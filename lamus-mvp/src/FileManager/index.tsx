@@ -7,6 +7,8 @@ import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect
 import { AppStore } from "../stores/AppStore";
 import { CommandBar } from "../components/CommandBar";
 import {
+  CHANGE_STORAGE_PRIMARY,
+  CHANGE_STORAGE_SECONDARY,
   COPY_COMBO,
   DELETE_COMBO,
   EDIT_COMBO,
@@ -171,6 +173,20 @@ const FileManager = observer(function FileManager() {
       {!hasDialogOpen && (
         <CommandBar.Nav key="command-bar">
           <CommandBar.Button
+            combo={CHANGE_STORAGE_PRIMARY}
+            position={1}
+            showOnlyWhenModifiersActive
+          >
+            Storage
+          </CommandBar.Button>
+          <CommandBar.Button
+            combo={CHANGE_STORAGE_SECONDARY}
+            position={2}
+            showOnlyWhenModifiersActive
+          >
+            Storage
+          </CommandBar.Button>
+          <CommandBar.Button
             combo={EDIT_COMBO}
             position={4}
             showOnlyWhenModifiersActive
@@ -212,7 +228,12 @@ const FileManager = observer(function FileManager() {
           >
             Menu
           </CommandBar.Button>
-          <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
+          <CommandBar.Button
+            combo={QUIT_COMBO}
+            position={10}
+            onClick={onQuit}
+            showOnlyWhenModifiersActive
+          >
             Quit
           </CommandBar.Button>
         </CommandBar.Nav>

@@ -61,6 +61,7 @@ dialog .buttons {
 
 dialog .buttons > button {
   flex: 1 1;
+  color: var(--color-black);
   background: var(--dialog-button-bkg-accept);
   border: none;
   border-radius: 0;

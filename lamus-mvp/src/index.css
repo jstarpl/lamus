@@ -318,10 +318,14 @@ input.form-control[type="datetime-local"]:not(:read-only):focus {
   box-shadow: 0 0 15px #00000022;
 }
 
+button {
+  color: inherit;
+}
+
 button.btn {
   border: none;
   background: var(--color-tone);
-  color: var(--color-dark);
+  color: var(--color-black);
   padding: 0.5em;
   border: none;
   border-radius: var(--button-border-radius);
