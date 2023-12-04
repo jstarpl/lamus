@@ -67,6 +67,19 @@ export interface IConsole {
 		swidth?: number,
 		sheight?: number
 	): void
+	putTileImage(
+		image: HTMLImageElement,
+		tileWidth: number,
+		tileHeight: number,
+		map: number[],
+		mapStride: number,
+		sx: number,
+		sy: number,
+		dx?: number,
+		dy?: number,
+		dwidth?: number,
+		dheight?: number
+	): void
 	cls(): void
 	locate(row: number, col: number): void
 	color(fg: number | null, bg: number | null, bo: number | null): void

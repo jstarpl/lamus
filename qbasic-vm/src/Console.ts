@@ -866,6 +866,73 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
+	public putTileImage(
+		image: HTMLImageElement,
+		tileWidth: number,
+		tileHeight: number,
+		map: number[],
+		mapStride: number,
+		sx: number,
+		sy: number,
+		dx: number = 0,
+		dy: number = 0,
+		dwidth?: number,
+		dheight?: number
+	): void {
+		dwidth = Math.max(0, Math.min(this._width, dwidth ?? this._width - dx))
+		dheight = Math.max(0, Math.min(this._height, dheight ?? this._height - dy))
+
+		const tileMapWidth = image.naturalWidth
+		const tileMapHeight = image.naturalHeight
+		const tileMapStride = Math.floor(tileMapWidth / tileWidth)
+
+		function getMapAtCoords(x: number, y: number): number | undefined {
+			return map[y * mapStride + x]
+		}
+
+		function getTileCoords(tileId: number): { x: number; y: number } {
+			const y = Math.floor(tileId / tileMapStride) * tileHeight
+			const x = (tileId % tileMapStride) * tileWidth
+			if (x >= tileMapWidth || y >= tileMapHeight) return { x: 0, y: 0 }
+			return { x, y }
+		}
+
+		let tilesHoriz = Math.ceil(dwidth / tileWidth)
+		let tilesVert = Math.ceil(dheight / tileHeight)
+
+		const tileOffsetX = Math.floor(sx / tileWidth)
+		const tileOffsetY = Math.floor(sy / tileHeight)
+		const pixelOffsetX = sx % tileWidth
+		const pixelOffsetY = sy % tileWidth
+
+		if (pixelOffsetX > 0) tilesHoriz++
+		if (pixelOffsetY > 0) tilesVert++
+
+		for (let j = 0; j < tilesVert; j++) {
+			for (let i = 0; i < tilesHoriz; i++) {
+				const tileId = getMapAtCoords(i + tileOffsetX, j + tileOffsetY)
+				if (tileId === undefined) continue
+
+				const tileCoords = getTileCoords(tileId)
+
+				const tileDx = dx + i * tileWidth
+				const tileDy = dy + j * tileHeight
+
+				this.ctx.drawImage(
+					image,
+					tileCoords.x,
+					tileCoords.y,
+					tileWidth,
+					tileHeight,
+					tileDx - pixelOffsetX,
+					tileDy - pixelOffsetY,
+					tileWidth,
+					tileHeight
+				)
+			}
+		}
+	}
+
 	public cls(): void {
 		this.record('[CLS]')
 		this.cursor(false)

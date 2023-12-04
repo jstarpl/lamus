@@ -1136,6 +1136,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch(() => {
+						vm.status = -1
 						vm.stack.push(-1)
 						vm.resume()
 					})
@@ -1155,6 +1156,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 					vm.resume()
 				})
 				.catch(() => {
+					vm.status = -1
 					vm.stack.push(-1)
 					vm.resume()
 				})
@@ -2678,6 +2680,61 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			try {
 				const image = vm.cons.getImage(imageHandle)
 				vm.cons.putImage(image, dx, dy, dw, dh, sx, sy, sw, sh)
+			} catch (e) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, e)
+			}
+		},
+	},
+
+	/**
+	 * Paint a tile map, sourcing the tiles from an Image under IMAGE_HANDLE%. The tiles are TILE_SIZE% by TILE_SIZE%,
+	 * starting at the top-left corner, numbering starts from 1. MAP_DEFINITION% is an array defining what Tiles
+	 * to paint. DST_X%, DST_Y%, DST_W%, DST_H define the target paint rectangle. SRC_X%, SRC_Y% define where the
+	 * target paint rectangle is located on the Tile Map, if it were an imaginary, large image. If DST_X%, DST_Y%
+	 * is not provided, the default is `0`. If DST_W% and DST_H% is not provided, the default is screen dimentions
+	 * minus target x,y location.
+	 *
+	 * ```
+	 * IMAGE_HANDLE%, TILE_SIZE%, MAP_DEFINITION%(), SRC_X%, SRC_Y%, [DST_X%, DST_Y%, [DST_W%, DST_H%,]]
+	 * ```
+	 *
+	 * @group graphics
+	 */
+	IMGPUTTILES: {
+		args: ['INTEGER', 'INTEGER', 'ARRAY OF INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
+		minArgs: 3,
+		action: function (vm) {
+			const argCount = vm.stack.pop()
+			let dw: number | undefined = undefined
+			let dh: number | undefined = undefined
+			let dx = 0
+			let dy = 0
+			if (argCount > 7) {
+				dh = getArgValue(vm.stack.pop())
+				dw = getArgValue(vm.stack.pop())
+			}
+			if (argCount > 5) {
+				dx = getArgValue(vm.stack.pop())
+				dy = getArgValue(vm.stack.pop())
+			}
+			const sy = getArgValue(vm.stack.pop())
+			const sx = getArgValue(vm.stack.pop())
+			const mapDefinitionArray = getArgValue(vm.stack.pop()) as ArrayVariable<IntegerType>
+			if (!IsNumericType(mapDefinitionArray.type)) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Map definition is not an Integer array')
+			}
+			if (mapDefinitionArray.dimensions.length !== 2) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Map definition is wrong size')
+			}
+			const tileSize = getArgValue(vm.stack.pop())
+			const imageHandle = getArgValue(vm.stack.pop())
+
+			const mapStride = mapDefinitionArray.dimensions[0].upper - mapDefinitionArray.dimensions[0].lower
+
+			const mapDefinition = mapDefinitionArray.values.map((value) => value.value as number)
+			try {
+				const image = vm.cons.getImage(imageHandle)
+				vm.cons.putTileImage(image, tileSize, tileSize, mapDefinition, mapStride, sx, sy, dx, dy, dw, dh)
 			} catch (e) {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, e)
 			}
