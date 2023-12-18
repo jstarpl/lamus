@@ -2729,7 +2729,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			const tileSize = getArgValue(vm.stack.pop())
 			const imageHandle = getArgValue(vm.stack.pop())
 
-			const mapStride = mapDefinitionArray.dimensions[0].upper - mapDefinitionArray.dimensions[0].lower
+			const mapStride = mapDefinitionArray.dimensions[1].upper - mapDefinitionArray.dimensions[1].lower + 1
 
 			const mapDefinition = mapDefinitionArray.values.map((value) => value.value as number)
 			try {

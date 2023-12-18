@@ -16,7 +16,7 @@ export const STRUCTURED_INPUT_MATCH = new RegExp(
   /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g
 );
 
-enum KNOWN_MIME_TYPES {
+enum KnownMimeTypes {
   BINARY = "application/octet-stream",
   PLAIN = "text/plain",
   STRUCTURED_TEXT = "text/csv",
@@ -228,7 +228,7 @@ export class LamusStorage implements IFileSystem {
       cursor: 0,
       modified: false,
       props: {
-        contentType: KNOWN_MIME_TYPES.STRUCTURED_TEXT,
+        contentType: KnownMimeTypes.STRUCTURED_TEXT,
       },
     };
   }
@@ -261,7 +261,7 @@ export class LamusStorage implements IFileSystem {
       cursor: buffer.length,
       modified: false,
       props: {
-        contentType: KNOWN_MIME_TYPES.STRUCTURED_TEXT,
+        contentType: KnownMimeTypes.STRUCTURED_TEXT,
       },
       meta,
     };
@@ -308,7 +308,7 @@ export class LamusStorage implements IFileSystem {
       cursor: 0,
       modified,
       props: {
-        contentType: KNOWN_MIME_TYPES.JSON,
+        contentType: KnownMimeTypes.JSON,
       },
       meta,
     };
@@ -324,7 +324,7 @@ export class LamusStorage implements IFileSystem {
       new ArrayBuffer(ARRAY_BUFFER_BLOCK_SIZE)
     );
     let size = 0;
-    let contentType: string = KNOWN_MIME_TYPES.BINARY;
+    let contentType: string = KnownMimeTypes.BINARY;
     let meta = undefined;
     let modified = true;
     if (accessResult.ok && accessResult.found) {

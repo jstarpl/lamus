@@ -584,19 +584,25 @@ export class Console extends EventTarget implements IConsole {
 
 	public box(x1: number, y1: number, x2: number, y2: number, color?: number): void {
 		const strokeBuf = this.ctx.strokeStyle
+		const lineWidthBuf = this.ctx.lineWidth
+		const lineJoinBuf = this.ctx.lineJoin
 		this.ctx.strokeStyle =
 			color === undefined ? this.fgcolor : color >= 0 ? VIDEO_COLORS[color] : Console.colorIntegerToRgb(color)
+		this.ctx.lineWidth = 1
+		this.ctx.lineJoin = 'miter'
 		this.ctx.beginPath()
-		this.ctx.moveTo(x1, y1)
-		this.ctx.lineTo(x2, y1)
-		this.ctx.lineTo(x2, y2)
-		this.ctx.lineTo(x1, y2)
-		this.ctx.lineTo(x1, y1)
+		this.ctx.moveTo(x1 + 0.5, y1 + 0.5)
+		this.ctx.lineTo(x2 + 0.5, y1 + 0.5)
+		this.ctx.lineTo(x2 + 0.5, y2 + 0.5)
+		this.ctx.lineTo(x1 + 0.5, y2 + 0.5)
+		this.ctx.lineTo(x1 + 0.5, y1 + 0.5)
 		this.ctx.stroke()
 
 		this.curX = x2
 		this.curY = y2
 		this.ctx.strokeStyle = strokeBuf
+		this.ctx.lineWidth = lineWidthBuf
+		this.ctx.lineJoin = lineJoinBuf
 	}
 
 	public fill(x1: number, y1: number, x2: number, y2: number, color?: number): void {
@@ -900,10 +906,12 @@ export class Console extends EventTarget implements IConsole {
 		let tilesHoriz = Math.ceil(dwidth / tileWidth)
 		let tilesVert = Math.ceil(dheight / tileHeight)
 
-		const tileOffsetX = Math.floor(sx / tileWidth)
-		const tileOffsetY = Math.floor(sy / tileHeight)
-		const pixelOffsetX = sx % tileWidth
-		const pixelOffsetY = sy % tileWidth
+		const signSx = sx >= 0 ? 1 : -1
+		const signSy = sy >= 0 ? 1 : -1
+		const tileOffsetX = signSx * Math.floor(Math.abs(sx) / tileWidth)
+		const tileOffsetY = signSy * Math.floor(Math.abs(sy) / tileHeight)
+		const pixelOffsetX = signSx * (Math.abs(sx) % tileWidth)
+		const pixelOffsetY = signSy * (Math.abs(sy) % tileWidth)
 
 		if (pixelOffsetX > 0) tilesHoriz++
 		if (pixelOffsetY > 0) tilesVert++
@@ -911,7 +919,7 @@ export class Console extends EventTarget implements IConsole {
 		for (let j = 0; j < tilesVert; j++) {
 			for (let i = 0; i < tilesHoriz; i++) {
 				const tileId = getMapAtCoords(i + tileOffsetX, j + tileOffsetY)
-				if (tileId === undefined) continue
+				if (tileId === undefined || tileId < 0) continue
 
 				const tileCoords = getTileCoords(tileId)
 
