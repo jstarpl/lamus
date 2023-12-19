@@ -20,12 +20,7 @@
 */
 
 import { IVisitor } from './IVisitor'
-import {
-	Instructions,
-	SystemSubroutines,
-	SystemFunctions,
-	IInstruction
-} from './VirtualMachine'
+import { Instructions, SystemSubroutines, SystemFunctions, IInstruction } from './VirtualMachine'
 import {
 	AstDeclareFunction,
 	AstSubroutine,
@@ -68,7 +63,7 @@ import {
 	AstOpenStatement,
 	AstCloseStatement,
 	AstWriteStatement,
-	AstOnEventStatement
+	AstOnEventStatement,
 } from './QBasic'
 import './types/array.extensions'
 import { IsArrayType } from './Types'
@@ -89,10 +84,7 @@ export class Instruction {
 		if (this.instr.numArgs === 0) {
 			return this.instr.name + ` (${this.locus.line}:${this.locus.position})`
 		} else {
-			return (
-				this.instr.name +
-				` ${this.arg} (${this.locus.line}:${this.locus.position})`
-			)
+			return this.instr.name + ` ${this.arg} (${this.locus.line}:${this.locus.position})`
 		}
 	}
 }
@@ -175,9 +167,7 @@ export class CodeGenerator implements IVisitor {
 	public newLabel(basename: string) {
 		let id = this.labels.length
 		let name = basename + '_' + id
-		this.labels.push(
-			new Label(name, this.instructions.length, this.data.length)
-		)
+		this.labels.push(new Label(name, this.instructions.length, this.data.length))
 		return id
 	}
 
@@ -403,9 +393,7 @@ export class CodeGenerator implements IVisitor {
 		let forLabel = this.newLabel('for')
 		let nextLabel = this.newLabel('next')
 		let endLabel = this.newLabel('end_for')
-		this.loopStack.push(
-			new LoopContext(node.identifier, forLabel, nextLabel, endLabel)
-		)
+		this.loopStack.push(new LoopContext(node.identifier, forLabel, nextLabel, endLabel))
 		node.startExpr.accept(this)
 		this.write('POPVAR', node.identifier, node.locus)
 		node.endExpr.accept(this)
@@ -450,16 +438,10 @@ export class CodeGenerator implements IVisitor {
 	public visitArrayDeref(node: AstArrayDeref) {
 		this.map(node.locus)
 		// check if it's really a function call.
-		if (
-			node.expr instanceof AstVariableReference &&
-			this.functionNames[node.expr.name]
-		) {
+		if (node.expr instanceof AstVariableReference && this.functionNames[node.expr.name]) {
 			node.parameters.accept(this)
 			this.write('CALL', this.getGotoLabel(node.expr.name), node.locus)
-		} else if (
-			node.expr instanceof AstVariableReference &&
-			SystemFunctions[node.expr.name]
-		) {
+		} else if (node.expr instanceof AstVariableReference && SystemFunctions[node.expr.name]) {
 			let func = SystemFunctions[node.expr.name]
 			node.parameters.accept(this)
 			if (func.minArgs < func.args.length) {
@@ -664,11 +646,7 @@ export class CodeGenerator implements IVisitor {
 			this.label(okayLabel)
 
 			node.statements.accept(this)
-			this.write(
-				'JMP',
-				this.selectStack[this.selectStack.length - 1],
-				node.locus
-			)
+			this.write('JMP', this.selectStack[this.selectStack.length - 1], node.locus)
 			this.label(skipLabel)
 		} else {
 			// case else.
@@ -707,10 +685,7 @@ export class CodeGenerator implements IVisitor {
 		this.map(node.locus)
 		node.expr.accept(this)
 
-		if (
-			node.lhs instanceof AstVariableReference &&
-			this.functionNames[node.lhs.name]
-		) {
+		if (node.lhs instanceof AstVariableReference && this.functionNames[node.lhs.name]) {
 			// it was actually a function call.
 			this.write('POPVAL', node.lhs.name, node.locus)
 		} else {

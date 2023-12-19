@@ -4396,6 +4396,13 @@ export const Instructions: InstructionDefinition = {
 				indexes.unshift(index)
 			}
 
+			if (!(variable instanceof ArrayVariable)) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					'Invalid use of array operator: argument is not an array'
+				)
+			}
+
 			// TODO: bounds checking.
 			const arrayMember = variable.access(indexes)
 			if (arrayMember === undefined) {
