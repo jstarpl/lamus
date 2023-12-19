@@ -897,6 +897,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 
 		function getTileCoords(tileId: number): { x: number; y: number } {
+			tileId = tileId - 1
 			const y = Math.floor(tileId / tileMapStride) * tileHeight
 			const x = (tileId % tileMapStride) * tileWidth
 			if (x >= tileMapWidth || y >= tileMapHeight) return { x: 0, y: 0 }
