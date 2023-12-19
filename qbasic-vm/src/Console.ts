@@ -919,7 +919,7 @@ export class Console extends EventTarget implements IConsole {
 		for (let j = 0; j < tilesVert; j++) {
 			for (let i = 0; i < tilesHoriz; i++) {
 				const tileId = getMapAtCoords(i + tileOffsetX, j + tileOffsetY)
-				if (tileId === undefined || tileId < 0) continue
+				if (tileId === undefined || tileId <= 0) continue
 
 				const tileCoords = getTileCoords(tileId)
 

@@ -1164,6 +1164,39 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	/**
+	 * Check if a given filename exists in the current path.
+	 *
+	 * - Returns `-1` if exists
+	 * - Returns `0` if doesn't exist
+	 *
+	 * @group files
+	 */
+	ACCESS: {
+		type: 'INTEGER',
+		args: ['STRING'],
+		minArgs: 1,
+		action: function (vm) {
+			const fileName = vm.cwd + vm.stack.pop()
+
+			if (vm.fileSystem) {
+				vm.suspend()
+
+				vm.fileSystem
+					.access(fileName)
+					.then((isOK) => {
+						vm.stack.push(isOK ? -1 : 0)
+						vm.resume()
+					})
+					.catch((error) => {
+						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking EOF: ${error}`)
+					})
+			} else {
+				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
+			}
+		},
+	},
+
 	EOF: {
 		// (fileNum1%|#N1)
 		type: 'INTEGER',
@@ -2687,12 +2720,12 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	},
 
 	/**
-	 * Paint a tile map, sourcing the tiles from an Image under IMAGE_HANDLE%. The tiles are TILE_SIZE% by TILE_SIZE%,
-	 * starting at the top-left corner, numbering starts from 1. MAP_DEFINITION% is an array defining what Tiles
-	 * to paint. DST_X%, DST_Y%, DST_W%, DST_H define the target paint rectangle. SRC_X%, SRC_Y% define where the
-	 * target paint rectangle is located on the Tile Map, if it were an imaginary, large image. If DST_X%, DST_Y%
-	 * is not provided, the default is `0`. If DST_W% and DST_H% is not provided, the default is screen dimentions
-	 * minus target x,y location.
+	 * Paint a tile map, sourcing the tiles from an Image under `IMAGE_HANDLE%`. The tiles are `TILE_SIZE%` by `TILE_SIZE%`,
+	 * starting at the top-left corner, numbering starts from 1. `MAP_DEFINITION%` is an array defining what Tiles
+	 * to paint. `DST_X%`, `DST_Y%`, `DST_W%`, `DST_H%` define the target paint rectangle. `SRC_X%`, `SRC_Y%` define where
+	 * the target paint rectangle is located on the Tile Map, if it were an imaginary, large image. If `DST_X%`, `DST_Y%`
+	 * is not provided, the default is `0`. If `DST_W%` and `DST_H%` is not provided, the default is screen dimentions
+	 * minus target `x,y` location.
 	 *
 	 * ```
 	 * IMAGE_HANDLE%, TILE_SIZE%, MAP_DEFINITION%(), SRC_X%, SRC_Y%, [DST_X%, DST_Y%, [DST_W%, DST_H%,]]
