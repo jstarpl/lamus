@@ -39,6 +39,13 @@ import {
 	AstWriteStatement,
 	AstOnEventStatement,
 	ErrorType,
+	AstDimStatement,
+	AstDoStatement,
+	AstIfStatement,
+	AstSelectStatement,
+	AstCaseStatement,
+	AstGotoStatement,
+	AstGosubStatement,
 } from './QBasic'
 import {
 	IntegerType,
@@ -697,7 +704,7 @@ export class TypeChecker implements IVisitor {
 		this.defaultType = this.types[def.typeName] as SomeScalarType
 	}
 
-	public visitDimStatement(dim) {
+	public visitDimStatement(dim: AstDimStatement) {
 		// type, if present, must exist.
 		let type
 		if (dim.typeName) {
@@ -726,7 +733,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitDoStatement(loop) {
+	public visitDoStatement(loop: AstDoStatement) {
 		if (loop.expr) {
 			loop.expr.accept(this)
 		}
@@ -750,7 +757,7 @@ export class TypeChecker implements IVisitor {
 		this.loopStack.shift()
 	}
 
-	public visitIfStatement(ifStatement) {
+	public visitIfStatement(ifStatement: AstIfStatement) {
 		ifStatement.expr.accept(this)
 		if (!IsNumericType(ifStatement.expr.type)) {
 			this.error(ifStatement, 'Expected numeric expression')
@@ -762,7 +769,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitSelectStatement(select) {
+	public visitSelectStatement(select: AstSelectStatement) {
 		// expr must be compatible with that of each case.
 		select.expr.accept(this)
 		if (!IsNumericType(select.expr.type) && !IsStringType(select.expr.type)) {
@@ -781,7 +788,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitCaseStatement(caseStatement) {
+	public visitCaseStatement(caseStatement: AstCaseStatement) {
 		caseStatement.exprList.accept(this)
 		caseStatement.statements.accept(this)
 	}
@@ -825,11 +832,11 @@ export class TypeChecker implements IVisitor {
 		this.types[userType.name] = new UserType(userType.name, members)
 	}
 
-	public visitGotoStatement(gotoStatement) {
+	public visitGotoStatement(gotoStatement: AstGotoStatement) {
 		this.labelsUsed.push(new CheckedLabel(gotoStatement.label, gotoStatement))
 	}
 
-	public visitGosub(gosub) {
+	public visitGosub(gosub: AstGosubStatement) {
 		this.labelsUsed.push(new CheckedLabel(gosub.label, gosub))
 	}
 

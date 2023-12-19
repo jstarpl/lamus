@@ -112,7 +112,7 @@ export class LamusStorage implements IFileSystem {
       path,
       fileName
     );
-    return result.ok;
+    return result.ok ? result.found : false;
   }
   async open(
     handle: number,

@@ -80,6 +80,7 @@ export class DropboxProvider implements IFileSystemProvider {
     try {
       const result = await this.dropbox.filesGetMetadata({
         path: DropboxProvider.getPath(path, name),
+        include_deleted: true,
       });
 
       if (isError(result)) {
@@ -93,6 +94,11 @@ export class DropboxProvider implements IFileSystemProvider {
         return {
           ok: false,
           error: "There is a folder of the same name",
+        };
+      } else if (result.result[".tag"] === "deleted") {
+        return {
+          ok: true,
+          found: false,
         };
       }
 
