@@ -401,10 +401,10 @@ export class AstDimStatement implements AstStatement {
 	typeName: string | null
 	shared: boolean
 
-	constructor(locus: ILocus, name: string, ranges: AstRange[], typeName: string | null) {
+	constructor(locus: ILocus, name: string, ranges: AstRange[] | null, typeName: string | null) {
 		this.locus = locus
 		this.name = name
-		this.ranges = ranges // list of AstRange
+		this.ranges = ranges ?? [] // list of AstRange
 		this.typeName = typeName // possibly null
 		this.shared = false // changed to true during parsing.
 	}

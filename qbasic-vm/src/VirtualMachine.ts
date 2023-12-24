@@ -2560,13 +2560,33 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	},
 
 	SWAP: {
+		args: ['ANY', 'ANY'],
+		minArgs: 2,
 		action: function (vm) {
 			const lhs = vm.stack.pop()
 			const rhs = vm.stack.pop()
-			const temp = lhs.value
-			lhs.value = rhs.value
-			rhs.value = temp
-			// TODO: Type checking.
+
+			if (lhs instanceof ScalarVariable && rhs instanceof ScalarVariable) {
+				if (lhs.type !== rhs.type) {
+					throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Can only swap variables of the same type')
+				}
+
+				const temp = lhs.value
+				lhs.value = rhs.value
+				rhs.value = temp
+			} else if (lhs instanceof ArrayVariable && rhs instanceof ArrayVariable) {
+				if (lhs.type !== rhs.type) {
+					throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Can only swap variables of the same type')
+				}
+				const tempDimensions = lhs.dimensions
+				const tempValues = lhs.values
+				lhs.values = rhs.values
+				lhs.dimensions = rhs.dimensions
+				rhs.values = tempValues
+				rhs.dimensions = tempDimensions
+			} else {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Provided arugments cannot be swapped')
+			}
 		},
 	},
 
@@ -4457,6 +4477,11 @@ export const Instructions: InstructionDefinition = {
 
 			const lhs = vm.stack.pop()
 			const rhs = vm.stack.pop()
+
+			if (lhs instanceof ArrayVariable && rhs instanceof ArrayVariable) {
+				lhs.reference(rhs)
+				return
+			}
 
 			lhs.value = lhs.type.copy(rhs)
 		},
