@@ -61,7 +61,9 @@ export class Sprite {
 
 	private _pAspectX: number = 1
 	private _pAspectY: number = 1
+	private _frameHeight: number = 0
 	private _frameWidth: number = 0
+	private _framesPerRow: number = 1
 	private _imgWidth: number = 0
 	private _imgHeight: number = 0
 
@@ -102,29 +104,30 @@ export class Sprite {
 		image: HTMLImageElement,
 		index: number,
 		frames: number,
+		framesPerRow: number,
 		pAspectX: number,
 		pAspectY: number
 	) {
 		this._pAspectX = pAspectX
 		this._pAspectY = pAspectY
 		this._totalFrames = frames
+		this._framesPerRow = framesPerRow
 		this._endFrame = frames - 1
 		this._el = document.createElement('div')
 		this._el.style.position = 'absolute'
 		this._el.style.top = '0'
 		this._el.style.left = '0'
 		this._el.style.zIndex = index.toString()
-		this._loaded = new Promise<void>(resolve => {
+		this._loaded = new Promise<void>(async (resolve) => {
 			const url = image.src
 			this._el.style.backgroundImage = `url('${url}')`
 			this._imgHeight = image.naturalHeight
 			this._imgWidth = image.naturalWidth
-			this._frameWidth = image.naturalWidth / frames
-			this._el.style.height = `${image.naturalHeight *
-				this._pAspectY}px`
+			this._frameHeight = image.naturalHeight / Math.ceil(frames / framesPerRow)
+			this._frameWidth = image.naturalWidth / framesPerRow
+			this._el.style.height = `${this._frameHeight * this._pAspectY}px`
 			this._el.style.width = `${this._frameWidth * this._pAspectX}px`
-			this._el.style.backgroundSize = `${this._imgWidth *
-				pAspectX}px ${this._imgHeight * pAspectY}px`
+			this._el.style.backgroundSize = `${this._imgWidth * pAspectX}px ${this._imgHeight * pAspectY}px`
 			this.reposition()
 			this.bkgReposition()
 			resolve()
@@ -157,10 +160,7 @@ export class Sprite {
 				this._scaleY = this._scaleY * -1
 			}
 		}
-		this._curFrame = Math.max(
-			Math.min(this._curFrame + this._animDirection, this._totalFrames),
-			-1
-		)
+		this._curFrame = Math.max(Math.min(this._curFrame + this._animDirection, this._totalFrames), -1)
 	}
 
 	update() {
@@ -174,13 +174,7 @@ export class Sprite {
 			}
 
 			let oldFrame = this._curFrame
-			this._curFrame = Math.max(
-				Math.min(
-					this._curFrame + this._animDirection,
-					this._totalFrames
-				),
-				-1
-			)
+			this._curFrame = Math.max(Math.min(this._curFrame + this._animDirection, this._totalFrames), -1)
 			if (this._curFrame > this._endFrame) {
 				if (this._loop) {
 					if (this._pingPong) {
@@ -216,20 +210,21 @@ export class Sprite {
 	}
 
 	private bkgReposition() {
-		this._el.style.backgroundPosition = `-${this._curFrame *
-			this._frameWidth *
-			this._pAspectX}px 0`
+		const x = this._curFrame % this._framesPerRow
+		const y = Math.floor(this._curFrame / this._framesPerRow)
+		this._el.style.backgroundPosition = `-${x * this._frameWidth * this._pAspectX}px -${
+			y * this._frameHeight * this._pAspectY
+		}px`
 		this.reposition()
 	}
 
 	private reposition() {
-		this._el.style.transformOrigin = `${this._anchorX *
-			this._pAspectX}px ${this._anchorY * this._pAspectY}px`
-		this._el.style.transform = `translate(-${this._anchorX *
-			this._pAspectX}px, -${this._anchorY *
-			this._pAspectY}px) translate(${this._x * this._pAspectX}px, ${this
-				._y * this._pAspectY}px) scale(${this._scaleX}, ${this._scaleY
-			}) rotate(${this._rotation}deg)`
+		this._el.style.transformOrigin = `${this._anchorX * this._pAspectX}px ${this._anchorY * this._pAspectY}px`
+		this._el.style.transform = `translate(-${this._anchorX * this._pAspectX}px, -${
+			this._anchorY * this._pAspectY
+		}px) translate(${this._x * this._pAspectX}px, ${this._y * this._pAspectY}px) scale(${this._scaleX}, ${
+			this._scaleY
+		}) rotate(${this._rotation}deg)`
 	}
 
 	setPosition(x: number, y: number) {

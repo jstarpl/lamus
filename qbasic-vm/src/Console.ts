@@ -1287,7 +1287,12 @@ export class Console extends EventTarget implements IConsole {
 		}
 	}
 
-	public async createSprite(spriteNumber: number, image: HTMLImageElement, frames = 1): Promise<void> {
+	public async createSprite(
+		spriteNumber: number,
+		image: HTMLImageElement,
+		frames = 1,
+		framesPerRow?: number
+	): Promise<void> {
 		if (this.sprites[spriteNumber]) {
 			this.clearSprite(spriteNumber)
 		}
@@ -1295,10 +1300,13 @@ export class Console extends EventTarget implements IConsole {
 		const targetContainerWidth = this.containerWidth || this._width
 		const targetContainerHeight = this.containerHeight || this._height
 
+		framesPerRow = framesPerRow ?? frames
+
 		const sprite = new Sprite(
 			image,
 			spriteNumber,
 			frames,
+			framesPerRow,
 			targetContainerWidth / this._width,
 			targetContainerHeight / this._height
 		)

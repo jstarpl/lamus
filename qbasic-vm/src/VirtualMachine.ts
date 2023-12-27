@@ -2824,13 +2824,22 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		},
 	},
 
+	/**
+	 * Set the image as a sprite.
+	 *
+	 * SPRITE_NO%, IMAGE% [, FRAME_COUNT% [, FRAMES_PER_ROW%]]
+	 */
 	SPSET: {
-		args: ['INTEGER', 'INTEGER', 'INTEGER'],
+		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
 		minArgs: 2,
 		action: function (vm) {
 			vm.suspend()
 			const argCount = vm.stack.pop()
 			let frames = 1
+			let framesPerRow: number | undefined
+			if (argCount > 3) {
+				framesPerRow = getArgValue(vm.stack.pop())
+			}
 			if (argCount > 2) {
 				frames = getArgValue(vm.stack.pop())
 			}
@@ -2838,7 +2847,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			const spriteNum = getArgValue(vm.stack.pop())
 
 			vm.cons
-				.createSprite(spriteNum - 1, vm.cons.getImage(imageHandle), frames)
+				.createSprite(spriteNum - 1, vm.cons.getImage(imageHandle), frames, framesPerRow)
 				.then(() => {
 					vm.resume()
 				})

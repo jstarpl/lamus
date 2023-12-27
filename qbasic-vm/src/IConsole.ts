@@ -99,7 +99,7 @@ export interface IConsole {
 	getImage(handle: number): HTMLImageElement
 	clearImage(handle: number): void
 
-	createSprite(spriteNumber: number, image: HTMLImageElement, frames: number): Promise<void>
+	createSprite(spriteNumber: number, image: HTMLImageElement, frames: number, framesPerRow?: number): Promise<void>
 	clearSprite(spriteNumber: number)
 	offsetSprite(spriteNumber: number, x: number, y: number)
 	scaleSprite(spriteNumber: number, scaleX: number, scaleY: number)
