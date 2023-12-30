@@ -406,11 +406,11 @@ export class LamusStorage implements IFileSystem {
       }
 
       fileHandle.buffer[fileHandle.cursor] = buf;
+      fileHandle.cursor++;
       fileHandle.props.size = Math.max(
         fileHandle.props.size,
         fileHandle.cursor
       );
-      fileHandle.cursor++;
     } else {
       assertNever(fileHandle.mode);
       throw new Error("Unknown access mode");

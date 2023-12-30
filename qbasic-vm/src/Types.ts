@@ -19,6 +19,8 @@
     along with qbasic-vm.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { RuntimeError, RuntimeErrorCodes } from './VirtualMachine'
+
 export abstract class Type<T> {
 	name: string
 
@@ -92,6 +94,25 @@ export class IntegerType extends Type<number> {
 	}
 }
 
+export class LongType extends Type<number> {
+	constructor() {
+		super()
+
+		this.name = 'LONG'
+	}
+
+	private static TOTAL_LONG_SIZE = 4294967295
+	private static HALF_LONG_SIZE = 2147483647
+
+	public createInstance() {
+		return 0
+	}
+
+	public copy(value: number) {
+		return (Math.round(value + LongType.HALF_LONG_SIZE) & LongType.TOTAL_LONG_SIZE) - LongType.HALF_LONG_SIZE
+	}
+}
+
 export class SingleType extends Type<number> {
 	constructor() {
 		super()
@@ -156,7 +177,11 @@ export class AnyType extends Type<any> {
 	}
 }
 
-export class ScalarVariable<T> {
+export interface CopyableVariable<T> {
+	copy(source: T): void
+}
+
+export class ScalarVariable<T> implements CopyableVariable<T> {
 	type: Type<T>
 	value: any
 
@@ -165,8 +190,8 @@ export class ScalarVariable<T> {
 		this.value = value
 	}
 
-	public copy() {
-		return new ScalarVariable(this.type, this.type.copy(this.value))
+	public copy(source: T): void {
+		this.value = this.type.copy(source)
 	}
 }
 
@@ -236,7 +261,7 @@ export class Dimension {
 	}
 }
 
-export class ArrayVariable<T extends SomeScalarType> {
+export class ArrayVariable<T extends SomeScalarType> implements CopyableVariable<ArrayVariable<any>> {
 	type: T
 	dimensions: Dimension[]
 	values: ScalarVariable<T>[]
@@ -257,7 +282,11 @@ export class ArrayVariable<T extends SomeScalarType> {
 		}
 	}
 
-	public reference(otherArray: ArrayVariable<any>): void {
+	public copy(otherArray: ArrayVariable<any>): void {
+		if (!(otherArray instanceof ArrayVariable)) {
+			throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Cannot assign this value to an array')
+		}
+
 		this.type = otherArray.type
 		this.dimensions = otherArray.dimensions
 		this.values = otherArray.values
@@ -304,8 +333,8 @@ export class ArrayVariable<T extends SomeScalarType> {
 	}
 }
 
-export function IsNumericType(type: SomeType): type is IntegerType | SingleType | DoubleType {
-	return type.name === 'INTEGER' || type.name === 'SINGLE' || type.name === 'DOUBLE'
+export function IsNumericType(type: SomeType): type is IntegerType | LongType | SingleType | DoubleType {
+	return type.name === 'INTEGER' || type.name === 'LONG' || type.name === 'SINGLE' || type.name === 'DOUBLE'
 }
 
 export function IsStringType(type: SomeType): type is StringType {

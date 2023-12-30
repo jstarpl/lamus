@@ -395,6 +395,7 @@ export class CodeGenerator implements IVisitor {
 		let endLabel = this.newLabel('end_for')
 		this.loopStack.push(new LoopContext(node.identifier, forLabel, nextLabel, endLabel))
 		node.startExpr.accept(this)
+		this.write('NEW', 'SINGLE', node.locus)
 		this.write('POPVAR', node.identifier, node.locus)
 		node.endExpr.accept(this)
 		node.stepExpr.accept(this)

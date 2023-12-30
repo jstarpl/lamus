@@ -166,7 +166,7 @@ export class Sprite {
 	update() {
 		if (this._animating) {
 			this._skip++
-			if (this._skip < this._speed) {
+			if (this._speed > 0 && this._skip < this._speed) {
 				// wait at _skip-times until actually animating this sprite
 				return
 			} else {
@@ -204,7 +204,7 @@ export class Sprite {
 					this._animating = false
 				}
 			}
-			if (oldFrame === this._curFrame) this._animating = false
+			if (oldFrame === this._curFrame || this._speed <= 0) this._animating = false
 			this.bkgReposition()
 		}
 	}

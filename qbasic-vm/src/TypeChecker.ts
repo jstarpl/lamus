@@ -65,6 +65,7 @@ import {
 	IsUserType,
 	SomeScalarType,
 	JSONType,
+	LongType,
 } from './Types'
 import { IVisitor } from './IVisitor'
 import { sprintf, getDebugConsole as dbg } from './DebugConsole'
@@ -114,6 +115,7 @@ export class TypeChecker implements IVisitor {
 	}
 	types: {
 		INTEGER: IntegerType
+		LONG: IntegerType
 		SINGLE: SingleType
 		DOUBLE: DoubleType
 		STRING: StringType
@@ -138,6 +140,7 @@ export class TypeChecker implements IVisitor {
 
 		this.types = {
 			INTEGER: new IntegerType(),
+			LONG: new LongType(),
 			SINGLE: new SingleType(),
 			DOUBLE: new DoubleType(),
 			STRING: new StringType(),
@@ -517,7 +520,6 @@ export class TypeChecker implements IVisitor {
 			this.error(loop, 'Loop counter must be a number')
 		}
 
-		loop.startExpr.wantRef = true
 		loop.startExpr.accept(this)
 		loop.endExpr.accept(this)
 		loop.stepExpr.accept(this)

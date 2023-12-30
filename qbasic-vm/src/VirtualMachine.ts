@@ -37,6 +37,7 @@ import {
 	IsNumericType,
 	IsStringType,
 	IntegerType,
+	CopyableVariable,
 } from './Types'
 import { IConsole, STRUCTURED_INPUT_MATCH } from './IConsole'
 import { IAudioDevice } from './IAudioDevice'
@@ -331,13 +332,14 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	 Runs some instructions during asynchronous mode.
 	*/
 	public runSome(): void {
-		const startTime = Date.now()
+		void this.MAX_RUN_SOME_BUDGET
+		// const startTime = Date.now()
 		try {
 			for (
 				let i = 0;
 				i < this.instructionsPerInterval &&
 				this.pc < this.instructions.length &&
-				Date.now() - startTime < this.MAX_RUN_SOME_BUDGET &&
+				// Date.now() - startTime < this.MAX_RUN_SOME_BUDGET &&
 				!this.suspended;
 				i++
 			) {
@@ -364,6 +366,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 			if (DEBUG) {
 				this.trace.printf('Execute [%s] %s\n', this.pc - 1, instr)
 			}
+			debugger
 			instr.instr.execute(this, instr.arg)
 		} catch (e) {
 			if (e instanceof RuntimeError) {
@@ -1189,7 +1192,10 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking EOF: ${error}`)
+						vm.emit(
+							'error',
+							new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking if file exists: ${error}`)
+						)
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
@@ -1219,7 +1225,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking EOF: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking EOF: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
@@ -1249,7 +1255,10 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while checking LOC: ${error}`)
+						vm.emit(
+							'error',
+							new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while getting file handle cursor position: ${error}`)
+						)
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `File System not available`)
@@ -1619,7 +1628,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while hashing: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while hashing: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1645,7 +1654,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while hashing: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while hashing: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1677,7 +1686,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error when trying to sign data: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error when trying to sign data: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1709,7 +1718,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while verifying signature: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while verifying signature: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1735,7 +1744,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1761,7 +1770,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1787,7 +1796,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1813,7 +1822,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1840,7 +1849,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while encrypting: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while encrypting: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1867,7 +1876,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while decrypting: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while decrypting: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1893,7 +1902,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1919,7 +1928,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1946,7 +1955,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1972,7 +1981,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while exporting key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -1998,7 +2007,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 						vm.resume()
 					})
 					.catch((error) => {
-						throw new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Error while importing key: ${error}`))
 					})
 			} else {
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, `Cryptography not available`)
@@ -2136,7 +2145,10 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 					.then(() => {
 						vm.resume()
 					})
-					.catch((e) => console.error(e))
+					.catch((e) => {
+						console.error(e)
+						vm.emit('error', new RuntimeError(RuntimeErrorCodes.IO_ERROR, `Could not play music`))
+					})
 			}
 		},
 	},
@@ -2827,7 +2839,11 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	/**
 	 * Set the image as a sprite.
 	 *
-	 * SPRITE_NO%, IMAGE% [, FRAME_COUNT% [, FRAMES_PER_ROW%]]
+	 * ```
+	 * SPRITE_NO%, IMAGE_HANDLE% [, FRAME_COUNT% [, FRAMES_PER_ROW%]]
+	 * ```
+	 *
+	 * @group graphics
 	 */
 	SPSET: {
 		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
@@ -4019,6 +4035,8 @@ export const Instructions: InstructionDefinition = {
 			const step = vm.stack[vm.stack.length - 2]
 			const end = vm.stack[vm.stack.length - 3]
 
+			debugger
+
 			if ((step < 0 && counter < end) || (step > 0 && counter > end)) {
 				vm.stack.length -= 3
 				vm.pc = arg
@@ -4484,15 +4502,10 @@ export const Instructions: InstructionDefinition = {
 			// Stack: left hand side: variable reference
 			// right hand side: value to assign.
 
-			const lhs = vm.stack.pop()
+			const lhs = vm.stack.pop() as CopyableVariable<any>
 			const rhs = vm.stack.pop()
 
-			if (lhs instanceof ArrayVariable && rhs instanceof ArrayVariable) {
-				lhs.reference(rhs)
-				return
-			}
-
-			lhs.value = lhs.type.copy(rhs)
+			lhs.copy(rhs)
 		},
 	},
 

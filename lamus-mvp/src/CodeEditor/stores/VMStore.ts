@@ -216,7 +216,7 @@ export class VMStoreClass {
     if (program.errors.length > 0) {
       this.parsingErrors.replace(
         program.errors.map((error) => ({
-          message: error.message,
+          message: error.message ?? error,
           line: error.locus?.line,
           column: error.locus?.position,
         }))
