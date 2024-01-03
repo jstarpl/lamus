@@ -221,7 +221,7 @@ export interface IUserTypeMembers {
 	[key: string]: SomeScalarType
 }
 
-export class UserType extends Type<object> {
+export class UserType extends Type<Record<string, ScalarVariable<any>>> {
 	members: IUserTypeMembers
 
 	constructor(name: string, members: IUserTypeMembers) {
@@ -232,7 +232,7 @@ export class UserType extends Type<object> {
 	}
 
 	public createInstance() {
-		let user = {}
+		let user: Record<string, ScalarVariable<any>> = {}
 
 		for (let name in this.members) {
 			user[name] = new ScalarVariable<any>(this.members[name], this.members[name].createInstance())
@@ -241,10 +241,10 @@ export class UserType extends Type<object> {
 		return user
 	}
 
-	public copy(value) {
-		let newValue = {}
+	public copy(value: Record<string, ScalarVariable<any>>) {
+		let newValue: Record<string, ScalarVariable<any>> = this.createInstance()
 		for (let key in value) {
-			newValue[key] = value[key].copy()
+			newValue[key].copy(value[key].value)
 		}
 
 		return newValue
