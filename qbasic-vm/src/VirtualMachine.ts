@@ -332,14 +332,13 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	 Runs some instructions during asynchronous mode.
 	*/
 	public runSome(): void {
-		void this.MAX_RUN_SOME_BUDGET
-		// const startTime = Date.now()
+		const startTime = Date.now()
 		try {
 			for (
 				let i = 0;
 				i < this.instructionsPerInterval &&
 				this.pc < this.instructions.length &&
-				// Date.now() - startTime < this.MAX_RUN_SOME_BUDGET &&
+				Date.now() - startTime < this.MAX_RUN_SOME_BUDGET &&
 				!this.suspended;
 				i++
 			) {
@@ -366,7 +365,6 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 			if (DEBUG) {
 				this.trace.printf('Execute [%s] %s\n', this.pc - 1, instr)
 			}
-			debugger
 			instr.instr.execute(this, instr.arg)
 		} catch (e) {
 			if (e instanceof RuntimeError) {
@@ -886,7 +884,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 	},
 
 	SQR: {
-		type: 'DOUBLE',
+		type: 'SINGLE',
 		args: ['ANY'],
 		minArgs: 1,
 		action: function (vm) {
@@ -4034,8 +4032,6 @@ export const Instructions: InstructionDefinition = {
 			const counter = vm.stack[vm.stack.length - 1]
 			const step = vm.stack[vm.stack.length - 2]
 			const end = vm.stack[vm.stack.length - 3]
-
-			debugger
 
 			if ((step < 0 && counter < end) || (step > 0 && counter > end)) {
 				vm.stack.length -= 3

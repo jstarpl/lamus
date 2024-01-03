@@ -129,7 +129,7 @@ export class TypeChecker implements IVisitor {
 
 	constructor(errors: IError[]) {
 		// map from name to AstDeclare
-		this.declaredSubs._main = new AstDeclareFunction(new Locus(0, 0), '_main', [], false)
+		this.declaredSubs._main = new AstDeclareFunction(new Locus(0, 0), '_main', [], false, null)
 
 		this.errors = errors
 		this.scopes = [new TypeScope()]
@@ -242,7 +242,16 @@ export class TypeChecker implements IVisitor {
 		this.declaredSubs[declare.name] = declare
 		declare.args.accept(this)
 		if (declare.isFunction) {
-			declare.type = this.getTypeFromVariableName(declare.name)
+			if (declare.typeName) {
+				declare.type = this.types[declare.typeName]
+				if (declare.type === undefined) {
+					this.error(declare, "Type '%s' is not defined", declare.typeName)
+				}
+			}
+
+			if (!declare.type) {
+				declare.type = this.getTypeFromVariableName(declare.name)
+			}
 		}
 	}
 

@@ -101,15 +101,17 @@ export class AstDeclareFunction implements AstStatement {
 	name: string
 	args: AstArgument[]
 	isFunction: boolean
+	typeName: string | null
 	type: SomeType
 	hasBody: boolean
 	used: boolean
 
-	constructor(locus: ILocus, name: string, args: AstArgument[], isFunction?: boolean) {
+	constructor(locus: ILocus, name: string, args: AstArgument[], isFunction: boolean, typeName: string | null) {
 		this.locus = locus
 		this.name = name
 		this.args = args // array of AstArgument
 		this.isFunction = isFunction || false
+		this.typeName = typeName || null // possibly null
 		this.hasBody = false // Set to true during type checking
 		// if sub is later implemented.
 		this.used = false
@@ -929,11 +931,11 @@ export class QBasicProgram {
 			rules.addRule("istatement: CONST identifier '=' expr", function (args, locus) {
 				return new AstConstStatement(locus, args[1], args[3])
 			})
-			rules.addRule('istatement: DECLARE FUNCTION identifier ArgList', function (args, locus) {
-				return new AstDeclareFunction(locus, args[2], args[3], true)
+			rules.addRule('istatement: DECLARE FUNCTION identifier ArgList AsType?', function (args, locus) {
+				return new AstDeclareFunction(locus, args[2], args[3], true, args[4])
 			})
 			rules.addRule('istatement: DECLARE SUB identifier ArgList', function (args, locus) {
-				return new AstDeclareFunction(locus, args[2], args[3], false)
+				return new AstDeclareFunction(locus, args[2], args[3], false, null)
 			})
 			rules.addRule('istatement: SUB identifier ArgList STATIC? statements END SUB', function (args, locus) {
 				return new AstSubroutine(locus, args[1], args[2], args[4], false, args[3] !== null)
@@ -1085,7 +1087,6 @@ export class QBasicProgram {
 				return new AstWriteStatement(locus, args[1], args[3])
 			})
 			rules.addRule("istatement: WRITE FileItem? ',' Reference", function (args, locus) {
-				debugger
 				return new AstWriteStatement(locus, args[1], [args[3]])
 			})
 			rules.addRule('istatement: WRITE PrintItems', function (args, locus) {
