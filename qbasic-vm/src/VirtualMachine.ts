@@ -591,6 +591,70 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	/**
+	 * Get the lower bound of a dimension of an array. First dimension is default.
+	 *
+	 * ```
+	 * ARRAY [, DIMENSION]
+	 * ```
+	 *
+	 * @group arrays
+	 */
+	LBOUND: {
+		type: 'INTEGER',
+		args: ['ANY', 'INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const numArgs = vm.stack.pop()
+			let dimensionIdx = 0
+			if (numArgs > 1) {
+				dimensionIdx = vm.stack.pop() - 1
+			}
+			const variable = vm.stack.pop()
+			if (!(variable instanceof ArrayVariable)) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Invalid argument for LEN')
+			}
+
+			const dimension = variable.dimensions[dimensionIdx]
+			if (!dimension) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `Argument out of bounds`)
+			}
+			vm.stack.push(dimension.lower)
+		},
+	},
+
+	/**
+	 * Get the upper bound of a dimension of an array. First dimension is default.
+	 *
+	 * ```
+	 * ARRAY [, DIMENSION]
+	 * ```
+	 *
+	 * @group arrays
+	 */
+	UBOUND: {
+		type: 'INTEGER',
+		args: ['ANY', 'INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const numArgs = vm.stack.pop()
+			let dimensionIdx = 0
+			if (numArgs > 1) {
+				dimensionIdx = vm.stack.pop() - 1
+			}
+			const variable = vm.stack.pop()
+			if (!(variable instanceof ArrayVariable)) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Invalid argument for LEN')
+			}
+
+			const dimension = variable.dimensions[dimensionIdx]
+			if (!dimension) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `Argument out of bounds`)
+			}
+			vm.stack.push(dimension.upper)
+		},
+	},
+
 	MID$: {
 		type: 'STRING',
 		args: ['STRING', 'INTEGER', 'INTEGER'],
@@ -3862,6 +3926,152 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.status = -1
 				throw new RuntimeError(RuntimeErrorCodes.UKNOWN_SYSCALL, 'General IO not available')
 			}
+		},
+	},
+
+	/**
+	 * Push a new item to the end of a single-dimensional array. Modifies the range end of the array.
+	 *
+	 * ```
+	 * ARRAY, ITEM
+	 * ```
+	 *
+	 * @group arrays
+	 */
+	PUSH: {
+		args: ['ANY', 'ANY'],
+		action: function (vm) {
+			const item = vm.stack.pop()
+			const array = vm.stack.pop()
+
+			if (!(array instanceof ArrayVariable) || array.dimensions.length !== 1) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `First argument must be a single-dimensional array`)
+			}
+			if (!(item instanceof ScalarVariable) || item.type !== array.type) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					`Second argument must match the type of the array, ${array.type.name}`
+				)
+			}
+
+			array.dimensions[0].upper = array.dimensions[0].upper + 1
+			array.values.push(item)
+		},
+	},
+
+	/**
+	 * Push a new item to the begining of a single-dimensional array. Modifies the range end of the array; re-indexes elements inside forward.
+	 *
+	 * ```
+	 * ARRAY, ITEM
+	 * ```
+	 *
+	 * @group arrays
+	 */
+	UNSHIFT: {
+		args: ['ANY', 'ANY'],
+		action: function (vm) {
+			const item = vm.stack.pop()
+			const array = vm.stack.pop()
+
+			if (!(array instanceof ArrayVariable) || array.dimensions.length !== 1) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `First argument must be a single-dimensional array`)
+			}
+			if (!(item instanceof ScalarVariable) || item.type !== array.type) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					`Second argument must match the type of the array, ${array.type.name}`
+				)
+			}
+
+			array.dimensions[0].upper = array.dimensions[0].upper + 1
+			array.values.unshift(item)
+		},
+	},
+
+	/**
+	 * Removes an item from the end of a single-dimensional array. Modifies the range end of the array.
+	 * If the array is empty, `ITEM` is not modified and ST is set to `-1`
+	 *
+	 * ```
+	 * ARRAY, OUT ITEM
+	 * ```
+	 *
+	 * @group arrays
+	 */
+	POP: {
+		args: ['ANY', 'ANY'],
+		action: function (vm) {
+			const item = vm.stack.pop()
+			const array = vm.stack.pop()
+
+			if (!(array instanceof ArrayVariable) || array.dimensions.length !== 1) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `First argument must be a single-dimensional array`)
+			}
+			if (!(item instanceof ScalarVariable) || item.type !== array.type) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					`Second argument must match the type of the array, ${array.type.name}`
+				)
+			}
+
+			if (array.values.length === 0) {
+				vm.status = -1
+				return
+			}
+
+			array.dimensions[0].upper = array.dimensions[0].upper - 1
+			const poppedItem = array.values.pop()
+			if (poppedItem === undefined) {
+				vm.status = -1
+				return
+			}
+
+			vm.status = 0
+			item.copy(poppedItem.value)
+		},
+	},
+
+	/**
+	 * Removes an item from the begining of a single-dimensional array. Modifies the range end of the array; re-indexes elements inside backwards.
+	 * If the array is empty, `ITEM` is not modified and ST is set to `-1`
+	 *
+	 * ```
+	 * ARRAY, OUT ITEM
+	 * ```
+	 *
+	 * @group arrays
+	 */
+	SHIFT: {
+		args: ['ANY', 'ANY'],
+		action: function (vm) {
+			const item = vm.stack.pop()
+			const array = vm.stack.pop()
+
+			if (!(array instanceof ArrayVariable) || array.dimensions.length !== 1) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `First argument must be a single-dimensional array`)
+			}
+			if (!(item instanceof ScalarVariable) || item.type !== array.type) {
+				throw new RuntimeError(
+					RuntimeErrorCodes.INVALID_ARGUMENT,
+					`Second argument must match the type of the array, ${array.type.name}`
+				)
+			}
+
+			if (array.values.length === 0) {
+				vm.status = -1
+				return
+			}
+
+			array.dimensions[0].upper = array.dimensions[0].upper - 1
+			const shiftedItem = array.values.shift()
+			if (shiftedItem === undefined) {
+				vm.status = -1
+				return
+			}
+
+			vm.status = 0
+			item.copy(shiftedItem.value)
 		},
 	},
 
