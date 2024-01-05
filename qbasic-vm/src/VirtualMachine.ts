@@ -3085,6 +3085,9 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			} else {
 				imgData = vm.cons.get()
 			}
+			if (target.type.name !== 'INTEGER')
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Target Array needs to be ARRAY OF INTEGER')
+
 			target.resize([new Dimension(1, imgData.length)])
 			for (let i = 0; i < imgData.length; i++) {
 				target.assign([i + 1], new ScalarVariable<number>(vm.types['INTEGER'] as IntegerType, imgData[i]))

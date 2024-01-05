@@ -1,10 +1,12 @@
 import { GeneralIORouter } from "@lamus/qbasic-vm";
 import { ShowModalDialogFunction } from "../../../helpers/useModalDialog";
 import type { Lambda } from "mobx";
+import type { VMStoreClass } from "../../stores/VMStore";
 
 export default function setup(
   generalIORouter: GeneralIORouter,
-  showModalDialog: ShowModalDialogFunction
+  showModalDialog: ShowModalDialogFunction,
+  vmStore: VMStoreClass
 ) {
   let isDestroyed = false;
   const allDestructors: Lambda[] = [];
@@ -33,6 +35,11 @@ export default function setup(
     .catch(handleImportError);
   import("./OAuth2")
     .then((oauth2) => handleImport(() => oauth2.default(generalIORouter)))
+    .catch(handleImportError);
+  import("./PowerSaving")
+    .then((powerSaving) =>
+      handleImport(() => powerSaving.default(generalIORouter, vmStore))
+    )
     .catch(handleImportError);
 
   return () => {

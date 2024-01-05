@@ -1,10 +1,9 @@
-import { GeneralIORouter, InOutRequest } from "@lamus/qbasic-vm";
-import {
+import type { GeneralIORouter, InOutRequest } from "@lamus/qbasic-vm";
+import type {
   ShowModalDialogFunction,
-  DialogButtons,
-  DialogType,
   IDialogChoice,
 } from "../../../helpers/useModalDialog";
+import { DialogButtons, DialogType } from "../../../helpers/useModalDialog";
 
 export default function setup(
   router: GeneralIORouter,

@@ -1,4 +1,4 @@
-import { GeneralIORouter } from "@lamus/qbasic-vm";
+import type { GeneralIORouter } from "@lamus/qbasic-vm";
 import {
   Client,
   IBLEConnection,

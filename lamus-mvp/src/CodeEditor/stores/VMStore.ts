@@ -41,6 +41,7 @@ const SHORTER_SCREEN_SIDE_LENGTH = 320;
 export class VMStoreClass {
   code: string = "";
   runState: VMRunState = VMRunState.IDLE;
+  _powerSavingSuspend: boolean = false;
   outputOrientation: VMOutputOrientation = VMOutputOrientation.PORTRAIT;
   parsingErrors = observable.array<IError>([]);
   runtimeErrors = observable.array<IError>([]);
@@ -51,14 +52,16 @@ export class VMStoreClass {
   _program: QBasicProgram | null = null;
   _destructors: (() => void)[] = [];
   _audio: AudioDevice;
+  _generalIORouter: GeneralIORouter;
   _soundEffects: HTMLAudioElement[];
   _cwd: string = "";
+  _powerSaving: boolean = true;
 
   constructor(
     viewParent: HTMLElement,
     soundEffects: HTMLAudioElement[],
     defaultStorageProviderId: ProviderId,
-    showModalDialog: ShowModalDialogFunction
+    public _showModalDialog: ShowModalDialogFunction
   ) {
     makeAutoObservable(
       this,
@@ -69,6 +72,10 @@ export class VMStoreClass {
         _program: false,
         _destructors: false,
         _cwd: false,
+        _audio: false,
+        _generalIORouter: false,
+        _soundEffects: false,
+        _showModalDialog: false,
       },
       {
         autoBind: true,
@@ -105,8 +112,6 @@ export class VMStoreClass {
       gamepads
     );
 
-    this._destructors.push(setupGeneralIO(generalIORouter, showModalDialog));
-
     setTimeout(() => {
       cons.print("\nREADY.");
     }, 1000);
@@ -118,11 +123,32 @@ export class VMStoreClass {
     cons.addEventListener("input", this._onInput);
     cons.addEventListener("orientationchange", this._onOrientationChange);
     cons.addEventListener("resize", this._onResize);
+    document.addEventListener("visibilitychange", this._onVisibilityChange);
 
     this._vm = vm;
     this._console = cons;
     this._audio = audio;
-    this._setupAudio();
+    this._generalIORouter = generalIORouter;
+    this._setupPlatform();
+  }
+
+  _onVisibilityChange() {
+    if (
+      document.visibilityState === "hidden" &&
+      this._powerSaving &&
+      this.runState === VMRunState.RUNNING
+    ) {
+      console.log(`😴 Power Saving enabled, VM going to sleep`);
+      this.pause();
+      this._powerSavingSuspend = true;
+    } else if (
+      document.visibilityState === "visible" &&
+      this.runState === VMRunState.SUSPENDED &&
+      this._powerSavingSuspend === true
+    ) {
+      console.log(`😴 Power Saving enabled, VM resuming`);
+      this.resume();
+    }
   }
 
   _setRunState(newState: VMRunState) {
@@ -199,12 +225,19 @@ export class VMStoreClass {
 
   _setupPlatform() {
     this._setupAudio();
+    this._destructors.push(
+      setupGeneralIO(this._generalIORouter, this._showModalDialog, this)
+    );
   }
 
   _setupAudio() {
     Promise.all(
       this._soundEffects.map((effect) => this._audio.addBeep(effect))
     ).catch(console.error);
+  }
+
+  setPowerSaving(enabled: boolean) {
+    this._powerSaving = enabled ?? true;
   }
 
   setCode(code: string) {
@@ -223,6 +256,7 @@ export class VMStoreClass {
       );
       return;
     }
+
     this._vm.reset();
     this._program = program;
   }
@@ -233,6 +267,8 @@ export class VMStoreClass {
 
     this.runtimeErrors.replace([]);
     this.runState = VMRunState.RUNNING;
+    this._powerSaving = true;
+    this._powerSavingSuspend = false;
     const program = this._program;
     setTimeout(() => {
       this._vm.run(program, false);
@@ -242,7 +278,6 @@ export class VMStoreClass {
   pause() {
     if (this.runState === VMRunState.RUNNING) {
       this._vm.suspend();
-      console.log(this._vm);
       this.runState = VMRunState.SUSPENDED;
     }
   }
@@ -251,12 +286,15 @@ export class VMStoreClass {
     if (this.runState === VMRunState.SUSPENDED) {
       this._vm.resume();
       this.runState = VMRunState.RUNNING;
+      this._powerSavingSuspend = false;
     }
   }
 
   reset() {
     this._vm.reset();
     this.runState = VMRunState.STOPPED;
+    this._powerSaving = true;
+    this._powerSavingSuspend = false;
 
     setTimeout(() => {
       this._console.print("\nREADY.");
@@ -278,6 +316,7 @@ export class VMStoreClass {
 
     this._vm.reset();
     this._viewParent.replaceChildren();
+    document.removeEventListener("visibilitychange", this._onVisibilityChange);
 
     this._destructors.forEach((destructor) => destructor());
   }
