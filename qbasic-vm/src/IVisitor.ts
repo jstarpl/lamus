@@ -61,7 +61,8 @@ import {
 	AstOpenStatement,
 	AstCloseStatement,
 	AstWriteStatement,
-	AstOnEventStatement
+	AstOnEventStatement,
+	AstReDimStatement,
 } from './QBasic'
 
 export interface IVisitor {
@@ -92,6 +93,7 @@ export interface IVisitor {
 	visitConstStatement(constStatement: AstConstStatement): void
 	visitDefTypeStatement(def: AstDefTypeStatement): void
 	visitDimStatement(dim: AstDimStatement): void
+	visitReDimStatement(reDim: AstReDimStatement): void
 	visitDoStatement(loop: AstDoStatement): void
 	visitWhileLoop(loop: AstWhileLoop): void
 	visitIfStatement(ifStatement: AstIfStatement): void

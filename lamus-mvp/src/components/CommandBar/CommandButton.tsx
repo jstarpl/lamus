@@ -100,6 +100,14 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
       hasMeta,
     ]);
 
+    function onTouchStart(e: React.TouchEvent) {
+      e.preventDefault();
+    }
+
+    function onMouseDown(e: React.MouseEvent) {
+      e.preventDefault();
+    }
+
     if (!display) return null;
 
     return (
@@ -111,6 +119,8 @@ export const CommandButton: React.FC<React.PropsWithChildren<IProps>> =
       >
         <button
           onMouseUp={onClick}
+          onTouchStart={onTouchStart}
+          onMouseDown={onMouseDown}
           style={
             //@ts-ignore Setting CSS Variable
             position ? { "--command-button-position": position } : undefined

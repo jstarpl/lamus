@@ -64,6 +64,7 @@ import {
 	AstCloseStatement,
 	AstWriteStatement,
 	AstOnEventStatement,
+	AstReDimStatement,
 } from './QBasic'
 import './types/array.extensions'
 import { IsArrayType } from './Types'
@@ -557,6 +558,26 @@ export class CodeGenerator implements IVisitor {
 			this.write('SYSCALL', 'alloc_scalar', node.locus)
 			this.write('POPVAR', node.name, node.locus)
 		}
+	}
+
+	public visitReDimStatement(node: AstReDimStatement): void {
+		this.map(node.locus)
+
+		// for each range
+		for (let i = 0; i < node.ranges.length; i++) {
+			node.ranges[i].lowerExpr.accept(this)
+			node.ranges[i].upperExpr.accept(this)
+		}
+		// push number of ranges.
+		this.write('PUSHCONST', node.ranges.length, node.locus)
+		// push preserve flag.
+		this.write('PUSHCONST', node.preserve === true ? -1 : 0, node.locus)
+		// push reference to the array
+		this.write('PUSHREF', node.name, node.locus)
+		// syscall resize.
+		this.write('SYSCALL', 'resize_array', node.locus)
+		// pop it into the variable name.
+		this.write('POPVAR', node.name, node.locus)
 	}
 
 	public visitDoStatement(node: AstDoStatement) {

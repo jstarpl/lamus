@@ -3088,7 +3088,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			if (target.type.name !== 'INTEGER')
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Target Array needs to be ARRAY OF INTEGER')
 
-			target.resize([new Dimension(1, imgData.length)])
+			target.resize([new Dimension(1, imgData.length)], true)
 			for (let i = 0; i < imgData.length; i++) {
 				target.assign([i + 1], new ScalarVariable<number>(vm.types['INTEGER'] as IntegerType, imgData[i]))
 			}
@@ -3359,7 +3359,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			const obj = getArgValue(vm.stack.pop())
 
 			const resultArr = jsonPath.query(obj, path)
-			target.resize([new Dimension(1, resultArr.length)])
+			target.resize([new Dimension(1, resultArr.length)], true)
 			for (let i = 0; i < resultArr.length; i++) {
 				target.assign([i + 1], new ScalarVariable<object>(vm.types['JSON'] as JSONType, resultArr[i]))
 			}
@@ -3446,7 +3446,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 			const resultArr = source.split(delim)
 
-			target.resize([new Dimension(1, resultArr.length)])
+			target.resize([new Dimension(1, resultArr.length)], true)
 			for (let i = 0; i < resultArr.length; i++) {
 				target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'], resultArr[i]))
 			}
@@ -3885,7 +3885,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 				vm.fileSystem
 					.directory(specifier)
 					.then((files) => {
-						target.resize([new Dimension(1, files.length)])
+						target.resize([new Dimension(1, files.length)], true)
 						for (let i = 0; i < files.length; i++) {
 							target.assign([i + 1], new ScalarVariable<string>(vm.types['STRING'] as StringType, files[i]))
 						}
@@ -4826,6 +4826,19 @@ export const Instructions: InstructionDefinition = {
 				type = vm.stack.pop()
 				variable = new ScalarVariable(type, type.createInstance())
 				vm.stack.push(variable)
+			} else if (arg === 'resize_array') {
+				const array = vm.stack.pop() as ArrayVariable<any>
+				const preserve = !(vm.stack.pop() === 0)
+				const numDimensions = vm.stack.pop()
+				const dimensions: Dimension[] = []
+				for (i = 0; i < numDimensions; i++) {
+					const upper = vm.stack.pop()
+					const lower = vm.stack.pop()
+					dimensions.unshift(new Dimension(lower, upper))
+				}
+
+				array.resize(dimensions, preserve)
+				vm.stack.push(array)
 			} else if (SystemFunctions[arg]) {
 				SystemFunctions[arg].action(vm)
 			} else if (SystemSubroutines[arg]) {

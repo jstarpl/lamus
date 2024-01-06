@@ -416,6 +416,24 @@ export class AstDimStatement implements AstStatement {
 	}
 }
 
+export class AstReDimStatement implements AstStatement {
+	locus: ILocus
+	name: string
+	ranges: AstRange[]
+	preserve: boolean
+
+	constructor(locus: ILocus, name: string, ranges: AstRange[] | null, preserve: boolean | null) {
+		this.locus = locus
+		this.name = name
+		this.ranges = ranges ?? [] // list of AstRange
+		this.preserve = !!preserve // possibly null
+	}
+
+	public accept(visitor: IVisitor) {
+		visitor.visitReDimStatement(this)
+	}
+}
+
 export class AstDefTypeStatement implements AstStatement {
 	locus: ILocus
 	typeName: string | null
@@ -845,6 +863,7 @@ export class QBasicProgram {
 			rules.addToken('DEF', 'DEF')
 			rules.addToken('DEFINT', 'DEFINT')
 			rules.addToken('DIM', 'DIM')
+			rules.addToken('REDIM', 'REDIM')
 			rules.addToken('DO', 'DO')
 			rules.addToken('ELSE', 'ELSE')
 			rules.addToken('END', 'END')
@@ -879,6 +898,7 @@ export class QBasicProgram {
 			rules.addToken('SELECT', 'SELECT')
 			rules.addToken('SHARED', 'SHARED')
 			rules.addToken('STATIC', 'STATIC')
+			rules.addToken('PRESERVE', 'PRESERVE')
 			rules.addToken('STEP', 'STEP')
 			rules.addToken('SUB', 'SUB')
 			rules.addToken('TAB', 'TAB')
@@ -962,6 +982,9 @@ export class QBasicProgram {
 					args[2][i].shared = true
 				}
 				return args[2]
+			})
+			rules.addRule("istatement: REDIM PRESERVE? identifier '\\(' RangeList '\\)'", function (args, locus) {
+				return new AstReDimStatement(locus, args[2], args[4], args[1])
 			})
 			rules.addRule('istatement: WHILE expr separator statements WEND', function (args, locus) {
 				return new AstWhileLoop(locus, args[1], args[3])

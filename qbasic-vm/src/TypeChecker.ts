@@ -46,6 +46,7 @@ import {
 	AstCaseStatement,
 	AstGotoStatement,
 	AstGosubStatement,
+	AstReDimStatement,
 } from './QBasic'
 import {
 	IntegerType,
@@ -741,6 +742,16 @@ export class TypeChecker implements IVisitor {
 			this.shared.names[dim.name] = type
 		} else {
 			this.scopes[0].names[dim.name] = type
+		}
+	}
+
+	public visitReDimStatement(reDim: AstReDimStatement): void {
+		for (let i = 0; i < reDim.ranges.length; i++) {
+			reDim.ranges[i].accept(this)
+		}
+
+		if (this.scopes[0].names[reDim.name] === undefined && this.shared.names[reDim.name] === undefined) {
+			this.error(reDim, "Variable '%s' is not defined", reDim.name)
 		}
 	}
 

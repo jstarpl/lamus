@@ -316,19 +316,37 @@ export class ArrayVariable<T extends SomeScalarType> implements CopyableVariable
 		return this.values[index]
 	}
 
-	public resize(dimensions: Dimension[]) {
-		this.dimensions = dimensions
-		const oldValues = this.values
-		this.values = []
-		let totalSize = 1
+	public resize(dimensions: Dimension[], preserve: boolean) {
+		let oldTotalSize = 1
 		let i
+
+		for (i = 0; i < this.dimensions.length; i++) {
+			oldTotalSize *= this.dimensions[i].upper - this.dimensions[i].lower + 1
+		}
+
+		this.dimensions = dimensions
+		// const oldValues = this.values
+		// this.values = []
+		let totalSize = 1
 
 		for (i = 0; i < this.dimensions.length; i++) {
 			totalSize *= this.dimensions[i].upper - this.dimensions[i].lower + 1
 		}
 
-		for (i = 0; i < totalSize; i++) {
-			this.values.push(oldValues[i] || new ScalarVariable<any>(this.type, this.type.createInstance()))
+		if (!preserve) {
+			this.values.length = 0
+			for (i = 0; i < totalSize; i++) {
+				this.values.push(new ScalarVariable<any>(this.type, this.type.createInstance()))
+			}
+			return
+		}
+
+		const diff = totalSize - oldTotalSize
+
+		if (diff < 0) this.values.length = Math.max(0, totalSize)
+
+		for (i = 0; i < diff; i++) {
+			this.values.push(new ScalarVariable<any>(this.type, this.type.createInstance()))
 		}
 	}
 }
