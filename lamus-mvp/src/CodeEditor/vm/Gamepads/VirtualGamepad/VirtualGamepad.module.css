@@ -105,7 +105,7 @@
   color: var(--button-color);
 }
 
-@media screen and (max-width: 320px) and (orientation: portrait) {
+@media screen and (width < 320px) and (orientation: portrait) {
   .virtualGamepad :global {
     --button-size: 2em;
     grid-template-columns: [joystick-area] 5em auto [buttons] 5em;
@@ -115,7 +115,7 @@
   }
 }
 
-@media screen and ((max-width: 750px) or (max-height: 500px)) and (orientation: landscape) {
+@media screen and ((width < 450px) or (height < 350px)) and (orientation: landscape) {
   .virtualGamepad :global {
     --button-size: 1.8em;
     grid-template-columns: [joystick-area] 4em auto [buttons] 4em;
