@@ -3454,7 +3454,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	},
 
 	FETCH: {
-		// URL$, OUT RESPONSE_CODE%, OUT DATA$ [, METHOD$ [[, HEADERS$()] | [, AUTHORIZATION] [[, BODY$] | [, OPTIONS, BODY$] | [, OPTIONS]]]]
+		// URL$, OUT RESPONSE_CODE%, OUT DATA$ [, METHOD$ [[, HEADERS$()] | [, AUTHORIZATION] [[, BODY$] | [, OPTIONS, BODY$] | [, BODY] | [, OPTIONS, BODY] | [, OPTIONS]]]]
 		args: ['STRING', 'INTEGER', 'STRING', 'STRING', 'ANY', 'ANY', 'ANY'],
 		minArgs: 3,
 		action: function (vm) {
@@ -3462,7 +3462,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 			let headers: Record<string, string> | undefined
 			let method = 'GET'
-			let body: string | undefined = undefined
+			let body: string | object | undefined = undefined
 			let options = 0
 			let cache: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload' | undefined =
 				undefined
@@ -3542,6 +3542,14 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			const outData = vm.stack.pop()
 			const outResCode = vm.stack.pop()
 			const url = getArgValue(vm.stack.pop())
+
+			if (typeof body === 'object') {
+				body = JSON.stringify(body)
+				if (headers === undefined || (!headers['content-type'] && !headers['Content-Type'])) {
+					headers = headers || {}
+					headers['Content-Type'] = 'application/json'
+				}
+			}
 
 			if (vm.networkAdapter) {
 				vm.suspend()
