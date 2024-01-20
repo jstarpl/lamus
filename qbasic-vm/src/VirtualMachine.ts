@@ -875,6 +875,23 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	BIN$: {
+		type: 'STRING',
+		args: ['SINGLE', 'INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const numArgs = vm.stack.pop()
+			let pad = 0
+			if (numArgs > 1) {
+				pad = vm.stack.pop()
+			}
+
+			const num = vm.stack.pop()
+			const result = Number(num).toString(2)
+			vm.stack.push('0000000000000000000000000000000000000000000000000000'.substr(0, pad - result.length) + result)
+		},
+	},
+
 	SPACE$: {
 		type: 'STRING',
 		args: ['INTEGER'],
