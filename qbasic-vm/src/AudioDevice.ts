@@ -332,6 +332,8 @@ export class AudioDevice implements IAudioDevice {
 			9: ['triangle', 0, 0.6, 0, 0, 0],
 			// Electric piano
 			10: ['sine', 0.1, 2, 0, 0.1, 0],
+			// Lazer
+			11: ['sineRing', 0.5, 0, 1, 0.5, 18],
 		}
 	}
 	private generateNoiseBuffer() {
@@ -375,6 +377,9 @@ export class AudioDevice implements IAudioDevice {
 				break
 			case 'square':
 				this.createPulseOscillator(amp, noteNumber, start, duration, release, pulseWidth)
+				break
+			case 'sineRing':
+				this.createRingSineOscillator(amp, noteNumber, start, duration, release, pulseWidth)
 				break
 			default:
 				this.createBasicOscillator(amp, 'sine', noteNumber, start, duration, release)
@@ -455,6 +460,33 @@ export class AudioDevice implements IAudioDevice {
 		whiteNoise.detune.setValueAtTime(240 * (noteNumber - 70), t0)
 
 		whiteNoise.connect(output)
+	}
+	private createRingSineOscillator(
+		output: AudioNode,
+		noteNumber: number,
+		start: number,
+		duration: number,
+		release: number,
+		pulseWidth: number
+	) {
+		const t0 = start
+		const t1 = t0 + duration
+		const t2 = t1 + release
+
+		const modulator = this.audioContext.createGain()
+		this.createBasicOscillator(modulator, 'sawtooth', noteNumber, start, duration, release)
+
+		const modulation = this.audioContext.createOscillator()
+		modulation.type = 'sine'
+		modulation.frequency.value = pulseWidth
+
+		modulation.start(t0)
+		modulation.stop(t2)
+
+		modulator.gain.value = -1
+		modulation.connect(modulator.gain)
+
+		modulator.connect(output)
 	}
 	private createBasicOscillator(
 		output: AudioNode,
