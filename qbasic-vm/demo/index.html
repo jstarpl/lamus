@@ -13,24 +13,12 @@
 
 		<script type="text/javascript">
 			const qb = window['qbasic-vm']
-			const cons = new qb.Console(
-				document.getElementById('main'),
-				undefined,
-				320,
-				600,
-				''
-			)
+			const cons = new qb.Console(document.getElementById('main'), undefined, 320, 600, '')
 			const audio = new qb.AudioDevice()
 			const network = new qb.NetworkAdapter()
 			const fileSystem = new qb.LocalStorageFileSystem()
 			const generalIORouter = new qb.GeneralIORouter()
-			const virtualMachine = new qb.VirtualMachine(
-				cons,
-				audio,
-				network,
-				fileSystem,
-				generalIORouter
-			)
+			const virtualMachine = new qb.VirtualMachine(cons, audio, network, fileSystem, generalIORouter)
 			const dbg = new qb.DebugConsole(document.getElementById('debug'))
 			document.getElementById('poke').addEventListener('click', () => {
 				generalIORouter.emit('/poke', 'Random Data From JavaScript: ' + Math.random() * 1000)
@@ -41,45 +29,48 @@
 			})
 			generalIORouter.insertRoute('/peek/**', (req) => {
 				console.log(req)
-				return Promise((resolve) => resolve('Reading from a resolved promise /peek/someEndpoint, time is: ' + new Date().toTimeString()))
+				return Promise((resolve) =>
+					resolve('Reading from a resolved promise /peek/someEndpoint, time is: ' + new Date().toTimeString())
+				)
 			})
 
 			function startProgram(fileName) {
 				fetch(fileName)
-				.then(resp => {
-					if (resp.ok) return resp.text()
-					throw new Error(resp.status, resp.statusText)
-				})
-				.then(code => {
-					virtualMachine.reset()
-					network.reset()
-					const program = new qb.QBasicProgram(code)
-					if (program.errors.length === 0) {
-						const path = fileName.split(fileSystem.pathSeparator);
-						if (path.length > 1) {
-							path.pop();
-							virtualMachine.cwd = path.join(fileSystem.pathSeparator) + fileSystem.pathSeparator;
-						} else {
-							virtualMachine.cwd = fileSystem.pathSeparator;
-						}
-
-						virtualMachine.run(program, false)
-						virtualMachine.on('error', error => {
-							dbg.print('Runtime error: ' + error + ' at ' + error.locus + '\n')
-						})
-					} else {
+					.then((resp) => {
+						if (resp.ok) return resp.text()
+						throw new Error(resp.status, resp.statusText)
+					})
+					.then((code) => {
 						virtualMachine.reset()
 						network.reset()
-						for (let i = 0; i < program.errors.length; i++) {
-							dbg.print(program.errors[i].message + '\n')
+						const program = new qb.QBasicProgram(code)
+						if (program.errors.length === 0) {
+							const path = fileName.split(fileSystem.pathSeparator)
+							if (path.length > 1) {
+								path.pop()
+								virtualMachine.cwd = path.join(fileSystem.pathSeparator) + fileSystem.pathSeparator
+							} else {
+								virtualMachine.cwd = fileSystem.pathSeparator
+							}
+
+							virtualMachine.run(program, false)
+							virtualMachine.on('error', (error) => {
+								dbg.print('Runtime error: ' + error + ' at ' + error.locus + '\n')
+							})
+						} else {
+							virtualMachine.reset()
+							network.reset()
+							for (let i = 0; i < program.errors.length; i++) {
+								dbg.print(program.errors[i].message + '\n')
+							}
+							cons.enableCursor(true)
 						}
-						cons.enableCursor(true)
-					}
-				})
-				.catch(e => console.error(e))
+					})
+					.catch((e) => console.error(e))
 			}
 
 			const demoPrgs = [
+				'synth.bas',
 				'stock/stock.bas',
 				'driveBy/driveBy.bas',
 				'artic/artic.bas',

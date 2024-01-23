@@ -25,7 +25,21 @@ export interface IAudioDevice {
 	playMusic(str: string, repeat?: number): Promise<void>
 	stopMusic(): void
 	isPlayingMusic(): boolean
+	setMusicVolume(volume: number): void
+	setMusicSynth(synth: number): void
+	setMusicSynthProperties(
+		synth: number,
+		attack: number,
+		decay: number,
+		sustain: number,
+		release: number,
+		waveform: 'triangle' | 'sawtooth' | 'square' | 'noise' | 'sineRing' | 'sine',
+		pulseWidth: number
+	)
 	makeSound(frequency: number, duration: number, volume?: number): Promise<void>
+
+	addEventListener(event: 'musicEnd', listener: () => void): void
+	removeEventListener(event: 'musicEnd', listener: () => void): void
 
 	reset(): Promise<void>
 }

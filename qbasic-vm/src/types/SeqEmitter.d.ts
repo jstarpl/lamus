@@ -1,5 +1,5 @@
 declare module 'seq-emitter' {
-	import * as MMLIterator from 'mml-iterator'
+	import * as MMLIterator from '@jstarpl/mml-iterator'
 
 	class SeqEmitter {
 		constructor(tracks: MMLIterator, config: { context?: AudioContext })
