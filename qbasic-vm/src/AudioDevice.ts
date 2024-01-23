@@ -333,7 +333,7 @@ export class AudioDevice implements IAudioDevice {
 			// Electric piano
 			10: ['sine', 0.1, 2, 0, 0.1, 0],
 			// Lazer
-			11: ['sineRing', 0.5, 0, 1, 0.5, 18],
+			11: ['sineRing', 0.5, 0, 1, 0.5, 0.18],
 		}
 	}
 	private generateNoiseBuffer() {
@@ -478,7 +478,7 @@ export class AudioDevice implements IAudioDevice {
 
 		const modulation = this.audioContext.createOscillator()
 		modulation.type = 'sine'
-		modulation.frequency.value = pulseWidth
+		modulation.frequency.value = pulseWidth * 100
 
 		modulation.start(t0)
 		modulation.stop(t2)
