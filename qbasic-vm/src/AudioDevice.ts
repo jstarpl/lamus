@@ -264,10 +264,11 @@ export class AudioDevice implements IAudioDevice {
 			const t0 = baseTime
 			const t1 = t0 + duration / 1000
 			const t2 = t1 + duration / 1000
-			const osc1 = this.audioContext.createOscillator()
-			const amp = this.audioContext.createGain()
+			const osc1 = new OscillatorNode(this.audioContext, {
+				frequency,
+			})
+			const amp = new GainNode(this.audioContext)
 
-			osc1.frequency.value = frequency
 			osc1.detune.setValueAtTime(+12, t0)
 			osc1.detune.linearRampToValueAtTime(+1, t1)
 			osc1.start(t0)
@@ -333,14 +334,17 @@ export class AudioDevice implements IAudioDevice {
 			// Electric piano
 			10: ['sine', 0.1, 2, 0, 0.1, 0],
 			// Lazer
-			11: ['sineRing', 0.5, 0, 1, 0.5, 0.18],
+			11: ['sineRing', 0.2, 0, 1, 0.5, 0.18],
 		}
 	}
 	private generateNoiseBuffer() {
 		const audioContext = this.audioContext
 		// we want 2 seconds worth, so that the looping is not noticable
 		const bufferSize = 2 * audioContext.sampleRate
-		const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate)
+		const noiseBuffer = new AudioBuffer({
+			length: bufferSize,
+			sampleRate: audioContext.sampleRate,
+		})
 		const output = noiseBuffer.getChannelData(0)
 		for (var i = 0; i < bufferSize; i++) {
 			output[i] = Math.random() * 2 - 1
@@ -354,7 +358,7 @@ export class AudioDevice implements IAudioDevice {
 		volume: number,
 		envelope: Envelope
 	): AudioNode {
-		const amp = this.audioContext.createGain()
+		const amp = new GainNode(this.audioContext)
 
 		const attack = Math.max(Math.min(envelope[EnvelopeProp.Attack], duration), 0)
 		const decay = Math.min(envelope[EnvelopeProp.Decay], duration - attack) * 3
@@ -418,16 +422,19 @@ export class AudioDevice implements IAudioDevice {
 
 		// use a normal oscillator as the basis of pulse oscillator.
 		// const oscillator = new OscillatorNode(audioContext, { type: 'sawtooth' })
-		const sawtooth = this.audioContext.createOscillator()
-		sawtooth.type = 'sawtooth'
-		sawtooth.frequency.value = this.noteToFreq(noteNumber)
+		const sawtooth = new OscillatorNode(this.audioContext, {
+			type: 'sawtooth',
+			frequency: this.noteToFreq(noteNumber),
+		})
 		// shape the output into a pulse wave.
 		// const squareShaper = new WaveShaperNode(audioContext, { curve: SQUARE_CURVE })
-		const squareShaper = this.audioContext.createWaveShaper()
-		squareShaper.curve = SQUARE_CURVE
+		const squareShaper = new WaveShaperNode(this.audioContext, {
+			curve: SQUARE_CURVE,
+		})
 		// create a constant signal level to offset the sawtooth
-		const constantLevel = this.audioContext.createConstantSource()
-		constantLevel.offset.value = pulseWidth - 0.5
+		const constantLevel = new ConstantSourceNode(this.audioContext, {
+			offset: pulseWidth - 0.5,
+		})
 
 		sawtooth.start(t0)
 		sawtooth.stop(t2)
@@ -451,9 +458,10 @@ export class AudioDevice implements IAudioDevice {
 		const t1 = t0 + duration
 		const t2 = t1 + release
 
-		var whiteNoise = this.audioContext.createBufferSource()
-		whiteNoise.buffer = this.noiseBuffer
-		whiteNoise.loop = true
+		var whiteNoise = new AudioBufferSourceNode(this.audioContext, {
+			buffer: this.noiseBuffer,
+			loop: true,
+		})
 		whiteNoise.start(t0)
 		whiteNoise.stop(t2)
 
@@ -473,12 +481,13 @@ export class AudioDevice implements IAudioDevice {
 		const t1 = t0 + duration
 		const t2 = t1 + release
 
-		const modulator = this.audioContext.createGain()
+		const modulator = new GainNode(this.audioContext)
 		this.createBasicOscillator(modulator, 'sawtooth', noteNumber, start, duration, release)
 
-		const modulation = this.audioContext.createOscillator()
-		modulation.type = 'sine'
-		modulation.frequency.value = pulseWidth * 100
+		const modulation = new OscillatorNode(this.audioContext, {
+			type: 'sine',
+			frequency: pulseWidth * 100,
+		})
 
 		modulation.start(t0)
 		modulation.stop(t2)
@@ -499,20 +508,21 @@ export class AudioDevice implements IAudioDevice {
 		const t0 = start
 		const t1 = t0 + duration
 		const t2 = t1 + release
-		const osc1 = this.audioContext.createOscillator()
-		const osc2 = this.audioContext.createOscillator()
+		const osc1 = new OscillatorNode(this.audioContext, {
+			type,
+			frequency: this.noteToFreq(noteNumber),
+		})
+		const osc2 = new OscillatorNode(this.audioContext, {
+			type,
+			frequency: this.noteToFreq(noteNumber),
+		})
 
-		osc1.type = type
-		osc2.type = type
-
-		osc1.frequency.value = this.noteToFreq(noteNumber)
 		osc1.detune.setValueAtTime(+12, t0)
 		osc1.detune.linearRampToValueAtTime(+1, t1)
 		osc1.start(t0)
 		osc1.stop(t2)
 		osc1.connect(output)
 
-		osc2.frequency.value = this.noteToFreq(noteNumber)
 		osc2.detune.setValueAtTime(-12, t0)
 		osc2.detune.linearRampToValueAtTime(-1, t1)
 		osc2.start(t0)
