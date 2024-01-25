@@ -316,27 +316,29 @@ export class AudioDevice implements IAudioDevice {
 			// Piano
 			0: ['square', 0, 0.6, 0, 0, 0.4, 0, 0],
 			// Accordion
-			1: ['sawtooth', 0.8, 0, 0.8, 0, 0, 0.2, 0],
+			1: ['sawtooth', 0.4, 0, 0.8, 0, 0, 0.05, 0],
 			// Calliope
-			2: ['triangle', 0, 0, 0.06, 0, 0, 0.5, 0],
+			2: ['triangle', 0, 0, 0.06, 0, 0, 0.05, 0],
 			// Drum
 			3: ['noise', 0, 0.5, 0.5, 0, 0, 0, 0],
 			// Flute
-			4: ['triangle', 0.6, 0.26, 0.26, 0, 0, 0, 0],
+			4: ['triangle', 0.1, 0.26, 0.26, 0.1, 0, 0, 0],
 			// Guitar
 			5: ['sawtooth', 0, 0.6, 0.13, 0.06, 0, 0, 0],
 			// Harpsichord
 			6: ['square', 0, 0.6, 0, 0, 0.12, 0, 0],
 			// Organ
-			7: ['square', 0, 0.6, 0.6, 0, 0.5, 0.1, 0],
+			7: ['square', 0, 0.6, 0.6, 0, 0.5, 0.05, 0],
 			// Trumpet
-			8: ['square', 0.5, 0.6, 0.26, 0.06, 0.12, 0, 0],
+			8: ['square', 0.2, 0.6, 0.26, 0.06, 0, 0, 0],
 			// Xylophone
 			9: ['triangle', 0, 0.6, 0, 0, 0.1, 0, 0],
 			// Electric piano
 			10: ['sine', 0, 0.6, 0, 0.1, 0, 0, 0],
 			// Lazer
 			11: ['sineRing', 0.2, 0, 1, 0.5, 0.18, 0, 0],
+			// Violin
+			12: ['square', 0.1, 0.4, 0, 0.05, 0, 0.3, 0],
 		}
 	}
 	private generateNoiseBuffer() {
@@ -402,7 +404,7 @@ export class AudioDevice implements IAudioDevice {
 			adsrEnvelope.gain.setValueAtTime(1, t0)
 		} else {
 			adsrEnvelope.gain.setValueAtTime(0, t0)
-			adsrEnvelope.gain.linearRampToValueAtTime(0, t0 + attack)
+			adsrEnvelope.gain.linearRampToValueAtTime(1, t0 + attack)
 			adsrEnvelope.gain.setValueAtTime(1, t0 + attack)
 		}
 
@@ -411,13 +413,12 @@ export class AudioDevice implements IAudioDevice {
 			adsrEnvelope.gain.setValueAtTime(sustain, t0 + attack + decay)
 		}
 
-		adsrEnvelope.gain.setValueAtTime(sustain, t1)
 		adsrEnvelope.gain.linearRampToValueAtTime(0, t2)
 
 		adsrEnvelope.connect(output)
 
 		if (tremolo > 0) {
-			const tremoloEfx = this.createTremolo(tremolo, t0, duration + release)
+			const tremoloEfx = this.createTremolo(tremolo * volume, t0, duration + release)
 			tremoloEfx.connect(output.gain)
 		}
 

@@ -4019,7 +4019,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 	/**
 	 * Removes an item from the end of a single-dimensional array. Modifies the range end of the array.
-	 * If the array is empty, `ITEM` is not modified and ST is set to `-1`
+	 * If the array is empty, `ITEM` is not modified and `ST` is set to `-1`
 	 *
 	 * ```
 	 * ARRAY, OUT ITEM
@@ -4062,7 +4062,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 
 	/**
 	 * Removes an item from the begining of a single-dimensional array. Modifies the range end of the array; re-indexes elements inside backwards.
-	 * If the array is empty, `ITEM` is not modified and ST is set to `-1`
+	 * If the array is empty, `ITEM` is not modified and `ST` is set to `-1`
 	 *
 	 * ```
 	 * ARRAY, OUT ITEM
