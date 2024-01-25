@@ -74,10 +74,10 @@ class MMLEmitter extends SeqEmitter {
 type AudioDeviceEvents = 'musicEnd'
 type EventHandler = () => void
 
-type Waveform = 'triangle' | 'sawtooth' | 'square' | 'noise' | 'sineRing' | 'sine'
+type Waveform = 'triangle' | 'sawtooth' | 'square' | 'noise' | 'sine' | 'sineRing'
 
-/** This is WaveForm type, Attack, Decay, Sustain, Release, PulseWidth */
-type Envelope = [Waveform, number, number, number, number, number]
+/** This is WaveForm type, Attack, Decay, Sustain, Release, PulseWidth, Tremolo, Vibrato */
+type Envelope = [Waveform, number, number, number, number, number, number, number]
 enum EnvelopeProp {
 	Type = 0,
 	Attack = 1,
@@ -85,6 +85,8 @@ enum EnvelopeProp {
 	Sustain = 3,
 	Release = 4,
 	PulseWidth = 5,
+	Tremolo = 6,
+	Vibrato = 7,
 }
 
 // create new curve that will flatten values [0:127] to -1 and [128:255] to 1
@@ -312,29 +314,29 @@ export class AudioDevice implements IAudioDevice {
 	private static getDefaultEnvelopes(): Record<number, Envelope> {
 		return {
 			// Piano
-			0: ['square', 0, 0.6, 0, 0, 0.4],
+			0: ['square', 0, 0.6, 0, 0, 0.4, 0, 0],
 			// Accordion
-			1: ['sawtooth', 0.8, 0, 0.8, 0, 0],
+			1: ['sawtooth', 0.8, 0, 0.8, 0, 0, 0.2, 0],
 			// Calliope
-			2: ['triangle', 0, 0, 0.06, 0, 0],
+			2: ['triangle', 0, 0, 0.06, 0, 0, 0.5, 0],
 			// Drum
-			3: ['noise', 0, 0.5, 0.5, 0, 0],
+			3: ['noise', 0, 0.5, 0.5, 0, 0, 0, 0],
 			// Flute
-			4: ['triangle', 0.6, 0.26, 0.26, 0, 0],
+			4: ['triangle', 0.6, 0.26, 0.26, 0, 0, 0, 0],
 			// Guitar
-			5: ['sawtooth', 0, 0.6, 0.13, 0.06, 0],
+			5: ['sawtooth', 0, 0.6, 0.13, 0.06, 0, 0, 0],
 			// Harpsichord
-			6: ['square', 0, 0.6, 0, 0, 0.12],
+			6: ['square', 0, 0.6, 0, 0, 0.12, 0, 0],
 			// Organ
-			7: ['square', 0, 0.6, 0.6, 0, 0.5],
+			7: ['square', 0, 0.6, 0.6, 0, 0.5, 0.1, 0],
 			// Trumpet
-			8: ['square', 0.5, 0.6, 0.26, 0.06, 0.12],
+			8: ['square', 0.5, 0.6, 0.26, 0.06, 0.12, 0, 0],
 			// Xylophone
-			9: ['triangle', 0, 0.6, 0, 0, 0],
+			9: ['triangle', 0, 0.6, 0, 0, 0.1, 0, 0],
 			// Electric piano
-			10: ['sine', 0.1, 2, 0, 0.1, 0],
+			10: ['sine', 0, 0.6, 0, 0.1, 0, 0, 0],
 			// Lazer
-			11: ['sineRing', 0.2, 0, 1, 0.5, 0.18],
+			11: ['sineRing', 0.2, 0, 1, 0.5, 0.18, 0, 0],
 		}
 	}
 	private generateNoiseBuffer() {
@@ -358,13 +360,19 @@ export class AudioDevice implements IAudioDevice {
 		volume: number,
 		envelope: Envelope
 	): AudioNode {
-		const amp = new GainNode(this.audioContext)
+		const output = new GainNode(this.audioContext, {
+			gain: volume,
+		})
+		const adsrEnvelope = new GainNode(this.audioContext)
 
 		const attack = Math.max(Math.min(envelope[EnvelopeProp.Attack], duration), 0)
-		const decay = Math.min(envelope[EnvelopeProp.Decay], duration - attack) * 3
-		const sustain = Math.max(envelope[EnvelopeProp.Sustain], 0) * volume
-		const release = Math.max(envelope[EnvelopeProp.Release], 0.1)
-		const pulseWidth = envelope[EnvelopeProp.PulseWidth]
+		const decay = Math.max(Math.min(envelope[EnvelopeProp.Decay], duration - attack), 0) * 3
+		const sustain = Math.max(envelope[EnvelopeProp.Sustain], 0)
+		const release = Math.max(envelope[EnvelopeProp.Release], 0.05)
+		const pulseWidth = Math.min(Math.max(envelope[EnvelopeProp.PulseWidth], 0), 1)
+
+		const tremolo = Math.min(Math.max(envelope[EnvelopeProp.Tremolo], 0), 1)
+		// const vibrato = Math.min(Math.max(envelope[EnvelopeProp.Vibrato], 0), 1)
 
 		const t0 = start
 		const t1 = t0 + duration
@@ -374,39 +382,70 @@ export class AudioDevice implements IAudioDevice {
 			case 'sawtooth':
 			case 'sine':
 			case 'triangle':
-				this.createBasicOscillator(amp, envelope[EnvelopeProp.Type], noteNumber, start, duration, release)
+				this.createBasicOscillator(adsrEnvelope, envelope[EnvelopeProp.Type], noteNumber, start, duration, release)
 				break
 			case 'noise':
-				this.createNoiseGenerator(amp, noteNumber, start, duration, release)
+				this.createNoiseGenerator(adsrEnvelope, noteNumber, start, duration, release)
 				break
 			case 'square':
-				this.createPulseOscillator(amp, noteNumber, start, duration, release, pulseWidth)
+				this.createPulseOscillator(adsrEnvelope, noteNumber, start, duration, release, pulseWidth)
 				break
 			case 'sineRing':
-				this.createRingSineOscillator(amp, noteNumber, start, duration, release, pulseWidth)
+				this.createRingSineOscillator(adsrEnvelope, noteNumber, start, duration, release, pulseWidth)
 				break
 			default:
-				this.createBasicOscillator(amp, 'sine', noteNumber, start, duration, release)
+				this.createBasicOscillator(adsrEnvelope, 'sine', noteNumber, start, duration, release)
 				break
 		}
 
 		if (attack === 0) {
-			amp.gain.setValueAtTime(volume, t0)
+			adsrEnvelope.gain.setValueAtTime(1, t0)
 		} else {
-			amp.gain.setValueAtTime(0, t0)
-			amp.gain.linearRampToValueAtTime(volume, t0 + attack)
-			amp.gain.setValueAtTime(volume, t0 + attack)
+			adsrEnvelope.gain.setValueAtTime(0, t0)
+			adsrEnvelope.gain.linearRampToValueAtTime(0, t0 + attack)
+			adsrEnvelope.gain.setValueAtTime(1, t0 + attack)
 		}
 
 		if (decay !== 0) {
-			amp.gain.linearRampToValueAtTime(sustain, t0 + attack + decay)
-			amp.gain.setValueAtTime(sustain, t0 + attack + decay)
+			adsrEnvelope.gain.linearRampToValueAtTime(sustain, t0 + attack + decay)
+			adsrEnvelope.gain.setValueAtTime(sustain, t0 + attack + decay)
 		}
 
-		amp.gain.linearRampToValueAtTime(sustain, t1)
-		amp.gain.linearRampToValueAtTime(1e-3, t2)
+		adsrEnvelope.gain.setValueAtTime(sustain, t1)
+		adsrEnvelope.gain.linearRampToValueAtTime(0, t2)
 
-		return amp
+		adsrEnvelope.connect(output)
+
+		if (tremolo > 0) {
+			const tremoloEfx = this.createTremolo(tremolo, t0, duration + release)
+			tremoloEfx.connect(output.gain)
+		}
+
+		return output
+	}
+	private createTremolo(amount: number, start: number, duration: number): AudioNode {
+		const t0 = start
+		const t1 = t0 + duration
+
+		const lfo = new OscillatorNode(this.audioContext, {
+			type: 'sine',
+			frequency: 8,
+		})
+		const level = new ConstantSourceNode(this.audioContext, {
+			offset: -1,
+		})
+		const output = new GainNode(this.audioContext, {
+			gain: 0.5 * amount,
+		})
+		lfo.connect(output)
+		level.connect(output)
+
+		lfo.start(t0)
+		lfo.stop(t1)
+		level.start(t0)
+		level.stop(t1)
+
+		return output
 	}
 	private createPulseOscillator(
 		output: AudioNode,
@@ -461,11 +500,10 @@ export class AudioDevice implements IAudioDevice {
 		var whiteNoise = new AudioBufferSourceNode(this.audioContext, {
 			buffer: this.noiseBuffer,
 			loop: true,
+			detune: 240 * (noteNumber - 70),
 		})
 		whiteNoise.start(t0)
 		whiteNoise.stop(t2)
-
-		whiteNoise.detune.setValueAtTime(240 * (noteNumber - 70), t0)
 
 		whiteNoise.connect(output)
 	}
