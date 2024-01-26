@@ -107,6 +107,7 @@ export class AudioDevice implements IAudioDevice {
 	private eventListeners: Partial<Record<AudioDeviceEvents, EventHandler[]>>
 	private volume: number
 	private envelopes: Partial<Record<number, Envelope>>
+	private defaultEnvelope = 0
 
 	private noiseBuffer: AudioBuffer
 
@@ -253,7 +254,8 @@ export class AudioDevice implements IAudioDevice {
 		start = start ?? this.audioContext.currentTime
 		const volume = noteVolume * this.volume
 
-		const envelope = (instrument ? this.envelopes[instrument] : undefined) ?? (this.envelopes[0] as Envelope)
+		const envelope =
+			(instrument ? this.envelopes[instrument] : undefined) ?? (this.envelopes[this.defaultEnvelope ?? 0] as Envelope)
 
 		const graph = this.createGraphForNote(noteNumber, start, duration, volume, envelope)
 
@@ -309,6 +311,7 @@ export class AudioDevice implements IAudioDevice {
 
 		this.audioContext = new AudioContext()
 		this.envelopes = AudioDevice.getDefaultEnvelopes()
+		this.defaultEnvelope = 0
 		this.generateNoiseBuffer()
 	}
 	private static getDefaultEnvelopes(): Record<number, Envelope> {

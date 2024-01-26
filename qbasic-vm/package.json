@@ -60,7 +60,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@jstarpl/mml-iterator": "^1.2.0",
+    "@jstarpl/mml-iterator": "^1.2.1",
     "assert-browserify": "^2.0.0",
     "easy-web-crypto": "^1.2.10",
     "eventemitter3": "^4.0.0",
