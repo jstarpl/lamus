@@ -9,11 +9,7 @@ import { manifest, version } from "@parcel/service-worker";
 async function install() {
   const cache = await caches.open(version);
   // make manifest entries absolute
-  await cache.addAll(
-    unique(
-      manifest.map((entry) => `${ensureEndsWithSlash(self.origin)}${entry}`)
-    )
-  );
+  await cache.addAll(unique(manifest.map((entry) => `${self.origin}${entry}`)));
 }
 self.addEventListener("install", (e: ExtendableEvent) =>
   e.waitUntil(install())
@@ -105,10 +101,10 @@ function cacheError(): Response {
   });
 }
 
-function ensureEndsWithSlash(url: string): string {
-  if (!url.endsWith("/")) return `${url}/`;
-  return url;
-}
+// function ensureEndsWithSlash(url: string): string {
+//   if (!url.endsWith("/")) return `${url}/`;
+//   return url;
+// }
 
 function unique<T>(list: T[]): T[] {
   function onlyUnique(value: T, index: number, self: T[]) {
