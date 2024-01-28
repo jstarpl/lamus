@@ -1,5 +1,9 @@
-GOSUB TRK16
+GOSUB TRK6
 GOSUB Playback
+
+TEST:
+PART1$ = "@12o4c1d1e1f1a1b1>c1"
+RETURN
 
 
 TRK1: ' Ghostbusters
@@ -137,7 +141,7 @@ DO
   PRINT STR$(FLOOR((TIME - Start) / 100) / 10) + "  "
   SLEEP 0.1
   IF INKEY$ = CHR$(0) + CHR$(27) THEN Exit = 1
-LOOP UNTIL (BGMCHK <> 0) OR (Exit <> 0)
+LOOP UNTIL (BGMCHK = 0) OR (Exit <> 0)
 
 BGMSTOP
 

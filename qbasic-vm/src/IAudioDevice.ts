@@ -29,12 +29,14 @@ export interface IAudioDevice {
 	setMusicSynth(synth: number): void
 	setMusicSynthProperties(
 		synth: number,
+		waveform: 'triangle' | 'sawtooth' | 'square' | 'noise' | 'sineRing' | 'sine',
 		attack: number,
 		decay: number,
 		sustain: number,
 		release: number,
-		waveform: 'triangle' | 'sawtooth' | 'square' | 'noise' | 'sineRing' | 'sine',
-		pulseWidth: number
+		pulseWidth: number,
+		tremolo: number,
+		vibrato: number
 	)
 	makeSound(frequency: number, duration: number, volume?: number): Promise<void>
 

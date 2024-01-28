@@ -76,6 +76,8 @@ type EventHandler = () => void
 
 type Waveform = 'triangle' | 'sawtooth' | 'square' | 'noise' | 'sine' | 'sineRing'
 
+type Events = 'musicEnd'
+
 /** This is WaveForm type, Attack, Decay, Sustain, Release, PulseWidth, Tremolo, Vibrato */
 type Envelope = [Waveform, number, number, number, number, number, number, number]
 enum EnvelopeProp {
@@ -99,6 +101,9 @@ const CONSTANT_CURVE = new Float32Array(2)
 CONSTANT_CURVE[0] = 1
 CONSTANT_CURVE[1] = 1
 
+const DEFAULT_AHEAD_TIME = 0.2
+const BACKGROUND_AHEAD_TIME = 1.0
+
 export class AudioDevice implements IAudioDevice {
 	private beeps: HTMLAudioElement[] = []
 	private managedAudioElements: HTMLAudioElement[] = []
@@ -107,44 +112,52 @@ export class AudioDevice implements IAudioDevice {
 	private eventListeners: Partial<Record<AudioDeviceEvents, EventHandler[]>>
 	private volume: number
 	private envelopes: Partial<Record<number, Envelope>>
-	private defaultEnvelope = 0
+	private defaultSynth = 0
 
 	private noiseBuffer: AudioBuffer
 
 	constructor() {
 		this.reset().catch(console.error)
-		void this.noiseBuffer
-		void this.envelopes
+
+		// TODO: Add EventListeners to "visibilitychange" to modify this.currentMMLEmitter.scheduler.aheadTime
 	}
 
 	setMusicVolume(volume: number): void {
 		this.volume = volume
 	}
-	setMusicSynth(_synth: number): void {
-		throw new Error('Method not implemented.')
+	setMusicSynth(synth: number): void {
+		this.defaultSynth = synth
 	}
 	setMusicSynthProperties(
-		_synth: number,
-		_attack: number,
-		_decay: number,
-		_sustain: number,
-		_release: number,
-		_waveform: Waveform,
-		_pulseWidth: number
-	) {
-		throw new Error('Method not implemented.')
+		synth: number,
+		waveform: Waveform,
+		attack: number,
+		decay: number,
+		sustain: number,
+		release: number,
+		pulseWidth: number,
+		tremolo: number,
+		vibrato: number
+	): void {
+		this.envelopes[synth] = [waveform, attack, decay, sustain, release, pulseWidth, tremolo, vibrato]
 	}
-	addEventListener(event: 'musicEnd', listener: () => void): void {
+	addEventListener(event: Events, listener: () => void): void {
 		const listeners = this.eventListeners[event] ?? []
 		listeners.push(listener)
 		this.eventListeners[event] = listeners
 	}
-	removeEventListener(event: 'musicEnd', listener: () => void): void {
+	removeEventListener(event: Events, listener: () => void): void {
 		const listeners = this.eventListeners[event] ?? []
 		const idx = listeners.indexOf(listener)
 		if (idx < 0) return
 		listeners.splice(idx, 1)
 		this.eventListeners[event] = listeners
+	}
+	private emit(event: Events) {
+		const handlers = this.eventListeners[event]
+		if (handlers === undefined) return
+
+		handlers.forEach((handler) => handler())
 	}
 
 	async beep(num: number): Promise<void> {
@@ -199,11 +212,11 @@ export class AudioDevice implements IAudioDevice {
 			const config = { context: this.audioContext }
 
 			if (this.currentMMLEmitter) {
-				this.currentMMLEmitter.stop()
-				this.currentMMLEmitter = undefined
+				this.stopMusic()
 			}
 
 			const mmlEmitter = new MMLEmitter(mml, config)
+			mmlEmitter.scheduler.aheadTime = DEFAULT_AHEAD_TIME
 			mmlEmitter.on('note', (e) => {
 				// console.log('NOTE: ' + e)
 				this.onMMLNote(e)
@@ -211,6 +224,7 @@ export class AudioDevice implements IAudioDevice {
 			mmlEmitter.on('end:all', () => {
 				// console.log('END : ' + JSON.stringify(e))
 				// loop forever
+				this.emit('musicEnd')
 				if (repeat === undefined || repeat > 1) {
 					resolve(this.playMusic(mml, repeat === undefined ? undefined : repeat - 1))
 				} else {
@@ -221,16 +235,33 @@ export class AudioDevice implements IAudioDevice {
 
 			mmlEmitter.start()
 			this.currentMMLEmitter = mmlEmitter
+			this.addEventHandlers()
 		})
 	}
 	stopMusic(): void {
-		if (this.currentMMLEmitter) {
-			this.currentMMLEmitter.stop()
-			this.currentMMLEmitter = undefined
+		if (!this.currentMMLEmitter) return
+		this.currentMMLEmitter.stop()
+		this.currentMMLEmitter = undefined
+		this.removeEventHandlers()
+	}
+	private addEventHandlers() {
+		document.addEventListener('visibilitychange', this.onVisibilityChange)
+	}
+	private removeEventHandlers() {
+		document.removeEventListener('visibilitychange', this.onVisibilityChange)
+	}
+	private onVisibilityChange = () => {
+		if (!this.currentMMLEmitter) return
+		if (document.visibilityState === 'visible') {
+			this.currentMMLEmitter.scheduler.aheadTime = DEFAULT_AHEAD_TIME
+			return
 		}
+
+		this.currentMMLEmitter.scheduler.aheadTime = BACKGROUND_AHEAD_TIME
+		this.currentMMLEmitter.scheduler.process()
 	}
 	isPlayingMusic(): boolean {
-		return !this.currentMMLEmitter
+		return !!this.currentMMLEmitter
 	}
 	private noteToFreq(noteNumber: number) {
 		return 440 * Math.pow(2, (noteNumber - 69) / 12)
@@ -250,12 +281,12 @@ export class AudioDevice implements IAudioDevice {
 		noteVolume: number,
 		noteNumber: number,
 		instrument: number | undefined
-	) {
+	): void {
 		start = start ?? this.audioContext.currentTime
 		const volume = noteVolume * this.volume
 
 		const envelope =
-			(instrument ? this.envelopes[instrument] : undefined) ?? (this.envelopes[this.defaultEnvelope ?? 0] as Envelope)
+			(instrument ? this.envelopes[instrument] : undefined) ?? (this.envelopes[this.defaultSynth ?? 0] as Envelope)
 
 		const graph = this.createGraphForNote(noteNumber, start, duration, volume, envelope)
 
@@ -281,9 +312,11 @@ export class AudioDevice implements IAudioDevice {
 
 			amp.gain.setValueAtTime(volume, t0)
 			amp.gain.setValueAtTime(volume, t1)
-			amp.gain.exponentialRampToValueAtTime(1e-3, t2)
+			amp.gain.exponentialRampToValueAtTime(0, t2)
 			amp.connect(this.audioContext.destination)
 			osc1.addEventListener('ended', () => {
+				osc1.disconnect()
+				amp.disconnect()
 				resolve()
 			})
 		})
@@ -311,7 +344,7 @@ export class AudioDevice implements IAudioDevice {
 
 		this.audioContext = new AudioContext()
 		this.envelopes = AudioDevice.getDefaultEnvelopes()
-		this.defaultEnvelope = 0
+		this.defaultSynth = 0
 		this.generateNoiseBuffer()
 	}
 	private static getDefaultEnvelopes(): Record<number, Envelope> {
@@ -337,11 +370,11 @@ export class AudioDevice implements IAudioDevice {
 			// Xylophone
 			9: ['triangle', 0, 0.6, 0, 0, 0.1, 0, 0],
 			// Electric piano
-			10: ['sine', 0, 0.6, 0, 0.1, 0, 0, 0],
+			10: ['sine', 0, 0.6, 0, 0.1, 0, 0, 1],
 			// Lazer
-			11: ['sineRing', 0.2, 0, 1, 0.5, 0.18, 0, 0],
+			11: ['sineRing', 0.2, 0, 1, 0.5, 0.18, 0.3, 1],
 			// Violin
-			12: ['square', 0.1, 0.4, 0, 0.05, 0, 0.3, 0],
+			12: ['square', 0.1, 0.4, 0, 0.05, 0, 0.3, 1],
 		}
 	}
 	private generateNoiseBuffer() {
@@ -353,7 +386,7 @@ export class AudioDevice implements IAudioDevice {
 			sampleRate: audioContext.sampleRate,
 		})
 		const output = noiseBuffer.getChannelData(0)
-		for (var i = 0; i < bufferSize; i++) {
+		for (let i = 0; i < bufferSize; i++) {
 			output[i] = Math.random() * 2 - 1
 		}
 		this.noiseBuffer = noiseBuffer
@@ -368,6 +401,9 @@ export class AudioDevice implements IAudioDevice {
 		const output = new GainNode(this.audioContext, {
 			gain: volume,
 		})
+		const signal = new GainNode(this.audioContext, {
+			gain: 1,
+		})
 		const adsrEnvelope = new GainNode(this.audioContext)
 
 		const attack = Math.max(Math.min(envelope[EnvelopeProp.Attack], duration), 0)
@@ -377,29 +413,40 @@ export class AudioDevice implements IAudioDevice {
 		const pulseWidth = Math.min(Math.max(envelope[EnvelopeProp.PulseWidth], 0), 1)
 
 		const tremolo = Math.min(Math.max(envelope[EnvelopeProp.Tremolo], 0), 1)
-		// const vibrato = Math.min(Math.max(envelope[EnvelopeProp.Vibrato], 0), 1)
+		const vibrato = Math.min(Math.max(envelope[EnvelopeProp.Vibrato], 0), 1)
 
 		const t0 = start
 		const t1 = t0 + duration
 		const t2 = t1 + release
 
+		const diff = t0 - this.audioContext.currentTime
+		const garbageCollectTime = 1000 * (t2 - t0 + diff + BACKGROUND_AHEAD_TIME)
+
 		switch (envelope[EnvelopeProp.Type]) {
 			case 'sawtooth':
 			case 'sine':
 			case 'triangle':
-				this.createBasicOscillator(adsrEnvelope, envelope[EnvelopeProp.Type], noteNumber, start, duration, release)
+				this.createBasicOscillator(
+					signal,
+					envelope[EnvelopeProp.Type],
+					noteNumber,
+					start,
+					duration,
+					release,
+					garbageCollectTime
+				)
 				break
 			case 'noise':
-				this.createNoiseGenerator(adsrEnvelope, noteNumber, start, duration, release)
+				this.createNoiseGenerator(signal, noteNumber, start, duration, release, garbageCollectTime)
 				break
 			case 'square':
-				this.createPulseOscillator(adsrEnvelope, noteNumber, start, duration, release, pulseWidth)
+				this.createPulseOscillator(signal, noteNumber, start, duration, release, pulseWidth, garbageCollectTime)
 				break
 			case 'sineRing':
-				this.createRingSineOscillator(adsrEnvelope, noteNumber, start, duration, release, pulseWidth)
+				this.createRingSineOscillator(signal, noteNumber, start, duration, release, pulseWidth, garbageCollectTime)
 				break
 			default:
-				this.createBasicOscillator(adsrEnvelope, 'sine', noteNumber, start, duration, release)
+				this.createBasicOscillator(signal, 'sine', noteNumber, start, duration, release, garbageCollectTime)
 				break
 		}
 
@@ -418,16 +465,68 @@ export class AudioDevice implements IAudioDevice {
 
 		adsrEnvelope.gain.linearRampToValueAtTime(0, t2)
 
+		if (vibrato > 0) {
+			const vibratoEfx = this.createVibrato(signal, vibrato, t0, duration + release, garbageCollectTime)
+			vibratoEfx.connect(adsrEnvelope)
+		} else {
+			signal.connect(adsrEnvelope)
+		}
+
 		adsrEnvelope.connect(output)
 
 		if (tremolo > 0) {
-			const tremoloEfx = this.createTremolo(tremolo * volume, t0, duration + release)
+			const tremoloEfx = this.createTremolo(tremolo * volume, t0, duration + release, garbageCollectTime)
 			tremoloEfx.connect(output.gain)
 		}
 
+		setTimeout(() => {
+			signal.disconnect()
+			adsrEnvelope.disconnect()
+			output.disconnect()
+		}, garbageCollectTime)
+
 		return output
 	}
-	private createTremolo(amount: number, start: number, duration: number): AudioNode {
+	private createVibrato(
+		source: AudioNode,
+		amount: number,
+		start: number,
+		duration: number,
+		garbageCollectTime: number
+	): AudioNode {
+		const t0 = start
+		const t1 = t0 + duration
+
+		const lfo = new OscillatorNode(this.audioContext, {
+			type: 'sine',
+			frequency: 6,
+		})
+		const lfoAmp = new GainNode(this.audioContext, {
+			gain: 100 * amount,
+		})
+		lfo.connect(lfoAmp)
+
+		lfo.start(t0)
+		lfo.stop(t1)
+
+		const output = new BiquadFilterNode(this.audioContext, {
+			gain: 1,
+			type: 'allpass',
+			detune: 0,
+		})
+		lfoAmp.connect(output.detune)
+
+		source.connect(output)
+
+		setTimeout(() => {
+			lfo.disconnect()
+			lfoAmp.disconnect()
+			output.disconnect()
+		}, garbageCollectTime)
+
+		return output
+	}
+	private createTremolo(amount: number, start: number, duration: number, garbageCollectTime: number): AudioNode {
 		const t0 = start
 		const t1 = t0 + duration
 
@@ -449,6 +548,12 @@ export class AudioDevice implements IAudioDevice {
 		level.start(t0)
 		level.stop(t1)
 
+		setTimeout(() => {
+			lfo.disconnect()
+			level.disconnect()
+			output.disconnect()
+		}, garbageCollectTime)
+
 		return output
 	}
 	private createPulseOscillator(
@@ -457,7 +562,8 @@ export class AudioDevice implements IAudioDevice {
 		start: number,
 		duration: number,
 		release: number,
-		pulseWidth: number
+		pulseWidth: number,
+		garbageCollectTime: number
 	) {
 		const t0 = start
 		const t1 = t0 + duration
@@ -489,19 +595,26 @@ export class AudioDevice implements IAudioDevice {
 		constantLevel.connect(squareShaper)
 
 		squareShaper.connect(output)
+
+		setTimeout(() => {
+			sawtooth.disconnect()
+			constantLevel.disconnect()
+			squareShaper.disconnect()
+		}, garbageCollectTime)
 	}
 	private createNoiseGenerator(
 		output: AudioNode,
 		noteNumber: number,
 		start: number,
 		duration: number,
-		release: number
+		release: number,
+		garbageCollectTime: number
 	) {
 		const t0 = start
 		const t1 = t0 + duration
 		const t2 = t1 + release
 
-		var whiteNoise = new AudioBufferSourceNode(this.audioContext, {
+		const whiteNoise = new AudioBufferSourceNode(this.audioContext, {
 			buffer: this.noiseBuffer,
 			loop: true,
 			detune: 240 * (noteNumber - 70),
@@ -510,6 +623,10 @@ export class AudioDevice implements IAudioDevice {
 		whiteNoise.stop(t2)
 
 		whiteNoise.connect(output)
+
+		setTimeout(() => {
+			whiteNoise.disconnect()
+		}, garbageCollectTime)
 	}
 	private createRingSineOscillator(
 		output: AudioNode,
@@ -517,14 +634,15 @@ export class AudioDevice implements IAudioDevice {
 		start: number,
 		duration: number,
 		release: number,
-		pulseWidth: number
+		pulseWidth: number,
+		garbageCollectTime: number
 	) {
 		const t0 = start
 		const t1 = t0 + duration
 		const t2 = t1 + release
 
 		const modulator = new GainNode(this.audioContext)
-		this.createBasicOscillator(modulator, 'sawtooth', noteNumber, start, duration, release)
+		this.createBasicOscillator(modulator, 'sawtooth', noteNumber, start, duration, release, garbageCollectTime)
 
 		const modulation = new OscillatorNode(this.audioContext, {
 			type: 'sine',
@@ -538,6 +656,11 @@ export class AudioDevice implements IAudioDevice {
 		modulation.connect(modulator.gain)
 
 		modulator.connect(output)
+
+		setTimeout(() => {
+			modulation.disconnect()
+			modulator.disconnect()
+		}, garbageCollectTime)
 	}
 	private createBasicOscillator(
 		output: AudioNode,
@@ -545,7 +668,8 @@ export class AudioDevice implements IAudioDevice {
 		noteNumber: number,
 		start: number,
 		duration: number,
-		release: number
+		release: number,
+		garbageCollectTime: number
 	) {
 		const t0 = start
 		const t1 = t0 + duration
@@ -570,5 +694,10 @@ export class AudioDevice implements IAudioDevice {
 		osc2.start(t0)
 		osc2.stop(t2)
 		osc2.connect(output)
+
+		setTimeout(() => {
+			osc1.disconnect()
+			osc2.disconnect()
+		}, garbageCollectTime)
 	}
 }

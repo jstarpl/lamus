@@ -3,9 +3,21 @@ declare module 'seq-emitter' {
 
 	class SeqEmitter {
 		constructor(tracks: MMLIterator, config: { context?: AudioContext })
-		public on(event: 'note' | 'end:all', handler: (e: any) => void): void
-		public start(): void
-		public stop(): void
+		scheduler: {
+			context: AudioContext
+			interval: number
+			aheadTime: number
+			timerAPI: any
+			playbackTime: number
+			currentTime: number
+			state: string
+			events: any[]
+			process(): void
+		}
+		state: 'running' | 'suspended' | 'closed'
+		on(event: 'note' | 'end:all', handler: (e: any) => void): void
+		start(): void
+		stop(): void
 	}
 
 	export = SeqEmitter
