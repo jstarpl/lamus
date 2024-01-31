@@ -1,9 +1,5 @@
-GOSUB TRK6
+GOSUB TRK1
 GOSUB Playback
-
-TEST:
-PART1$ = "@12o4c1d1e1f1a1b1>c1"
-RETURN
 
 
 TRK1: ' Ghostbusters

@@ -2341,6 +2341,94 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		},
 	},
 
+	/**
+	 * Set volume of the music player
+	 *
+	 * @group audio
+	 */
+	VOLUME: {
+		args: ['INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const volume = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+			if (!vm.audio) return
+
+			vm.audio.setMusicVolume(volume)
+		},
+	},
+
+	/**
+	 * If only a single argument is provided: set the default instrument for the music player.
+	 * If more parameters are provided: modify an instrument with the given number
+	 *
+	 * ```
+	 * SYNTH% [, WAVEFORM%, ATTACK%, DECAY%, SUSTAIN%, RELEASE%, PULSE_WIDTH% [, TREMOLO%, VIBRATO%]]
+	 * ```
+	 *
+	 * Arguments use range of 0 to 255, apart from `PULSE_WIDTH%` which is 0 to 4095.
+	 *
+	 * @group audio
+	 */
+	ENVELOPE: {
+		args: ['INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER', 'INTEGER'],
+		minArgs: 1,
+		action: function (vm) {
+			const argCount = vm.stack.pop()
+
+			if (!vm.audio) return
+
+			if (argCount === 1) {
+				const synth = getArgValue(vm.stack.pop())
+				vm.audio.setMusicSynth(synth)
+				return
+			}
+
+			let vibrato = 0
+			let tremolo = 0
+			if (argCount < 6) {
+				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, 'Invalid argument count')
+			}
+
+			if (argCount > 6) {
+				vibrato = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+				tremolo = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+			}
+
+			const pulseWidth = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 4095))
+			const release = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+			const sustain = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+			const decay = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+			const attack = Math.min(1, Math.max(0, getArgValue(vm.stack.pop()) / 255))
+
+			const waveformNum = getArgValue(vm.stack.pop())
+			let waveform: 'sawtooth' | 'square' | 'noise' | 'sineRing' | 'sine' | 'triangle'
+			switch (waveformNum) {
+				case 1:
+					waveform = 'sawtooth' as const
+					break
+				case 2:
+					waveform = 'square' as const
+					break
+				case 3:
+					waveform = 'noise' as const
+					break
+				case 4:
+					waveform = 'sineRing' as const
+					break
+				case 5:
+					waveform = 'sine' as const
+					break
+				case 0:
+				default:
+					waveform = 'triangle' as const
+					break
+			}
+
+			const synth = getArgValue(vm.stack.pop())
+			vm.audio.setMusicSynthProperties(synth, waveform, attack, decay, sustain, release, pulseWidth, tremolo, vibrato)
+		},
+	},
+
 	SLEEP: {
 		args: ['SINGLE'],
 		minArgs: 0,
