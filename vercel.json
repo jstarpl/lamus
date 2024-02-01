@@ -55,8 +55,6 @@
       ]
     }
   ],
-  "buildCommand": "yarn build",
   "installCommand": "yarn",
-  "devCommand": "yarn start",
-  "outputDirectory": "./lamus-mvp/build"
+  "devCommand": "yarn start"
 }
