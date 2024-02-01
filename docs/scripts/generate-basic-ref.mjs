@@ -1,4 +1,7 @@
 import fs from 'node:fs/promises'
+import { rimraf } from 'rimraf'
+import { fileURLToPath } from 'node:url'
+import copy from 'recursive-copy'
 
 const groupProps = {
   'audio': {
@@ -38,6 +41,8 @@ const groupProps = {
 const commandReference = JSON.parse(await fs.readFile(new URL("../../qbasic-vm/dist/allCommands.json", import.meta.url)))
 const basicReference = new URL("../docs/basic-reference/", import.meta.url)
 
+const basicReferencePath = fileURLToPath(basicReference)
+
 const groupedCommands = {}
 
 function sanitizeMdText(text) {
@@ -47,6 +52,10 @@ function sanitizeMdText(text) {
 function sanitizeUrl(url) {
   return url.replace(/([\W])/gi, (found) => `_u${found.charCodeAt(0)}`)
 }
+
+await rimraf([`${basicReferencePath}/**/*.md`], {
+  glob: true,
+})
 
 Object.values(commandReference).forEach(
   (commands) => Object.entries(commands).forEach(
@@ -61,6 +70,7 @@ Object.values(commandReference).forEach(
 Object.values(groupedCommands).forEach(
   (commands) => commands.sort((a, b) => a.name.localeCompare(b.name)))
 
+/** Create command group pages */
 {
   await Promise.allSettled(Object.entries(groupedCommands).map(async ([groupName, commands]) => {
     const body = commands.map((commandProps) => {
@@ -97,6 +107,7 @@ Object.values(groupedCommands).forEach(
   }))
 }
 
+/** Create command index */
 {
   const header = `# Command Index\n\n`
 
@@ -122,5 +133,14 @@ Object.values(groupedCommands).forEach(
   fs.writeFile(targetUrl, allText, {
     encoding: 'utf8'
   })
+}
+
+/** Copy the static files over */
+{
+  const staticAssets = new URL("./static/", import.meta.url)
+
+  const staticAssetsPath = fileURLToPath(staticAssets)
+  const basicReferencePath = fileURLToPath(basicReference)
+  await copy(staticAssetsPath, basicReferencePath)
 }
 
