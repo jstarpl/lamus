@@ -64,18 +64,24 @@ Object.values(groupedCommands).forEach(
 {
   await Promise.allSettled(Object.entries(groupedCommands).map(async ([groupName, commands]) => {
     const body = commands.map((commandProps) => {
-      return `## ${commandProps.name}<a id="${sanitizeUrl(commandProps.name)}"></a>\n` +
+      return `## ${commandProps.name} {#${sanitizeUrl(commandProps.name)}}\n` +
         '\n' +
-        (commandProps.type ? `Return Type: \`${commandProps.type}\`  ` : '') +
-        '\n' +
-        (commandProps.args?.length ? `Arguments: ` + commandProps.args.map((arg) => (`\`${arg}\``)).join(', ') + '  ' : 'No arguments  ') +
-        '\n' +
-        (commandProps.minArgs ? `Minimum arguments: ${commandProps.minArgs}  ` : '') +
+        (commandProps.args?.length ? ` * Arguments: ` + commandProps.args.map((arg) => (`\`${arg}\``)).join(', ') + '  \n' : 'No arguments\n') +
+        (commandProps.minArgs ? ` * Minimum arguments: ${commandProps.minArgs}\n` : '') +
+        (commandProps.type ? ` * Return Type: \`${commandProps.type}\`\n` : '') +
         '\n\n' +
         (commandProps.comment ?? '') +
         '\n'
     }).join('\n')
     const headerStr = groupProps[groupName]?.title ?? groupName
+
+    let frontMatter = ''
+
+    if (groupProps[groupName]?.frontMatter) {
+      frontMatter = '---\n' +
+                    Object.entries(groupProps[groupName]?.frontMatter).map(([key, value]) => `${key}: ${value}`).join('\n')
+                    '---\n\n'
+    }
 
     const header = `# ${headerStr}` + '\n\n'
 
