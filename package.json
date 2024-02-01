@@ -11,6 +11,7 @@
     "build:qbasic": "cd qbasic-vm && yarn bundle",
     "build:qbasic-lang": "cd codemirror-lang-qbasic-vm && yarn build",
     "build:app": "cd lamus-mvp && yarn build",
+    "build:docs": "yarn build:qbasic && cd docs && yarn gen-reference && yarn build",
     "build": "yarn build:qbasic && yarn build:app",
     "check": "tsc --noEmit"
   },

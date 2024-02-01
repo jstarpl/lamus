@@ -65,7 +65,12 @@ const config = {
 						position: 'left',
 						label: 'Tutorial',
 					},
-					{ to: '/blog', label: 'Blog', position: 'left' },
+					{
+						type: 'doc',
+						docId: 'basic-reference/alphabetic-index',
+						label: 'BASIC Reference',
+						position: 'left'
+					},
 					{
 						href: 'https://github.com/facebook/docusaurus',
 						label: 'GitHub',
