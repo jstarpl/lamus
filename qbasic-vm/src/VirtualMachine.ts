@@ -4110,21 +4110,27 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	 * If the array is empty, `ITEM` is not modified and `ST` is set to `-1`
 	 *
 	 * ```
-	 * ARRAY, OUT ITEM
+	 * ARRAY [, OUT ITEM]
 	 * ```
 	 *
 	 * @group arrays
 	 */
 	POP: {
 		args: ['ANY', 'ANY'],
+		minArgs: 1,
 		action: function (vm) {
-			const item = vm.stack.pop()
+			const argCount = vm.stack.pop()
+
+			let item: ScalarVariable<any> | undefined = undefined
+			if (argCount > 1) {
+				item = vm.stack.pop()
+			}
 			const array = vm.stack.pop()
 
 			if (!(array instanceof ArrayVariable) || array.dimensions.length !== 1) {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `First argument must be a single-dimensional array`)
 			}
-			if (!(item instanceof ScalarVariable) || item.type !== array.type) {
+			if (item && (!(item instanceof ScalarVariable) || item.type !== array.type)) {
 				throw new RuntimeError(
 					RuntimeErrorCodes.INVALID_ARGUMENT,
 					`Second argument must match the type of the array, ${array.type.name}`
@@ -4144,7 +4150,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			}
 
 			vm.status = 0
-			item.copy(poppedItem.value)
+			if (item) item.copy(poppedItem.value)
 		},
 	},
 
@@ -4153,21 +4159,27 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	 * If the array is empty, `ITEM` is not modified and `ST` is set to `-1`
 	 *
 	 * ```
-	 * ARRAY, OUT ITEM
+	 * ARRAY	[, OUT ITEM]
 	 * ```
 	 *
 	 * @group arrays
 	 */
 	SHIFT: {
 		args: ['ANY', 'ANY'],
+		minArgs: 1,
 		action: function (vm) {
-			const item = vm.stack.pop()
+			const argCount = vm.stack.pop()
+
+			let item: ScalarVariable<any> | undefined = undefined
+			if (argCount > 1) {
+				item = vm.stack.pop()
+			}
 			const array = vm.stack.pop()
 
 			if (!(array instanceof ArrayVariable) || array.dimensions.length !== 1) {
 				throw new RuntimeError(RuntimeErrorCodes.INVALID_ARGUMENT, `First argument must be a single-dimensional array`)
 			}
-			if (!(item instanceof ScalarVariable) || item.type !== array.type) {
+			if (item && (!(item instanceof ScalarVariable) || item.type !== array.type)) {
 				throw new RuntimeError(
 					RuntimeErrorCodes.INVALID_ARGUMENT,
 					`Second argument must match the type of the array, ${array.type.name}`
@@ -4187,7 +4199,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			}
 
 			vm.status = 0
-			item.copy(shiftedItem.value)
+			if (item) item.copy(shiftedItem.value)
 		},
 	},
 
