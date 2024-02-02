@@ -48,6 +48,7 @@ export class FileManagerPane {
   status: LoadStatus = LoadStatus.LOADING;
   items = observable.array<IFileEntryEx>([]);
   navigateHandler: IReactionDisposer;
+  isChangingStorage: boolean = false;
 
   constructor(public store: FileManagerStoreClass) {
     makeAutoObservable(this, {
@@ -55,6 +56,7 @@ export class FileManagerPane {
       navigateHandler: false,
       loadContentsFrom: false,
       refresh: false,
+      isChangingStorage: observable,
     });
 
     this.navigateHandler = reaction(
@@ -113,6 +115,14 @@ export class FileManagerPane {
   dispose() {
     this.navigateHandler();
   }
+
+  setLocation = action((location: FileSystemLocation) => {
+    this.location = location;
+  });
+
+  setChangingStorage = action((value: boolean) => {
+    this.isChangingStorage = value;
+  });
 }
 
 export const FileManagerStore = new FileManagerStoreClass();

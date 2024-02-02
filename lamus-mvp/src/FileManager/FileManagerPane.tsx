@@ -7,9 +7,11 @@ import { LoadStatus } from "./LoadStatus";
 import { Spinner } from "../components/Spinner";
 import { FileListItem } from "./FileListItem";
 import * as classNames from "./FileManagerPane.module.css";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FileName } from "../stores/fileSystem/IFileSystemProvider";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
+import { SelectStorageDialog } from "./SelectStorageDialog";
+import { autorun } from "mobx";
 
 const FileManagerPane = observer(function FileManagerPane({
   pane,
@@ -28,6 +30,7 @@ const FileManagerPane = observer(function FileManagerPane({
   onFileEntryDoubleClick?: React.MouseEventHandler<HTMLLIElement>;
   onGoToPath?: React.MouseEventHandler<HTMLButtonElement>;
 }) {
+  const paneListEl = useRef<HTMLDivElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<undefined | FileName[]>(
     undefined
   );
@@ -60,6 +63,45 @@ const FileManagerPane = observer(function FileManagerPane({
     );
   });
 
+  function onStorageProviderCrumbContextMenu(
+    e: React.MouseEvent<HTMLButtonElement>
+  ) {
+    e.preventDefault();
+    onChangeStorageBegin();
+  }
+
+  function onChangeStorageBegin() {
+    pane.setChangingStorage(true);
+  }
+
+  function onCloseChangeStorageDialog() {
+    pane.setChangingStorage(false);
+  }
+
+  function onChangeStorage(newProviderId: string) {
+    pane.setChangingStorage(false);
+    pane.setLocation({
+      path: [],
+      providerId: newProviderId,
+    });
+  }
+
+  useEffect(
+    () =>
+      autorun(() => {
+        const status = pane.status;
+        if (status !== LoadStatus.OK) return;
+
+        window.setTimeout(() => {
+          const defaultLeftFocus = document.querySelector<HTMLElement>(
+            `.${className}[data-focus-initial]`
+          );
+          defaultLeftFocus?.focus();
+        }, 20);
+      }),
+    []
+  );
+
   return (
     <div className={className}>
       <div className={classNames.PanePath}>
@@ -70,13 +112,13 @@ const FileManagerPane = observer(function FileManagerPane({
             }
             currentPath={pane.location.path}
             onGoToPath={onGoToPath}
-            // onStorageContextMenu={onStorageProviderCrumbContextMenu}
+            onStorageContextMenu={onStorageProviderCrumbContextMenu}
             // onFocus={() => setPathFocused(true)}
             // onBlur={() => setPathFocused(false)}
           />
         )}
       </div>
-      <div className={classNames.PaneList}>
+      <div className={classNames.PaneList} ref={paneListEl}>
         {pane.status === LoadStatus.LOADING && <Spinner />}
         {pane.status === LoadStatus.OK && (
           <ListView.List
@@ -90,6 +132,13 @@ const FileManagerPane = observer(function FileManagerPane({
           </ListView.List>
         )}
       </div>
+      <SelectStorageDialog
+        show={pane.isChangingStorage}
+        currentStorage={pane.location?.providerId}
+        label="Select storage:"
+        onChangeStorage={onChangeStorage}
+        onDismiss={onCloseChangeStorageDialog}
+      />
     </div>
   );
 });

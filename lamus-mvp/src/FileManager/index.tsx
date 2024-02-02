@@ -16,12 +16,16 @@ import {
   MOVE_COMBO,
   QUIT_COMBO,
 } from "../lib/commonHotkeys";
-import { FileManagerStore } from "./stores/FileManagerStore";
+import {
+  FileManagerPane as FileManagerPaneStore,
+  FileManagerStore,
+} from "./stores/FileManagerStore";
 import FileManagerPane from "./FileManagerPane";
 import * as classNames from "./FileManager.module.css";
 import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
 import { sleep } from "../lib/lib";
 import { FileManagerTabs } from "./FileManagerTabs";
+import { FileSystemLocation } from "../stores/FileSystemStore";
 
 const MENU_COMBO = ["F9"];
 const SWITCH_PANE_COMBO = "Tab";
@@ -124,22 +128,48 @@ const FileManager = observer(function FileManager() {
       }
     }
 
-    async function onEnter(e: KeyboardEvent) {
-      console.log(e);
-    }
-
     keyboardHandler.bind(SWITCH_PANE_COMBO, onTab, {
-      exclusive: true,
-    });
-    keyboardHandler.bind(GO_COMBO, onEnter, {
       exclusive: true,
     });
 
     return () => {
       keyboardHandler.unbind(SWITCH_PANE_COMBO, onTab);
-      keyboardHandler.unbind(GO_COMBO, onEnter);
     };
   }, [keyboardHandler]);
+
+  const createStorageChangeHandler = (pane: FileManagerPaneStore) => {
+    return () => {
+      pane.setChangingStorage(true);
+    };
+  };
+
+  const onStorageChangeLeft = createStorageChangeHandler(
+    FileManagerStore.leftPane
+  );
+  const onStorageChangeRight = createStorageChangeHandler(
+    FileManagerStore.rightPane
+  );
+
+  const createNavigationHandler = (pane: FileManagerPaneStore) => {
+    return (e: React.MouseEvent<HTMLButtonElement>) => {
+      const pathStr = e.currentTarget.dataset["path"];
+      if (!pathStr) return;
+      const path = JSON.parse(pathStr);
+      pane.setLocation(path);
+    };
+  };
+
+  const onNavigateLeft = createNavigationHandler(FileManagerStore.leftPane);
+  const onNavigateRight = createNavigationHandler(FileManagerStore.rightPane);
+
+  const createFocusHadler = (focus: "left" | "right") => {
+    return () => {
+      FileManagerStore.setDisplayFocus(focus);
+    };
+  };
+
+  const onFocusLeft = createFocusHadler("left");
+  const onFocusRight = createFocusHadler("right");
 
   return (
     <div className={`sdi-app`}>
@@ -155,7 +185,8 @@ const FileManager = observer(function FileManager() {
             itemClassName={FILE_MANAGER_ITEM_LEFT}
             pane={FileManagerStore.leftPane}
             onFileEntryDoubleClick={console.log}
-            onGoToPath={console.log}
+            onGoToPath={onNavigateLeft}
+            onFocus={onFocusLeft}
           />
           <FileManagerPane
             className={`${classNames.PaneRight} ${
@@ -166,7 +197,8 @@ const FileManager = observer(function FileManager() {
             pane={FileManagerStore.rightPane}
             itemClassName={FILE_MANAGER_ITEM_RIGHT}
             onFileEntryDoubleClick={console.log}
-            onGoToPath={console.log}
+            onGoToPath={onNavigateRight}
+            onFocus={onFocusRight}
           />
         </div>
       </div>
@@ -176,6 +208,7 @@ const FileManager = observer(function FileManager() {
             combo={CHANGE_STORAGE_PRIMARY}
             position={1}
             showOnlyWhenModifiersActive
+            onClick={onStorageChangeLeft}
           >
             Storage
           </CommandBar.Button>
@@ -183,6 +216,7 @@ const FileManager = observer(function FileManager() {
             combo={CHANGE_STORAGE_SECONDARY}
             position={2}
             showOnlyWhenModifiersActive
+            onClick={onStorageChangeRight}
           >
             Storage
           </CommandBar.Button>
