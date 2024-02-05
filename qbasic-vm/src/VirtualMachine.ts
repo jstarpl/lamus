@@ -4159,7 +4159,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	 * If the array is empty, `ITEM` is not modified and `ST` is set to `-1`
 	 *
 	 * ```
-	 * ARRAY	[, OUT ITEM]
+	 * ARRAY [, OUT ITEM]
 	 * ```
 	 *
 	 * @group arrays
