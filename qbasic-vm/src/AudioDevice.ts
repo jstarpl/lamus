@@ -312,7 +312,7 @@ export class AudioDevice implements IAudioDevice {
 
 			amp.gain.setValueAtTime(volume, t0)
 			amp.gain.setValueAtTime(volume, t1)
-			amp.gain.exponentialRampToValueAtTime(0, t2)
+			amp.gain.linearRampToValueAtTime(1.4015e-45, t2)
 			amp.connect(this.audioContext.destination)
 			osc1.addEventListener('ended', () => {
 				osc1.disconnect()
