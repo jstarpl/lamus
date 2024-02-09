@@ -556,11 +556,16 @@ export class AstForLoop implements AstStatement {
 
 export class AstIfStatement implements AstStatement {
 	locus: ILocus
-	expr: any
+	expr: AstExpression
 	statements: AstStatement[]
-	elseStatements: AstStatement[] | null
+	elseStatements: AstStatement | AstStatement[] | null
 
-	constructor(locus: ILocus, expr: AstStatement, statements: AstStatement[], elseStatements: AstStatement[] | null) {
+	constructor(
+		locus: ILocus,
+		expr: AstExpression,
+		statements: AstStatement[],
+		elseStatements: AstStatement | AstStatement[] | null
+	) {
 		this.locus = locus
 		this.expr = expr
 		this.statements = statements

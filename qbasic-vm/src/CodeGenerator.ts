@@ -156,12 +156,17 @@ export class CodeGenerator implements IVisitor {
 		this.getGotoLabel(':top')
 	}
 
-	private arrayAccept(array: AstStatement[], visitor: IVisitor) {
-		for (let i = 0; i < array.length; i++) {
-			if (!this[i]) {
+	private acceptVisitor(visitee: AstStatement | AstStatement[], visitor: IVisitor) {
+		if (!Array.isArray(visitee)) return visitee.accept(visitor)
+		for (let i = 0; i < visitee.length; i++) {
+			if (!visitee[i]) {
 				continue
 			}
-			this[i].accept(visitor)
+			if (Array.isArray(visitee[i])) {
+				this.acceptVisitor(visitee[i], visitor)
+			} else {
+				visitee[i].accept(visitor)
+			}
 		}
 	}
 
@@ -244,7 +249,7 @@ export class CodeGenerator implements IVisitor {
 				this.write('POPVAR', node.args[i].name, node.locus)
 			}
 		}
-		this.arrayAccept(node.statements, this)
+		this.acceptVisitor(node.statements, this)
 		if (node.isFunction) {
 			// when the function returns, place its return value on the top of
 			// the stack.
@@ -459,19 +464,19 @@ export class CodeGenerator implements IVisitor {
 		this.map(node.locus)
 		// check if it's really a function call.
 		if (node.expr instanceof AstVariableReference && this.functionNames[node.expr.name]) {
-			this.arrayAccept(node.parameters, this)
+			this.acceptVisitor(node.parameters, this)
 			this.write('CALL', this.getGotoLabel(node.expr.name), node.locus)
 		} else if (node.expr instanceof AstVariableReference && SystemFunctions[node.expr.name]) {
 			const func = SystemFunctions[node.expr.name]
-			this.arrayAccept(node.parameters, this)
+			this.acceptVisitor(node.parameters, this)
 			if (func.minArgs < func.args.length) {
 				// variable number of arguments.
 				this.write('PUSHCONST', node.parameters.length, node.locus)
 			}
 			node.expr.accept(this)
 		} else {
-			this.arrayAccept(node.parameters, this)
-			node.expr.accept(this)
+			this.acceptVisitor(node.parameters, this)
+			this.acceptVisitor(node.expr, this)
 			if (node.parameters.length > 0) {
 				this.write('ARRAY_DEREF', node.wantRef ? -1 : 0, node.locus)
 			} else {
@@ -609,7 +614,7 @@ export class CodeGenerator implements IVisitor {
 		this.label(top)
 
 		this.loopStack.push(new LoopContext(null, null, null, bottom))
-		this.arrayAccept(node.statements, this)
+		this.acceptVisitor(node.statements, this)
 		this.loopStack.pop()
 		switch (node.type) {
 			case AstDoStatementType.UNTIL:
@@ -640,7 +645,7 @@ export class CodeGenerator implements IVisitor {
 		node.expr.accept(this)
 		this.write('BZ', bottom, node.locus)
 		this.loopStack.push(new LoopContext(null, null, null, bottom))
-		this.arrayAccept(node.statements, this)
+		this.acceptVisitor(node.statements, this)
 		this.loopStack.pop()
 		this.write('JMP', top, node.locus)
 		this.label(bottom)
@@ -653,13 +658,13 @@ export class CodeGenerator implements IVisitor {
 
 		node.expr.accept(this)
 		this.write('BZ', elseLabel, node.locus)
-		this.arrayAccept(node.statements, this)
+		this.acceptVisitor(node.statements, this)
 		this.write('JMP', endLabel, node.locus)
 
 		this.label(elseLabel)
 
 		if (node.elseStatements) {
-			this.arrayAccept(node.elseStatements, this)
+			this.acceptVisitor(node.elseStatements, this)
 			this.write('JMP', endLabel, node.locus)
 		}
 
@@ -671,7 +676,7 @@ export class CodeGenerator implements IVisitor {
 		const endSelect = this.newLabel('end_select')
 		this.selectStack.push(endSelect)
 		node.expr.accept(this)
-		this.arrayAccept(node.cases, this)
+		this.acceptVisitor(node.cases, this)
 		this.write('POP', null, node.locus)
 		this.label(endSelect)
 		this.selectStack.pop()
@@ -691,12 +696,12 @@ export class CodeGenerator implements IVisitor {
 			this.write('JMP', skipLabel, node.locus)
 			this.label(okayLabel)
 
-			this.arrayAccept(node.statements, this)
+			this.acceptVisitor(node.statements, this)
 			this.write('JMP', this.selectStack[this.selectStack.length - 1], node.locus)
 			this.label(skipLabel)
 		} else {
 			// case else.
-			this.arrayAccept(node.statements, this)
+			this.acceptVisitor(node.statements, this)
 		}
 	}
 

@@ -3,6 +3,9 @@ import path from 'node:path'
 import fs from 'node:fs'
 import * as esbuild from 'esbuild'
 
+const PORT = 4000
+const HOSTNAME = 'localhost'
+
 function locateFile(paths, url) {
   for (const pathOption of paths) {
     const filePath = path.join(pathOption, url)
@@ -71,4 +74,6 @@ http.createServer((req, res) => {
 
   // Forward the body of the request to esbuild
   req.pipe(proxyReq, { end: true })
-}).listen(4000)
+}).listen(PORT, HOSTNAME)
+
+console.log(`> Ready! Available at http://${HOSTNAME}:${PORT}`)

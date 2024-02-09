@@ -10,6 +10,7 @@
 		<div id="debug"></div>
 
 		<script>
+			window.global = window
 			window.process = {
 				env: {},
 			}
@@ -44,7 +45,7 @@
 			})
 			generalIORouter.insertRoute('/peek/**', (req) => {
 				console.log(req)
-				return Promise((resolve) =>
+				return new Promise((resolve) =>
 					resolve('Reading from a resolved promise /peek/someEndpoint, time is: ' + new Date().toTimeString())
 				)
 			})
@@ -85,10 +86,10 @@
 			}
 
 			const demoPrgs = [
+				'artic/artic.bas',
 				'synth.bas',
 				'stock/stock.bas',
 				'driveBy/driveBy.bas',
-				'artic/artic.bas',
 				'helloWorld.bas',
 				'events.bas',
 				'nibbles.bas',

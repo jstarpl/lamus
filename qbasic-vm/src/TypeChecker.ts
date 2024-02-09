@@ -175,12 +175,17 @@ export class TypeChecker implements IVisitor {
 		this.loopStack = []
 	}
 
-	private arrayAccept(array: AstStatement[], visitor: IVisitor) {
-		for (let i = 0; i < array.length; i++) {
-			if (!array[i]) {
+	private acceptVisitor(visitee: AstStatement | AstStatement[], visitor: IVisitor) {
+		if (!Array.isArray(visitee)) return visitee.accept(visitor)
+		for (let i = 0; i < visitee.length; i++) {
+			if (!visitee[i]) {
 				continue
 			}
-			array[i].accept(visitor)
+			if (Array.isArray(visitee[i])) {
+				this.acceptVisitor(visitee[i], visitor)
+			} else {
+				visitee[i].accept(visitor)
+			}
 		}
 	}
 
@@ -268,7 +273,7 @@ export class TypeChecker implements IVisitor {
 		}
 
 		this.declaredSubs[declare.name] = declare
-		this.arrayAccept(declare.args, this)
+		this.acceptVisitor(declare.args, this)
 		if (declare.isFunction) {
 			if (declare.typeName) {
 				declare.type = this.types[declare.typeName]
@@ -335,10 +340,13 @@ export class TypeChecker implements IVisitor {
 				continue
 			}
 			// dbg.printf("Try to visit %s\n", getObjectClass( sub.statements[i]) );
-			if (!sub.statements[i].accept) {
-				dbg().printf('ERROR: Could not visit object of type %s\n', /*getObjectClass*/ sub.statements[i])
-			} else {
+			//@ts-expect-error sub.statements[i] may be an array
+			if (sub.statements[i].accept) {
 				sub.statements[i].accept(this)
+			} else if (Array.isArray(sub.statements[i])) {
+				this.acceptVisitor(sub.statements[i], this)
+			} else {
+				dbg().printf('ERROR: Could not visit object of type %s\n', /*getObjectClass*/ sub.statements[i])
 			}
 		}
 
@@ -414,7 +422,7 @@ export class TypeChecker implements IVisitor {
 
 	public visitPrintStatement(print: AstPrintStatement): void {
 		// all arguments must be convertable to strings or single.
-		this.arrayAccept(print.printItems, this)
+		this.acceptVisitor(print.printItems, this)
 	}
 
 	public visitPrintUsingStatement(printUsing: AstPrintUsingStatement): void {
@@ -446,7 +454,7 @@ export class TypeChecker implements IVisitor {
 
 	public visitWriteStatement(write: AstWriteStatement): void {
 		// all arguments must be convertable to strings or single.
-		this.arrayAccept(write.writeItems, this)
+		this.acceptVisitor(write.writeItems, this)
 	}
 
 	public visitOpenStatement(open: AstOpenStatement): void {
@@ -632,7 +640,7 @@ export class TypeChecker implements IVisitor {
 			const func = SystemFunctions[ref.expr.name]
 			const name = ref.expr.name
 			ref.type = this.types[func.type]
-			this.arrayAccept(ref.parameters, this)
+			this.acceptVisitor(ref.parameters, this)
 
 			// verify that parameters are correct type.
 			if (ref.parameters.length < func.minArgs || ref.parameters.length > func.args.length) {
@@ -801,7 +809,7 @@ export class TypeChecker implements IVisitor {
 		}
 
 		this.loopStack.unshift(new CheckedLoopContext('DO', null))
-		this.arrayAccept(loop.statements, this)
+		this.acceptVisitor(loop.statements, this)
 		this.loopStack.shift()
 	}
 
@@ -812,7 +820,7 @@ export class TypeChecker implements IVisitor {
 		}
 
 		this.loopStack.unshift(new CheckedLoopContext('WHILE', null))
-		this.arrayAccept(loop.statements, this)
+		this.acceptVisitor(loop.statements, this)
 		this.loopStack.shift()
 	}
 
@@ -822,9 +830,9 @@ export class TypeChecker implements IVisitor {
 			this.error(ifStatement, 'Expected numeric expression')
 		}
 
-		this.arrayAccept(ifStatement.statements, this)
+		this.acceptVisitor(ifStatement.statements, this)
 		if (ifStatement.elseStatements) {
-			this.arrayAccept(ifStatement.elseStatements, this)
+			this.acceptVisitor(ifStatement.elseStatements, this)
 		}
 	}
 
@@ -848,8 +856,8 @@ export class TypeChecker implements IVisitor {
 	}
 
 	public visitCaseStatement(caseStatement: AstCaseStatement): void {
-		this.arrayAccept(caseStatement.exprList, this)
-		this.arrayAccept(caseStatement.statements, this)
+		this.acceptVisitor(caseStatement.exprList, this)
+		this.acceptVisitor(caseStatement.statements, this)
 	}
 
 	public visitTypeMember(member: AstTypeMember): void {

@@ -27,5 +27,6 @@ export default defineConfig(async () => ({
   plugins: [react(), viteTsconfigPaths()],
   define: {
     "process.env": {},
+    global: "window",
   },
 }));
