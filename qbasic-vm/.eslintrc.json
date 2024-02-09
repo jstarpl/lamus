@@ -9,6 +9,7 @@
 				"usePrettierrc": true,
 				"trailingComma": "es5"
 			}
-		]
+		],
+		"@typescript-eslint/unbound-method": "off"
 	}
 }

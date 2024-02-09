@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<script src="qbasic-vm.js" type="text/javascript"></script>
-	</head>
+	<head> </head>
 	<body>
 		<div>
 			<select id="select"></select>
@@ -11,15 +9,32 @@
 		<button id="poke">POKE</button>
 		<div id="debug"></div>
 
-		<script type="text/javascript">
-			const qb = window['qbasic-vm']
-			const cons = new qb.Console(document.getElementById('main'), undefined, 320, 600, '')
-			const audio = new qb.AudioDevice()
-			const network = new qb.NetworkAdapter()
-			const fileSystem = new qb.LocalStorageFileSystem()
-			const generalIORouter = new qb.GeneralIORouter()
-			const virtualMachine = new qb.VirtualMachine(cons, audio, network, fileSystem, generalIORouter)
-			const dbg = new qb.DebugConsole(document.getElementById('debug'))
+		<script>
+			window.process = {
+				env: {},
+			}
+
+			new EventSource('/esbuild').addEventListener('change', () => location.reload())
+		</script>
+
+		<script type="module">
+			import {
+				Console,
+				AudioDevice,
+				NetworkAdapter,
+				LocalStorageFileSystem,
+				GeneralIORouter,
+				VirtualMachine,
+				DebugConsole,
+				QBasicProgram,
+			} from './index.js'
+			const cons = new Console(document.getElementById('main'), undefined, 320, 600, '')
+			const audio = new AudioDevice()
+			const network = new NetworkAdapter()
+			const fileSystem = new LocalStorageFileSystem()
+			const generalIORouter = new GeneralIORouter()
+			const virtualMachine = new VirtualMachine(cons, audio, network, fileSystem, generalIORouter)
+			const dbg = new DebugConsole(document.getElementById('debug'))
 			document.getElementById('poke').addEventListener('click', () => {
 				generalIORouter.emit('/poke', 'Random Data From JavaScript: ' + Math.random() * 1000)
 			})
@@ -43,7 +58,7 @@
 					.then((code) => {
 						virtualMachine.reset()
 						network.reset()
-						const program = new qb.QBasicProgram(code)
+						const program = new QBasicProgram(code)
 						if (program.errors.length === 0) {
 							const path = fileName.split(fileSystem.pathSeparator)
 							if (path.length > 1) {

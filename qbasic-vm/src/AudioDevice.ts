@@ -18,7 +18,7 @@
 */
 
 import MMLIterator from '@jstarpl/mml-iterator'
-import SeqEmitter = require('seq-emitter')
+import SeqEmitter from 'seq-emitter'
 import { IAudioDevice } from './IAudioDevice'
 
 interface IMMLEmitterConfig {

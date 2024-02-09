@@ -47,6 +47,25 @@ import {
 	AstGotoStatement,
 	AstGosubStatement,
 	AstReDimStatement,
+	AstPrintStatement,
+	AstPrintUsingStatement,
+	AstPrintItem,
+	AstEndStatement,
+	AstNullStatement,
+	AstMemberDeref,
+	AstRange,
+	AstDataStatement,
+	AstReturnStatement,
+	AstRestoreStatement,
+	AstConstStatement,
+	AstDefTypeStatement,
+	AstWhileLoop,
+	AstTypeMember,
+	AstUserType,
+	AstLabel,
+	AstAssignStatement,
+	AstBinaryOp,
+	AstUnaryOperator,
 } from './QBasic'
 import {
 	IntegerType,
@@ -76,7 +95,6 @@ import { Locus } from './Tokenizer'
 // map from names to type objects.
 class TypeScope {
 	names: { [key: string]: SomeType | undefined } = {}
-	constructor() {}
 }
 
 class CheckedLabel {
@@ -157,7 +175,16 @@ export class TypeChecker implements IVisitor {
 		this.loopStack = []
 	}
 
-	public error(object: AstStatement, ...args: any) {
+	private arrayAccept(array: AstStatement[], visitor: IVisitor) {
+		for (let i = 0; i < array.length; i++) {
+			if (!array[i]) {
+				continue
+			}
+			array[i].accept(visitor)
+		}
+	}
+
+	public error(object: AstStatement, ...args: any[]): void {
 		const message = sprintf(args)
 		this.errors.push({
 			message,
@@ -171,7 +198,7 @@ export class TypeChecker implements IVisitor {
 	 If the variable name includes a type suffix, removes it and returns the
 	 result.
 	 */
-	public removeSuffix(name: string) {
+	public removeSuffix(name: string): string {
 		switch (name[name.length - 1]) {
 			case '%':
 			case '$':
@@ -188,7 +215,7 @@ export class TypeChecker implements IVisitor {
 	 Using the current scope, or the type suffix, determine the type of the
 	 variable given its name. Returns the type object.
 	 */
-	public getTypeFromVariableName(name: string) {
+	public getTypeFromVariableName(name: string): SomeType {
 		let type = this.scopes[0].names[name]
 		if (type !== undefined) {
 			return type
@@ -206,7 +233,7 @@ export class TypeChecker implements IVisitor {
 		return this.defaultType
 	}
 
-	public visitProgram(program: AstProgram) {
+	public visitProgram(program: AstProgram): void {
 		let i
 		for (i = 0; i < program.subs.length; i++) {
 			program.subs[i].accept(this)
@@ -214,22 +241,22 @@ export class TypeChecker implements IVisitor {
 
 		// for each label used, if it is not defined, then emit an error.
 		for (i = 0; i < this.labelsUsed.length; i++) {
-			let label = this.labelsUsed[i]
+			const label = this.labelsUsed[i]
 			if (!this.labelsDefined[label.name]) {
 				this.error(label.astNode, 'Label %s is not defined', label.name)
 			}
 		}
 
 		// emit an error on any subs not implemented
-		for (let name in this.declaredSubs) {
-			let func = this.declaredSubs[name]
+		for (const name in this.declaredSubs) {
+			const func = this.declaredSubs[name]
 			if (!func.hasBody && func.used) {
 				this.error(func, "SUB or FUNCTION '%s' has no body", name)
 			}
 		}
 	}
 
-	public visitDeclareFunction(declare: AstDeclareFunction) {
+	public visitDeclareFunction(declare: AstDeclareFunction): void {
 		// error if this name is already declared.
 		if (this.declaredSubs[declare.name]) {
 			this.error(
@@ -241,7 +268,7 @@ export class TypeChecker implements IVisitor {
 		}
 
 		this.declaredSubs[declare.name] = declare
-		declare.args.accept(this)
+		this.arrayAccept(declare.args, this)
 		if (declare.isFunction) {
 			if (declare.typeName) {
 				declare.type = this.types[declare.typeName]
@@ -256,12 +283,9 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitSubroutine(sub: AstSubroutine) {
-		let i
-		let self = this
-
-		function subError(declare) {
-			self.error(
+	public visitSubroutine(sub: AstSubroutine): void {
+		const subError = (declare) => {
+			this.error(
 				sub,
 				"SUB or FUNCTION '%s' does not match declaration on " + 'line %s',
 				sub.name,
@@ -273,7 +297,7 @@ export class TypeChecker implements IVisitor {
 		if (!this.declaredSubs[sub.name]) {
 			this.error(sub, "SUB '%s' is not declared", sub.name)
 		} else {
-			let declare = this.declaredSubs[sub.name]
+			const declare = this.declaredSubs[sub.name]
 
 			if (declare.isFunction !== sub.isFunction) {
 				subError(declare)
@@ -283,7 +307,7 @@ export class TypeChecker implements IVisitor {
 				subError(declare)
 			} else {
 				// error if the declaration does not have the same arguments.
-				for (i = 0; i < sub.args.length; i++) {
+				for (let i = 0; i < sub.args.length; i++) {
 					// don't compare variable names, it's okay if they differ.
 					if (
 						(sub.args[i].typeName !== declare.args[i].typeName && declare.args[i].typeName !== 'ANY') ||
@@ -300,13 +324,13 @@ export class TypeChecker implements IVisitor {
 		this.scopes.unshift(new TypeScope())
 
 		// visit arguments
-		for (i = 0; i < sub.args.length; i++) {
+		for (let i = 0; i < sub.args.length; i++) {
 			sub.args[i].accept(this)
 			this.scopes[0].names[sub.args[i].name] = sub.args[i].type
 		}
 
 		// visit statements
-		for (i = 0; i < sub.statements.length; i++) {
+		for (let i = 0; i < sub.statements.length; i++) {
 			if (!sub.statements[i]) {
 				continue
 			}
@@ -324,7 +348,7 @@ export class TypeChecker implements IVisitor {
 	/**
 	 Check that types of arguments match the ones from the AstDeclareStatement.
 	 */
-	public checkCallArguments(declare: AstDeclareFunction, args: AstArgument[]) {
+	public checkCallArguments(declare: AstDeclareFunction, args: AstArgument[]): void {
 		declare.used = true
 		if (declare.args.length !== args.length) {
 			this.error(declare, 'Wrong number of arguments')
@@ -346,7 +370,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitCallStatement(call: AstCallStatement) {
+	public visitCallStatement(call: AstCallStatement): void {
 		if (SystemSubroutines[call.name]) {
 			// TODO: Check args for system parameters.
 			for (let i = 0; i < call.args.length; i++) {
@@ -356,7 +380,7 @@ export class TypeChecker implements IVisitor {
 			return
 		}
 
-		let declare = this.declaredSubs[call.name]
+		const declare = this.declaredSubs[call.name]
 		// sub must exist and argument number and types must be compatible.
 		if (!declare) {
 			this.error(call, "Call to undefined SUB '%s'", call.name)
@@ -365,7 +389,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitArgument(argument: AstArgument) {
+	public visitArgument(argument: AstArgument): void {
 		let type
 
 		// we are about to enter a function, so add this variable to the scope
@@ -388,12 +412,12 @@ export class TypeChecker implements IVisitor {
 		argument.type = type
 	}
 
-	public visitPrintStatement(print) {
+	public visitPrintStatement(print: AstPrintStatement): void {
 		// all arguments must be convertable to strings or single.
-		print.printItems.accept(this)
+		this.arrayAccept(print.printItems, this)
 	}
 
-	public visitPrintUsingStatement(printUsing) {
+	public visitPrintUsingStatement(printUsing: AstPrintUsingStatement): void {
 		for (let i = 0; i < printUsing.exprList.length; i++) {
 			printUsing.exprList[i].wantRef = true
 			printUsing.exprList[i].accept(this)
@@ -410,7 +434,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitPrintItem(item) {
+	public visitPrintItem(item: AstPrintItem): void {
 		if (item.expr === null) {
 			return
 		}
@@ -420,12 +444,12 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitWriteStatement(write: AstWriteStatement) {
+	public visitWriteStatement(write: AstWriteStatement): void {
 		// all arguments must be convertable to strings or single.
-		write.writeItems.accept(this)
+		this.arrayAccept(write.writeItems, this)
 	}
 
-	public visitOpenStatement(open: AstOpenStatement) {
+	public visitOpenStatement(open: AstOpenStatement): void {
 		if (!open.fileNameExpr) {
 			this.error(open, 'File name needs to be specified.')
 		} else {
@@ -451,7 +475,7 @@ export class TypeChecker implements IVisitor {
 			} else {
 				open.fileHandle.accept(this)
 				if (open.fileHandle instanceof AstVariableReference) {
-					let type = this.getTypeFromVariableName(open.fileHandle.name)
+					const type = this.getTypeFromVariableName(open.fileHandle.name)
 					if (type.name !== 'INTEGER') {
 						this.error(open, "File handle '%s' number must be an INTEGER", open.fileHandle.name)
 					}
@@ -466,12 +490,12 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitCloseStatement(close: AstCloseStatement) {
+	public visitCloseStatement(close: AstCloseStatement): void {
 		for (let i = 0; i < close.fileHandles.length; i++) {
 			const handle = close.fileHandles[i]
 			handle.accept(this)
 			if (handle instanceof AstVariableReference) {
-				let type = this.getTypeFromVariableName(handle.name)
+				const type = this.getTypeFromVariableName(handle.name)
 				if (type.name !== 'INTEGER') {
 					this.error(close, "File handle '%s' number must be an INTEGER", handle.name)
 				}
@@ -485,12 +509,12 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitInputStatement(input: AstInputStatement) {
+	public visitInputStatement(input: AstInputStatement): void {
 		// if fileHandle is specified, it needs to be a valid file handler
 		if (input.fileHandle) {
 			input.fileHandle.accept(this)
 			if (input.fileHandle instanceof AstVariableReference) {
-				let type = this.getTypeFromVariableName(input.fileHandle.name)
+				const type = this.getTypeFromVariableName(input.fileHandle.name)
 				if (type.name !== 'INTEGER') {
 					this.error(input, "File handle '%s' number must be an INTEGER", input.fileHandle.name)
 				}
@@ -513,18 +537,22 @@ export class TypeChecker implements IVisitor {
 
 		// identifiers must be strings or numbers.
 		for (let i = 0; i < input.identifiers.length; i++) {
-			let type = this.getTypeFromVariableName(input.identifiers[i])
+			const type = this.getTypeFromVariableName(input.identifiers[i])
 			if (!IsNumericType(type) && !IsStringType(type)) {
 				this.error(input, "Identifier '%s' should be string or numeric.", input.identifiers[i])
 			}
 		}
 	}
 
-	public visitNullStatement(_argument) {}
+	public visitNullStatement(_argument: AstNullStatement): void {
+		// noop
+	}
 
-	public visitEndStatement(_argument) {}
+	public visitEndStatement(_argument: AstEndStatement): void {
+		// noop
+	}
 
-	public visitForLoop(loop: AstForLoop) {
+	public visitForLoop(loop: AstForLoop): void {
 		// identifier must be numeric type.
 		if (!IsNumericType(this.getTypeFromVariableName(loop.identifier))) {
 			this.error(loop, 'Loop counter must be a number')
@@ -546,7 +574,7 @@ export class TypeChecker implements IVisitor {
 		this.loopStack.unshift(new CheckedLoopContext('FOR', loop.identifier))
 	}
 
-	public visitNextStatement(next: AstNextStatement) {
+	public visitNextStatement(next: AstNextStatement): void {
 		// pop loops off loopstack in order.
 		// identifier must match loops.
 		for (let i = 0; i < next.identifiers.length; i++) {
@@ -574,7 +602,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitExitStatement(exit: AstExitStatement) {
+	public visitExitStatement(exit: AstExitStatement): void {
 		if (exit.what && exit.what !== 'FOR' && exit.what !== 'DO' && exit.what !== 'WHILE') {
 			this.error(exit, 'EXIT %s not supported', exit.what)
 		}
@@ -586,12 +614,12 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitArrayDeref(ref: AstArrayDeref) {
+	public visitArrayDeref(ref: AstArrayDeref): void {
 		let i
 		ref.expr.accept(this)
 
 		if (ref.expr instanceof AstVariableReference && this.declaredSubs[ref.expr.name]) {
-			let declare = this.declaredSubs[ref.expr.name]
+			const declare = this.declaredSubs[ref.expr.name]
 			if (!declare.isFunction) {
 				this.error(ref, "Tried to call non-function '%s'", ref.expr.name)
 			}
@@ -604,7 +632,7 @@ export class TypeChecker implements IVisitor {
 			const func = SystemFunctions[ref.expr.name]
 			const name = ref.expr.name
 			ref.type = this.types[func.type]
-			ref.parameters.accept(this)
+			this.arrayAccept(ref.parameters, this)
 
 			// verify that parameters are correct type.
 			if (ref.parameters.length < func.minArgs || ref.parameters.length > func.args.length) {
@@ -647,7 +675,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitMemberDeref(ref) {
+	public visitMemberDeref(ref: AstMemberDeref): void {
 		// lhs should resolve to a user type.
 		ref.lhs.accept(this)
 		if (!IsUserType(ref.lhs.type)) {
@@ -663,7 +691,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitVariableReference(ref) {
+	public visitVariableReference(ref: AstVariableReference): void {
 		let func
 		if (SystemFunctions[ref.name]) {
 			func = SystemFunctions[ref.name]
@@ -681,7 +709,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitRange(range) {
+	public visitRange(range: AstRange): void {
 		range.lowerExpr.accept(this)
 		range.upperExpr.accept(this)
 
@@ -690,17 +718,21 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitDataStatement(_argument) {}
+	public visitDataStatement(_argument: AstDataStatement): void {
+		// noop
+	}
 
-	public visitReturnStatement(_returnStatement) {}
+	public visitReturnStatement(_returnStatement: AstReturnStatement): void {
+		// noop
+	}
 
-	public visitRestoreStatement(restore) {
+	public visitRestoreStatement(restore: AstRestoreStatement): void {
 		if (restore.label) {
 			this.labelsUsed.push(new CheckedLabel(restore.label, restore))
 		}
 	}
 
-	public visitConstStatement(constStatement) {
+	public visitConstStatement(constStatement: AstConstStatement): void {
 		// Ensure it's not double defined.
 		if (constStatement.name in this.shared.names) {
 			this.error(constStatement, "Redeclared variable '%s'", constStatement.name)
@@ -712,11 +744,16 @@ export class TypeChecker implements IVisitor {
 		this.shared.names[constStatement.name] = constStatement.expr.type
 	}
 
-	public visitDefTypeStatement(def) {
+	public visitDefTypeStatement(def: AstDefTypeStatement): void {
+		if (def.typeName === null) {
+			this.error(def, 'Type Name cannot be null')
+			return
+		}
+
 		this.defaultType = this.types[def.typeName] as SomeScalarType
 	}
 
-	public visitDimStatement(dim: AstDimStatement) {
+	public visitDimStatement(dim: AstDimStatement): void {
 		// type, if present, must exist.
 		let type
 		if (dim.typeName) {
@@ -755,7 +792,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitDoStatement(loop: AstDoStatement) {
+	public visitDoStatement(loop: AstDoStatement): void {
 		if (loop.expr) {
 			loop.expr.accept(this)
 		}
@@ -764,34 +801,34 @@ export class TypeChecker implements IVisitor {
 		}
 
 		this.loopStack.unshift(new CheckedLoopContext('DO', null))
-		loop.statements.accept(this)
+		this.arrayAccept(loop.statements, this)
 		this.loopStack.shift()
 	}
 
-	public visitWhileLoop(loop) {
+	public visitWhileLoop(loop: AstWhileLoop): void {
 		loop.expr.accept(this)
 		if (!IsNumericType(loop.expr.type)) {
 			this.error(loop, 'Loop expression must be numeric')
 		}
 
 		this.loopStack.unshift(new CheckedLoopContext('WHILE', null))
-		loop.statements.accept(this)
+		this.arrayAccept(loop.statements, this)
 		this.loopStack.shift()
 	}
 
-	public visitIfStatement(ifStatement: AstIfStatement) {
+	public visitIfStatement(ifStatement: AstIfStatement): void {
 		ifStatement.expr.accept(this)
 		if (!IsNumericType(ifStatement.expr.type)) {
 			this.error(ifStatement, 'Expected numeric expression')
 		}
 
-		ifStatement.statements.accept(this)
+		this.arrayAccept(ifStatement.statements, this)
 		if (ifStatement.elseStatements) {
-			ifStatement.elseStatements.accept(this)
+			this.arrayAccept(ifStatement.elseStatements, this)
 		}
 	}
 
-	public visitSelectStatement(select: AstSelectStatement) {
+	public visitSelectStatement(select: AstSelectStatement): void {
 		// expr must be compatible with that of each case.
 		select.expr.accept(this)
 		if (!IsNumericType(select.expr.type) && !IsStringType(select.expr.type)) {
@@ -799,7 +836,7 @@ export class TypeChecker implements IVisitor {
 		}
 
 		for (let i = 0; i < select.cases.length; i++) {
-			let caseStatement = select.cases[i]
+			const caseStatement = select.cases[i]
 			caseStatement.accept(this)
 
 			for (let j = 0; j < caseStatement.exprList.length; j++) {
@@ -810,12 +847,12 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitCaseStatement(caseStatement: AstCaseStatement) {
-		caseStatement.exprList.accept(this)
-		caseStatement.statements.accept(this)
+	public visitCaseStatement(caseStatement: AstCaseStatement): void {
+		this.arrayAccept(caseStatement.exprList, this)
+		this.arrayAccept(caseStatement.statements, this)
 	}
 
-	public visitTypeMember(member) {
+	public visitTypeMember(member: AstTypeMember): void {
 		let type
 
 		// typename must exist.
@@ -832,14 +869,14 @@ export class TypeChecker implements IVisitor {
 		member.type = type
 	}
 
-	public visitUserType(userType) {
+	public visitUserType(userType: AstUserType): void {
 		// must not already be declared.
 		if (this.types[userType.name]) {
 			this.error(userType, "Typename '%s' already defined", userType.name)
 		}
 
 		// members should be declared only once.
-		let members = {}
+		const members = {}
 		for (let i = 0; i < userType.members.length; i++) {
 			userType.members[i].accept(this)
 			if (members[userType.members[i].name] !== undefined) {
@@ -854,15 +891,15 @@ export class TypeChecker implements IVisitor {
 		this.types[userType.name] = new UserType(userType.name, members)
 	}
 
-	public visitGotoStatement(gotoStatement: AstGotoStatement) {
+	public visitGotoStatement(gotoStatement: AstGotoStatement): void {
 		this.labelsUsed.push(new CheckedLabel(gotoStatement.label, gotoStatement))
 	}
 
-	public visitGosub(gosub: AstGosubStatement) {
+	public visitGosub(gosub: AstGosubStatement): void {
 		this.labelsUsed.push(new CheckedLabel(gosub.label, gosub))
 	}
 
-	public visitOnEventStatement(event: AstOnEventStatement) {
+	public visitOnEventStatement(event: AstOnEventStatement): void {
 		event.path.accept(this)
 		if (!IsStringType(event.path.type)) {
 			this.error(event, 'Event path must be a string.')
@@ -875,7 +912,7 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitLabel(label) {
+	public visitLabel(label: AstLabel): void {
 		// label must not already be defined.
 		if (this.labelsDefined[label.name]) {
 			this.error(label, "Label '%s' is already defined", label.name)
@@ -884,7 +921,7 @@ export class TypeChecker implements IVisitor {
 		this.labelsDefined[label.name] = new CheckedLabel(label.name, label)
 	}
 
-	public visitAssignStatement(assign) {
+	public visitAssignStatement(assign: AstAssignStatement): void {
 		// rhs must be compatible with rhs.
 		assign.lhs.wantRef = true
 		assign.lhs.accept(this)
@@ -894,8 +931,8 @@ export class TypeChecker implements IVisitor {
 		}
 	}
 
-	public visitBinaryOp(binary) {
-		let op = binary.op
+	public visitBinaryOp(binary: AstBinaryOp): void {
+		const op = binary.op
 		binary.lhs.accept(this)
 		binary.rhs.accept(this)
 		let bad = 0
@@ -937,7 +974,7 @@ export class TypeChecker implements IVisitor {
 		binary.type = type
 	}
 
-	public visitUnaryOperator(unary) {
+	public visitUnaryOperator(unary: AstUnaryOperator): void {
 		// type must be numeric.
 		unary.expr.accept(this)
 		if (!IsNumericType(unary.expr.type)) {
@@ -946,7 +983,7 @@ export class TypeChecker implements IVisitor {
 		unary.type = unary.expr.type
 	}
 
-	public visitConstantExpr(expr) {
+	public visitConstantExpr(expr: AstConstantExpr): void {
 		if (expr.value === null) {
 			expr.type = this.types[':NULL']
 		} else if (expr.value.constructor === String) {

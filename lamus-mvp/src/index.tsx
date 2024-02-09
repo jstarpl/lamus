@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import "./index.css";
 import { App } from "./App";
+import serviceWorker from "./serviceWorker.ts?worker";
 
 import * as Sentry from "@sentry/react";
 
@@ -37,7 +38,7 @@ console.log(
   "font-weight: normal"
 );
 
-navigator.serviceWorker.register(
-  new URL("./serviceWorker.ts", import.meta.url),
-  { type: "module", scope: `${window.location.origin}/` }
-);
+navigator.serviceWorker.register(serviceWorker, {
+  type: "module",
+  scope: `${window.location.origin}/`,
+});

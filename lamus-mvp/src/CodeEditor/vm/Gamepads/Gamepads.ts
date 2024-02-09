@@ -1,9 +1,8 @@
+import { GamepadJoystickState, IGamepad } from "@lamus/qbasic-vm";
 import {
   GamepadDPadState,
-  GamepadJoystickState,
-  IGamepad,
-} from "@lamus/qbasic-vm";
-import { VirtualGamepadStoreClass } from "../../stores/VirtualGamepadStore";
+  VirtualGamepadStoreClass,
+} from "../../stores/VirtualGamepadStore";
 
 export class Gamepads implements IGamepad {
   private hasCoarsePointer: boolean = false;

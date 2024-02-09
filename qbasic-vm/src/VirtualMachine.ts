@@ -4333,7 +4333,7 @@ export interface IInstruction {
 	addrLabel?: boolean
 	dataLabel?: boolean
 	numArgs?: 0 | 1
-	execute: (vm: VirtualMachine, arg: number | string | undefined) => void
+	execute: (vm: VirtualMachine, arg: number | string | null) => void
 }
 
 interface IDataLabelInstruction extends IInstruction {
@@ -4352,7 +4352,7 @@ interface INoArgInstruction extends IInstruction {
 	addrLabel?: false
 	dataLabel?: false
 	numArgs: 0
-	execute: (vm: VirtualMachine, arg?: undefined) => void
+	execute: (vm: VirtualMachine, arg: null) => void
 }
 
 type InstructionDefinition = {

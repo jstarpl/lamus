@@ -5,8 +5,7 @@ import {
   IHTTPConnection,
   ISerialConnection,
   Types,
-} from "@meshtastic/meshtasticjs/dist/index";
-import { MyNodeInfo, NodeInfo } from "@meshtastic/meshtasticjs/dist/generated";
+} from "@meshtastic/meshtasticjs";
 
 const HTTP_FETCH_INTERVAL = 3000;
 
@@ -16,6 +15,11 @@ type ISomeMeshtasticConnection =
   | ISerialConnection;
 
 type TextMessage = Types.PacketMetadata<string>;
+
+type NodeInfo = {
+  num: number;
+};
+type MyNodeInfo = {};
 
 export default function setup(router: GeneralIORouter) {
   let currentConnection: ISomeMeshtasticConnection | null = null;
@@ -71,7 +75,7 @@ export default function setup(router: GeneralIORouter) {
 
     const data = req.data.split(",");
     const address = data[0];
-    const tls = data[1] === "tls" ?? false;
+    const tls = data[1] === "tls";
 
     const connection = client.createHTTPConnection();
     currentConnection = connection;
