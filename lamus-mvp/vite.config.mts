@@ -8,6 +8,10 @@ const __dirname = new URL(".", import.meta.url);
 
 export default defineConfig(async () => ({
   root: "src/",
+  build: {
+    outDir: "build/",
+    emptyOutDir: true,
+  },
   server: {
     port: parseInt(process.env.PORT),
   },

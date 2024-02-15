@@ -1,6 +1,7 @@
 import { assertNever } from "../../../../helpers/util";
 import {
   IAccessResult,
+  IDeleteResult,
   IFileEntry,
   IFileSystemProvider,
   IListResult,
@@ -84,8 +85,25 @@ export class OPFSProvider implements IFileSystemProvider {
       };
     }
   }
-  mkdir(path: Path, name: string): Promise<IMkDirResult> {
-    throw new Error("Method not implemented.");
+  async mkdir(path: Path, name: string): Promise<IMkDirResult> {
+    if (!this.directoryHandle) throw new Error("Not initialized");
+
+    try {
+      const parentDirectory = await this.resolvePath(path);
+
+      parentDirectory.getDirectoryHandle(name, {
+        create: true,
+      });
+
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
   rename(
     path: Path,
@@ -94,8 +112,24 @@ export class OPFSProvider implements IFileSystemProvider {
   ): Promise<IMkDirResult> {
     throw new Error("Method not implemented.");
   }
-  unlink(path: Path, fileName: string): Promise<IMkDirResult> {
-    throw new Error("Method not implemented.");
+  async unlink(path: Path, name: string): Promise<IDeleteResult> {
+    const directory = await this.resolvePath(path);
+
+    try {
+      const file = await directory.getFileHandle(name);
+      file.remove({
+        recursive: true,
+      });
+
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
   async read(path: Path, fileName: string): Promise<IReadResult> {
     if (!this.directoryHandle) throw new Error("Not initialized");
@@ -133,7 +167,7 @@ export class OPFSProvider implements IFileSystemProvider {
         position: 0,
         type: "write",
       });
-      await writableStream.close()
+      await writableStream.close();
       return {
         ok: true,
         fileName: fileName,
