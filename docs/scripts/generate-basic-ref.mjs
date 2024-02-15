@@ -53,7 +53,7 @@ function sanitizeUrl(url) {
   return url.replace(/([\W])/gi, (found) => `_u${found.charCodeAt(0)}`)
 }
 
-await rimraf([`${basicReferencePath}/**/*.md`], {
+await rimraf([`${basicReferencePath}/**/*`], {
   glob: true,
 })
 
@@ -101,7 +101,7 @@ Object.values(groupedCommands).forEach(
 
     const targetUrl = new URL(`${groupName}.md`, basicReference)
 
-    fs.writeFile(targetUrl, allText, {
+    await fs.writeFile(targetUrl, allText, {
       encoding: 'utf-8'
     })
   }))
@@ -124,13 +124,13 @@ Object.values(groupedCommands).forEach(
 
   allCommands.sort((a, b) => a.name.localeCompare(b.name))
 
-  const targetUrl = new URL(`alphabetic-index.md`, basicReference)
+  const targetUrl = new URL(`alphabetical-index.md`, basicReference)
 
   const body = allCommands.map((commandProps) => ` * [${sanitizeMdText(commandProps.name)}](${commandProps.group}.md#${sanitizeUrl(commandProps.name)})`).join('\n') + '\n'
 
   const allText = header + body
 
-  fs.writeFile(targetUrl, allText, {
+  await fs.writeFile(targetUrl, allText, {
     encoding: 'utf8'
   })
 }

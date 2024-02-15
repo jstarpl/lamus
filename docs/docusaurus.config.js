@@ -67,7 +67,7 @@ const config = {
 					},
 					{
 						type: 'doc',
-						docId: 'basic-reference/alphabetic-index',
+						docId: 'basic-reference/alphabetical-index',
 						label: 'BASIC Reference',
 						position: 'left'
 					},
