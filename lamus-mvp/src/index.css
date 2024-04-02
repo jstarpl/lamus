@@ -85,6 +85,20 @@
   --color-brand-4: #ffedd7;
   --color-brand: var(--color-brand-2);
 
+  /*
+    Code
+    ---
+    Use: Code Editor, terminals, tech-stuff, dark magic, hacking
+  */
+  --color-code-1: #000000;
+  --color-code-2: #0f0f0f;
+  --color-code-3: #2f2f2f;
+  --color-code-4: #414141;
+  --color-code-text: #9ec0ec;
+  --color-code-selection: #11335f;
+  --color-code-caret: #ffffff;
+  --color-code: var(--color-dark-3);
+
   --color-dark-1: #000000;
   --color-dark-2: #0f0f0f;
   --color-dark-3: #2f2f2f;
@@ -134,6 +148,17 @@
   --color-tint-2: var(--color-general-4);
   color: var(--color-black);
   background: var(--color-tint-2);
+}
+
+.bg-code {
+  --color-tone: var(--color-code-2);
+  --color-shade: var(--color-code-1);
+  --color-tint-1: var(--color-code-3);
+  --color-tint-2: var(--color-code-4);
+  --color-selection: var(--color-code-selection);
+  --color-caret: var(--color-code-caret);
+  color: var(--color-code-text);
+  background: var(--color-code-1);
 }
 
 .bg-success {

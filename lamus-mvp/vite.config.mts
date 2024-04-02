@@ -9,6 +9,7 @@ const __dirname = new URL(".", import.meta.url);
 export default defineConfig(async () => ({
   root: "src/",
   build: {
+    manifest: true,
     outDir: "build/",
     emptyOutDir: true,
   },

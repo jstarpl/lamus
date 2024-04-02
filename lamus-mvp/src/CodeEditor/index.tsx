@@ -472,7 +472,7 @@ const CodeEditor = observer(function CodeEditor() {
   return (
     <div className="CodeEditor sdi-app">
       <div
-        className={`sdi-app-workspace bg-general ${displayFocusToClassName(
+        className={`sdi-app-workspace bg-code ${displayFocusToClassName(
           EditorStore.displayFocus
         )} ${orientationToClassName(
           EditorStore.vm?.outputOrientation ?? "portrait"

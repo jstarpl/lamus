@@ -11,5 +11,9 @@
 			}
 		],
 		"@typescript-eslint/unbound-method": "off"
+	},
+	"parserOptions": {
+		"ecmaVersion": 2022,
+		"sourceType": "module"
 	}
 }

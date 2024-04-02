@@ -4,7 +4,9 @@
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-import { manifest, version } from "@parcel/service-worker";
+// import { manifest, version } from "@parcel/service-worker";
+const manifest: string[] = [];
+const version = "dummy";
 
 async function install() {
   const cache = await caches.open(version);
