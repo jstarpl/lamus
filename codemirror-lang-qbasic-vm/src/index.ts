@@ -1,5 +1,6 @@
 import {parser} from "./syntax.grammar"
-import {LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, foldInside, delimitedIndent} from "@codemirror/language"
+import {LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, foldInside, delimitedIndent, flatIndent, syntaxHighlighting, HighlightStyle} from "@codemirror/language"
+import {Extension} from "@codemirror/state"
 import {styleTags, tags as t} from "@lezer/highlight"
 import {completeFromList} from "@codemirror/autocomplete"
 
@@ -7,31 +8,40 @@ export const QBasicVMLanguage = LRLanguage.define({
   parser: parser.configure({
     props: [
       indentNodeProp.add({
-        Application: delimitedIndent({closing: ")", align: false})
+        Application: flatIndent,
       }),
       foldNodeProp.add({
         Application: foldInside
       }),
       styleTags({
         Identifier: t.variableName,
-        Boolean: t.bool,
-        String: t.string,
+        StringConstant: t.string,
+        FileConstant: t.number,
+        FloatConstant: t.number,
+        HexConstant: t.number,
+        BinConstant: t.number,
         LineComment: t.lineComment,
-        "( )": t.paren
+        deref: t.paren,
+        Label: t.labelName,
+        BinaryOperator: t.operator,
+        Keyword: t.keyword
       })
     ]
   }),
   languageData: {
-    commentTokens: {line: ";"}
+    commentTokens: {line: "'"}
   }
 })
 
-export const completion = QBasicVMLanguage.data.of({
+export const LanguageExtension: Extension = QBasicVMLanguage.data.of({
   autocomplete: completeFromList([
     
-  ])
+  ]),
+  syntaxHighlight: syntaxHighlighting(HighlightStyle.define([
+    { tag: t.variableName, class: 'variableName' }
+  ]))
 })
 
 export function qbasicVm() {
-  return new LanguageSupport(QBasicVMLanguage)
+  return new LanguageSupport(QBasicVMLanguage, LanguageExtension)
 }

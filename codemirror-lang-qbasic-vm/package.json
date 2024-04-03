@@ -17,13 +17,16 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "@codemirror/autocomplete": "^6.3.0",
     "@codemirror/language": "^6.0.0",
+    "@codemirror/state": "^0.20.1",
+    "@lamus/qbasic-vm": "*",
     "@lezer/highlight": "^1.1.2",
     "@lezer/lr": "^1.0.0"
   },
   "devDependencies": {
-    "@codemirror/autocomplete": "^6.3.0",
     "@lezer/generator": "^1.0.0",
+    "handlebars": "^4.7.8",
     "mocha": "^9.0.1",
     "rollup": "^2.60.2",
     "rollup-plugin-dts": "^4.0.1",
