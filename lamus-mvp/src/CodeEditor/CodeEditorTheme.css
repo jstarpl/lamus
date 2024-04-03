@@ -1,0 +1,44 @@
+.CodeEditor .ce-keyword {
+  color: #ff419d;
+  font-weight: 600;
+}
+
+.CodeEditor .ce-name {
+  color: #66e28d;
+}
+
+.CodeEditor .ce-string {
+  color: #d3a170;
+}
+
+.CodeEditor .ce-literal,
+.CodeEditor .ce-number {
+  color: #d3d070;
+}
+
+.CodeEditor .ce-comment {
+  color: #8a8a8a;
+}
+
+.CodeEditor .ce-labelName {
+  color: #e4be5f;
+  font-weight: 600;
+}
+
+.CodeEditor .ce-modifier {
+  color: #008cff;
+  font-weight: 600;
+}
+
+.CodeEditor .ce-brace {
+  color: #a8b3c0;
+}
+
+.CodeEditor .ce-derefOperator,
+.CodeEditor .ce-separator {
+  color: #647a97;
+}
+
+.CodeEditor .ce-operator {
+  color: #eeeeee;
+}

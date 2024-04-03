@@ -14,13 +14,15 @@ Literals { LString | LFloat | LHex | LFile }
 DerefOp { MemberDerefOp | ArrayDerefOp }
 
 iStatement {
-  Keyword | TypeDecl { TypeKeyword Identifier } | BinaryOp | Literals | Identifier | DerefOp | comma | Semicolon
+  Keyword | Declaration { DeclareKeyword ( TypeName | Identifier ) } | SystemFunction | SystemSubroutine | BinaryOp | Literals | Identifier | DerefOp | Comma | Semicolon
 }
 
 @tokens {
-  Keyword { "GOSUB" | "IF" | "THEN" | "ELSE" | "SELECT" | "CASE ELSE" | "CASE" | "END" | "SUB" | "FUNCTION" | "FOR" | "TO" | "NEXT" | "LOOP" | "UNTIL" | "WHILE" | "WEND" | "PRINT" | "WRITE" | "STEP" | "DO" | "NOT" | "DECLARE" | "DIM" | "SHARED" | "DATA" | "CONST" | "RETURN" }
+  Keyword { "GOSUB" | "IF" | "THEN" | "ELSE" | "SELECT" | "CASE ELSE" | "CASE" | "END" | "FOR" | "TO" | "NEXT" | "LOOP" | "UNTIL" | "WHILE" | "WEND" | "STEP" | "DO" | "NOT" | "DECLARE" | "DIM" | "SHARED" | "DATA" | "CONST" | "RETURN" }
 
-  TypeKeyword { "TYPE" | "AS" }
+  DeclareKeyword { "TYPE" | "AS" | "SUB" | "FUNCTION" }
+
+  TypeName { "INTEGER" | "LONG" | "SINGLE" | "DOUBLE" | "STRING" | "JSON" | "ANY" | ":NULL" }
 
   SystemFunction { {{tokens (keys SystemFunctions)}} }
 
@@ -48,12 +50,11 @@ iStatement {
 
   ArrayDerefOp { "(" | ")" }
 
-  comma { "," " "* }
+  Comma { "," " "* }
 
   Semicolon { ";" }
 
-  @precedence { Keyword, TypeKeyword, Identifier }
-  @precedence { BinaryOperator, Literals }
+  @precedence { Keyword, DeclareKeyword, TypeName, SystemFunction, SystemSubroutine, Identifier }
   @precedence { LineComment, Label, BinaryOp, LFloat, Identifier }
 }
 

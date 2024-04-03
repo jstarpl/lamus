@@ -1,5 +1,5 @@
 .TextEditor .ce-block--selected .ce-block__content {
-  background: var(--color-selection);
+  background-color: var(--color-selection);
 }
 
 .TextEditor .ce-toolbar__actions > .ce-toolbar__plus:hover,

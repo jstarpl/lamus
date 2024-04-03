@@ -30,7 +30,6 @@
     "packages": [
       "lamus-mvp",
       "qbasic-vm",
-      "codemirror-lang-qbasic-vm",
       "docs"
     ]
   },
