@@ -6,10 +6,7 @@ import {
   LanguageSupport,
   indentNodeProp,
   flatIndent,
-  syntaxHighlighting,
-  HighlightStyle,
 } from "@codemirror/language";
-import { tags as t } from "@lezer/highlight";
 import { completeFromList } from "@codemirror/autocomplete";
 
 export const QBasicLanguage = LRLanguage.define({

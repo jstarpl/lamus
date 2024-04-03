@@ -5,13 +5,11 @@ import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 import { lezer } from "@lezer/generator/rollup";
 
-const __dirname = new URL(".", import.meta.url);
-
 export default defineConfig(async () => ({
   root: "src/",
   build: {
     manifest: true,
-    outDir: "build/",
+    outDir: "../build/",
     emptyOutDir: true,
   },
   server: {

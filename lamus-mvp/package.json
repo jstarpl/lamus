@@ -77,7 +77,7 @@
     "clean": "rimraf ./build",
     "build:grammar": "node ./scripts/build-grammar.mjs",
     "build:app": "run build:grammar && vite build",
-    "build": "yarn clean && yarn build:app && npm run sentry:sourcemaps",
+    "build": "yarn clean && yarn build:app && yarn run sentry:sourcemaps",
     "format": "prettier --write src/**/*.ts{,x}",
     "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org jsbg --project lamus-mvp ./build && sentry-cli sourcemaps upload --org jsbg --project lamus-mvp ./build"
