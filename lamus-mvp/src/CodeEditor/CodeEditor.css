@@ -52,6 +52,10 @@
   background-color: var(--color-tone);
 }
 
+.CodeEditor .cm-editor .cm-selectionMatch {
+  background: var(--color-brand-1);
+}
+
 .CodeEditor .cm-editor .cm-selectionBackground {
   background: var(--color-selection);
 }

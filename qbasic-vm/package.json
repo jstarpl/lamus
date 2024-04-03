@@ -12,6 +12,10 @@
     "dist",
     "assets/charmap.png"
   ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./allCommands.json": "./dist/allCommands.json"
+  },
   "repository": "https://github.com/jstarpl/qbasic-vm",
   "author": "Jan Starzak <jan.starzak@gmail.com>",
   "contributors": [
