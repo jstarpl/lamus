@@ -94,7 +94,8 @@
   --color-code-2: #0f0f0f;
   --color-code-3: #2f2f2f;
   --color-code-4: #414141;
-  --color-code-text: #9ec0ec;
+  /* --color-code-text: #9ec0ec; */
+  --color-code-text: #9cdcfe;
   --color-code-selection: #11335f;
   --color-code-caret: var(--color-brand-2);
   --color-code: var(--color-dark-3);

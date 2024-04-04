@@ -1,19 +1,22 @@
+/* Colors are based on the VS Code Modern Dark theme */
+
 .CodeEditor .ce-keyword {
-  color: #ff419d;
+  color: #c586c0;
   font-weight: 600;
 }
 
 .CodeEditor .ce-name {
-  color: #66e28d;
+  color: #4ec9b0;
+  font-weight: 600;
 }
 
 .CodeEditor .ce-string {
-  color: #d3a170;
+  color: #ce9178;
 }
 
 .CodeEditor .ce-literal,
 .CodeEditor .ce-number {
-  color: #d3d070;
+  color: #dcdcaa;
 }
 
 .CodeEditor .ce-comment {
@@ -26,7 +29,7 @@
 }
 
 .CodeEditor .ce-modifier {
-  color: #008cff;
+  color: #4fc1ff;
   font-weight: 600;
 }
 

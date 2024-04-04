@@ -2,7 +2,7 @@ import { styleTags, tags as t } from "@lezer/highlight";
 
 export const basicHighlighting = styleTags({
   "Keyword DeclareKeyword": t.keyword,
-  "SystemFunction SystemSubroutine": t.name,
+  Command: t.name,
   Identifier: t.variableName,
   Label: t.labelName,
   BinaryOp: t.operator,

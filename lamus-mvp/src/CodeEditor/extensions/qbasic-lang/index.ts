@@ -24,6 +24,10 @@ export const QBasicLanguage = LRLanguage.define({
 
 export const LanguageExtension = QBasicLanguage.data.of({
   autocomplete: completeFromList([
+    {
+      label: "PRINT",
+      type: "function",
+    },
     ...Object.keys(VMInfo.SystemFunctions).map((entry) => ({
       label: entry,
       type: "function",

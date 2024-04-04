@@ -14,19 +14,17 @@ Literals { LString | LFloat | LHex | LFile }
 DerefOp { MemberDerefOp | ArrayDerefOp }
 
 iStatement {
-  Keyword | Declaration { DeclareKeyword ( TypeName | Identifier ) } | SystemFunction | SystemSubroutine | BinaryOp | Literals | Identifier | DerefOp | Comma | Semicolon
+  Keyword | Declaration { DeclareKeyword ( TypeName | Identifier ) } | Command | BinaryOp | Literals | Identifier | DerefOp | Comma | Semicolon
 }
 
 @tokens {
-  Keyword { "GOSUB" | "IF" | "THEN" | "ELSE" | "SELECT" | "CASE ELSE" | "CASE" | "END" | "FOR" | "TO" | "NEXT" | "LOOP" | "UNTIL" | "WHILE" | "WEND" | "STEP" | "DO" | "NOT" | "DECLARE" | "DIM" | "SHARED" | "DATA" | "CONST" | "RETURN" }
+  Keyword { "GOSUB" | "GOTO" | "IF" | "THEN" | "ELSE" | "SELECT" | "CASE ELSE" | "CASE" | "END" | "FOR" | "TO" | "NEXT" | "LOOP" | "UNTIL" | "WHILE" | "WEND" | "STEP" | "DO" | "NOT" | "DECLARE" | "DIM" | "SHARED" | "DATA" | "CONST" | "RETURN" }
 
   DeclareKeyword { "TYPE" | "AS" | "SUB" | "FUNCTION" }
 
   TypeName { "INTEGER" | "LONG" | "SINGLE" | "DOUBLE" | "STRING" | "JSON" | "ANY" | ":NULL" }
 
-  SystemFunction { {{tokens (keys SystemFunctions)}} }
-
-  SystemSubroutine { {{tokens (keys SystemSubroutines)}} }
+  Command { "PRINT" | "RANDOM" | "OUTPUT" | "BINARY" | {{toTokens (sort (join (keys SystemFunctions) (keys SystemSubroutines)))}} }
   
   BinaryOp { "IMP" | "EQV" | "XOR" | "OR" | "AND" | "=" | "<>" | ">" | "<" | "<<" | ">>" | "<=" | ">=" | "MOD" | "+" | "-" | "*" | "/" | "^" }
 
@@ -54,7 +52,7 @@ iStatement {
 
   Semicolon { ";" }
 
-  @precedence { Keyword, DeclareKeyword, TypeName, SystemFunction, SystemSubroutine, Identifier }
+  @precedence { Keyword, DeclareKeyword, TypeName, Command, Identifier }
   @precedence { LineComment, Label, BinaryOp, LFloat, Identifier }
 }
 
