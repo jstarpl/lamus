@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import "./index.css";
 import { App } from "./App";
-import ServiceWorker from "./serviceWorker.ts?worker";
+import pwaWorker from "./serviceWorker?worker&url";
 
 import * as Sentry from "@sentry/react";
 
@@ -39,7 +39,7 @@ console.log(
 );
 
 if ("serviceWorker" in navigator) {
-  new ServiceWorker({
-    name: "pwaServiceWorker",
+  navigator.serviceWorker.register(pwaWorker, {
+    type: "module",
   });
 }
