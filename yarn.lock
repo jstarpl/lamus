@@ -3619,6 +3619,7 @@ __metadata:
     "@lezer/generator": "npm:^1.7.0"
     "@lezer/highlight": "npm:^1.2.0"
     "@meshtastic/meshtasticjs": "npm:^0.9.8"
+    "@react-editor-js/client": "npm:^2.1.0"
     "@sentry/cli": "npm:^2.21.5"
     "@sentry/react": "npm:^7.81.1"
     "@sofie-automation/sorensen": "npm:^1.4.2"
@@ -3679,7 +3680,6 @@ __metadata:
     react-app-polyfill: "npm:^3.0.0"
     react-dev-utils: "npm:^12.0.1"
     react-dom: "npm:^18.1.0"
-    react-editor-js: "npm:^2.0.6"
     react-icons: "npm:^4.6.0"
     react-markdown: "npm:^8.0.3"
     react-refresh: "npm:^0.11.0"
@@ -4003,7 +4003,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-editor-js/client@npm:2.1.0":
+"@react-editor-js/client@npm:^2.1.0":
   version: 2.1.0
   resolution: "@react-editor-js/client@npm:2.1.0"
   dependencies:
@@ -4023,19 +4023,6 @@ __metadata:
     "@editorjs/editorjs": "*"
     react: "*"
   checksum: 10c0/42f5c5fbe26dc33dbbfc1b27a56bc31a255c3964ccf269edb687cb84473a8a0b0a69ceb6374fce16582a85fe155977f540a4cc8af57c4e837a19fd469138187f
-  languageName: node
-  linkType: hard
-
-"@react-editor-js/server@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@react-editor-js/server@npm:2.1.0"
-  dependencies:
-    "@react-editor-js/core": "npm:2.1.0"
-  peerDependencies:
-    "@editorjs/editorjs": "*"
-    "@editorjs/paragraph": "*"
-    react: "*"
-  checksum: 10c0/e06513bfd27df29cfa2bfbad9db5323efe6817eb63b4002224731db75d3ecd76387aa6cd361b045508a0c293e10efe510bc923126df30aed0c882964fac17c4a
   languageName: node
   linkType: hard
 
@@ -17783,17 +17770,6 @@ __metadata:
   peerDependencies:
     react: ^18.2.0
   checksum: 10c0/66dfc5f93e13d0674e78ef41f92ed21dfb80f9c4ac4ac25a4b51046d41d4d2186abc915b897f69d3d0ebbffe6184e7c5876f2af26bfa956f179225d921be713a
-  languageName: node
-  linkType: hard
-
-"react-editor-js@npm:^2.0.6":
-  version: 2.1.0
-  resolution: "react-editor-js@npm:2.1.0"
-  dependencies:
-    "@react-editor-js/client": "npm:2.1.0"
-    "@react-editor-js/core": "npm:2.1.0"
-    "@react-editor-js/server": "npm:2.1.0"
-  checksum: 10c0/39d36e512a9e6932c29f063714c562ac05d5fde0aa7264bc0fb526602eb3e72a6bafd130eb92da81b44427dc162c5d772a6ff32172831f11fc792abc634a2e0a
   languageName: node
   linkType: hard
 

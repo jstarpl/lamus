@@ -30,8 +30,4 @@ export default defineConfig(async () => ({
     dedupe: ["@codemirror/state"],
   },
   plugins: [react(), viteTsconfigPaths(), lezer() as any],
-  define: {
-    "process.env": {},
-    global: "window",
-  },
 }));

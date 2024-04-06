@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import { EditorStore } from "./stores/EditorStore";
-import { createReactEditorJS } from "react-editor-js";
-import { Document } from "@editorjs/editorjs";
+import ReactEditorJS from "@react-editor-js/client";
+import { OutputData as Document } from "@editorjs/editorjs";
 import Paragraph from "@editorjs/paragraph";
 import Header from "@editorjs/header";
 import Quote from "@editorjs/quote";
@@ -41,8 +41,6 @@ import {
   bsCheckListIcon,
 } from "./editorIcons";
 import { useFragmentRoute } from "../helpers/useFragmentRoute";
-
-const ReactEditorJS = createReactEditorJS();
 
 const INITIAL_FOCUS_RETRY_COUNT = 3;
 
