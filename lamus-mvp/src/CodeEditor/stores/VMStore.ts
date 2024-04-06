@@ -16,6 +16,7 @@ import { ProviderId } from "../../stores/FileSystemStore";
 import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
 import { VirtualGamepadStoreClass } from "./VirtualGamepadStore";
 import { Gamepads } from "../vm/Gamepads/Gamepads";
+import Charmap from "../img/charmap.png";
 
 export enum VMRunState {
   IDLE = "idle",
@@ -87,10 +88,10 @@ export class VMStoreClass {
 
     const cons = new Console(
       viewParent,
+      Charmap,
       undefined,
       SHORTER_SCREEN_SIDE_LENGTH,
-      LONGER_SCREEN_SIDE_LENGTH,
-      new URL("../img/charmap.png", import.meta.url).href + "?/"
+      LONGER_SCREEN_SIDE_LENGTH
     );
 
     const audio = new AudioDevice();

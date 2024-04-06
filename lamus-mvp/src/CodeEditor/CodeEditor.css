@@ -1,3 +1,5 @@
+@import url("./CodeEditorTheme.css");
+
 .CodeEditor {
   --output-zoom: 1;
   --gutter-min-width: 80px;
@@ -49,16 +51,39 @@
 }
 
 .CodeEditor .cm-editor .cm-activeLine {
-  background-color: var(--color-light);
+  background-color: rgba(108, 108, 108, 0.13);
 }
 
-.CodeEditor .cm-editor .cm-selectionBackground {
-  background: var(--color-selection);
+.CodeEditor .cm-editor .cm-selectionMatch {
+  background: var(--color-brand-1);
+}
+
+.CodeEditor
+  .cm-editor.cm-focused
+  > .cm-scroller
+  > .cm-selectionLayer
+  .cm-selectionBackground,
+.CodeEditor
+  .cm-editor
+  > .cm-scroller
+  > .cm-selectionLayer
+  .cm-selectionBackground {
+  background-color: var(--color-selection);
+}
+
+.CodeEditor .cm-editor ::selection {
+  background-color: transparent !important;
+}
+
+.CodeEditor .cm-editor .cm-cursorLayer .cm-cursor,
+.CodeEditor .cm-editor .cm-cursorLayer .cm-dropCursor {
+  border-left-color: var(--color-caret, var(--color-black, #000));
+  border-left-width: 2px;
 }
 
 .CodeEditor .cm-editor .cm-gutters {
-  background-color: var(--color-tint-1);
-  border-right: 1px solid var(--color-tone);
+  background-color: var(--color-tone);
+  border-right: 1px solid var(--color-tint-1);
   min-width: var(--gutter-min-width);
 }
 
@@ -71,7 +96,12 @@
   flex-grow: 1;
 }
 
-.CodeEditor .cm-editor .cm-activeLineGutter {
+.CodeEditor .cm-editor .cm-gutters {
+  color: #6c6c6c;
+}
+
+.CodeEditor .cm-editor .cm-gutters .cm-activeLineGutter {
+  color: #969696;
   background-color: var(--color-tone);
 }
 
@@ -82,7 +112,8 @@
 }
 
 .CodeEditor .cm-editor .cm-line-error {
-  background: var(--color-danger-3);
+  background: var(--color-danger-1);
+  color: var(--color-danger-3);
   border-top: 1px solid var(--color-danger-2);
   border-bottom: 1px solid var(--color-danger-2);
   padding: 0 2px 0 4px;
@@ -90,13 +121,13 @@
 }
 
 .CodeEditor .cm-editor .cm-line-error .cm-line-error-counter {
-  color: var(--color-danger-1);
+  color: var(--color-danger-2);
   margin-right: 0.25em;
   user-select: none;
 }
 
 .CodeEditor .cm-editor .cm-line-error .cm-line-error-icon {
-  color: var(--color-danger-1);
+  color: var(--color-danger-2);
   vertical-align: top;
   display: inline-block;
   margin-top: 0.2em;
@@ -112,7 +143,26 @@
 }
 
 .CodeEditor .cm-editor .cm-line-error .cm-line-error-message {
-  font-weight: bold;
+  font-weight: 600;
+}
+
+.CodeEditor .cm-editor .cm-tooltip {
+  background: var(--color-tone);
+  border: 1px solid var(--color-tint-1);
+  border-radius: var(--command-bar-radius);
+  overflow: hidden;
+}
+
+.CodeEditor .cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul {
+  font-family: var(--system-code-font-family);
+  font-size: var(--editor-font-size);
+  color: var(--color-code-text);
+}
+
+.CodeEditor .cm-editor .cm-tooltip-autocomplete ul li[aria-selected] {
+  border-radius: var(--command-bar-radius);
+  background: var(--color-focus);
+  color: var(--color-white);
 }
 
 @media screen and ((max-width: 750px) or (max-height: 500px)) and (orientation: landscape) {

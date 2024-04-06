@@ -19,10 +19,9 @@
 	along with qbasic-vm.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { SomeType, SomeScalarType } from './Types'
+import { SomeType, SomeScalarType, Type } from './Types'
 import { getDebugConsole as dbg } from './DebugConsole'
 import { IVisitor } from './IVisitor'
-import './types/array.extensions'
 import { TypeChecker } from './TypeChecker'
 import { CodeGenerator } from './CodeGenerator'
 import { RuleParser } from './RuleParser'
@@ -32,12 +31,12 @@ export class AstProgram implements AstStatement {
 	locus: ILocus
 	subs: AstSubroutine[]
 
-	constructor(locus, mainSub) {
+	constructor(locus: ILocus, mainSub: AstSubroutine) {
 		this.locus = locus
 		this.subs = [mainSub]
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitProgram(this)
 	}
 }
@@ -62,7 +61,7 @@ export class AstArgument implements AstStatement {
 		this.isArray = isArray || false
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitArgument(this)
 	}
 }
@@ -91,7 +90,7 @@ export class AstSubroutine implements AstStatement {
 		this.isStatic = isStatic || false
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitSubroutine(this)
 	}
 }
@@ -117,7 +116,7 @@ export class AstDeclareFunction implements AstStatement {
 		this.used = false
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitDeclareFunction(this)
 	}
 }
@@ -134,7 +133,7 @@ export class AstPrintUsingStatement implements AstStatement {
 		this.terminator = terminator // literal ';', ',', or null
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitPrintUsingStatement(this)
 	}
 }
@@ -148,7 +147,7 @@ export class AstPrintStatement implements AstStatement {
 		this.printItems = printItems
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitPrintStatement(this)
 	}
 }
@@ -161,10 +160,15 @@ export enum AstPrintItemType {
 export class AstPrintItem implements AstStatement {
 	locus: ILocus
 	type: AstPrintItemType
-	expr: any
+	expr: AstExpression | null
 	terminator: string | null | undefined
 
-	constructor(locus: ILocus, type: AstPrintItemType, expr: any, terminator: string | null | undefined) {
+	constructor(
+		locus: ILocus,
+		type: AstPrintItemType,
+		expr: AstExpression | null,
+		terminator: string | null | undefined
+	) {
 		this.locus = locus
 		// Type: 0 for expr, 1 for tab, in which case expr is the argument.
 		this.type = type
@@ -173,7 +177,7 @@ export class AstPrintItem implements AstStatement {
 		this.terminator = terminator // comma, semicolon, or nothing.
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitPrintItem(this)
 	}
 }
@@ -184,14 +188,19 @@ export class AstOpenStatement implements AstStatement {
 	mode: string
 	fileHandle: AstVariableReference | AstConstantExpr
 
-	constructor(locus: ILocus, fileNameExpr: any, mode: string, fileHandle: AstVariableReference | AstConstantExpr) {
+	constructor(
+		locus: ILocus,
+		fileNameExpr: AstStatement,
+		mode: string,
+		fileHandle: AstVariableReference | AstConstantExpr
+	) {
 		this.locus = locus
 		this.fileNameExpr = fileNameExpr
 		this.mode = (mode || '').toUpperCase()
 		this.fileHandle = fileHandle
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitOpenStatement(this)
 	}
 }
@@ -205,7 +214,7 @@ export class AstCloseStatement implements AstStatement {
 		this.fileHandles = fileHandles
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitCloseStatement(this)
 	}
 }
@@ -221,7 +230,7 @@ export class AstWriteStatement implements AstStatement {
 		this.fileHandle = fileHandle
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitWriteStatement(this)
 	}
 }
@@ -229,7 +238,7 @@ export class AstWriteStatement implements AstStatement {
 export class AstInputStatement implements AstStatement {
 	locus: ILocus
 	line: boolean
-	promptExpr: any
+	promptExpr: AstExpression | null
 	printQuestionMark: boolean
 	identifiers: any[]
 	newLineAfterEnter: boolean
@@ -238,7 +247,7 @@ export class AstInputStatement implements AstStatement {
 	constructor(
 		locus: ILocus,
 		line: boolean,
-		promptExpr: any,
+		promptExpr: AstExpression | null,
 		printQuestionMark: boolean,
 		identifiers: any[],
 		newLineAfterEnter = true,
@@ -253,7 +262,7 @@ export class AstInputStatement implements AstStatement {
 		this.fileHandle = fileHandle
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitInputStatement(this)
 	}
 }
@@ -265,7 +274,7 @@ export class AstNullStatement implements AstStatement {
 		this.locus = locus
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitNullStatement(this)
 	}
 }
@@ -277,7 +286,7 @@ export class AstEndStatement implements AstStatement {
 		this.locus = locus
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitEndStatement(this)
 	}
 }
@@ -291,7 +300,7 @@ export class AstNextStatement implements AstStatement {
 		this.identifiers = identifierList
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitNextStatement(this)
 	}
 }
@@ -303,13 +312,13 @@ export class AstArrayDeref implements AstStatement {
 	type: SomeType
 	wantRef: boolean
 
-	constructor(locus: ILocus, expr: any, parameters: any[]) {
+	constructor(locus: ILocus, expr: AstStatement, parameters: any[]) {
 		this.locus = locus
 		this.expr = expr
 		this.parameters = parameters
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitArrayDeref(this)
 	}
 }
@@ -319,14 +328,15 @@ export class AstMemberDeref implements AstStatement {
 	lhs: any
 	identifier: string
 	wantRef: boolean
+	type: SomeType
 
-	constructor(locus: ILocus, lhs: any, identifier: string) {
+	constructor(locus: ILocus, lhs: AstStatement, identifier: string) {
 		this.locus = locus
 		this.lhs = lhs
 		this.identifier = identifier
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitMemberDeref(this)
 	}
 }
@@ -338,13 +348,13 @@ export class AstVariableReference implements AstStatement {
 	wantRef: boolean
 	type: SomeType
 
-	constructor(locus: ILocus, lhs: any, name: string) {
+	constructor(locus: ILocus, lhs: AstStatement, name: string) {
 		this.locus = locus
 		this.lhs = lhs
 		this.name = name
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitVariableReference(this)
 	}
 }
@@ -354,7 +364,7 @@ export class AstRange implements AstStatement {
 	lowerExpr: any
 	upperExpr: any
 
-	constructor(locus: ILocus, lowerExpr: any, upperExpr: any) {
+	constructor(locus: ILocus, lowerExpr: AstStatement, upperExpr: AstStatement) {
 		this.locus = locus
 		// lower and upper are possibly equal. in this case, we should avoid
 		// evaluating the expression twice.
@@ -362,7 +372,7 @@ export class AstRange implements AstStatement {
 		this.upperExpr = upperExpr
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitRange(this)
 	}
 }
@@ -371,12 +381,12 @@ export class AstDataStatement implements AstStatement {
 	locus: ILocus
 	data: any
 
-	constructor(locus: ILocus, data: any) {
+	constructor(locus: ILocus, data: AstStatement) {
 		this.locus = locus
 		this.data = data
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitDataStatement(this)
 	}
 }
@@ -391,7 +401,7 @@ export class AstRestoreStatement implements AstStatement {
 		this.label = label
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitRestoreStatement(this)
 	}
 }
@@ -411,7 +421,7 @@ export class AstDimStatement implements AstStatement {
 		this.shared = false // changed to true during parsing.
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitDimStatement(this)
 	}
 }
@@ -429,7 +439,7 @@ export class AstReDimStatement implements AstStatement {
 		this.preserve = !!preserve // possibly null
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitReDimStatement(this)
 	}
 }
@@ -443,7 +453,7 @@ export class AstDefTypeStatement implements AstStatement {
 		this.typeName = typeName
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitDefTypeStatement(this)
 	}
 }
@@ -453,13 +463,13 @@ export class AstConstStatement implements AstStatement {
 	name: string
 	expr: any
 
-	constructor(locus: ILocus, name: string, expr: any) {
+	constructor(locus: ILocus, name: string, expr: AstStatement) {
 		this.locus = locus
 		this.name = name
 		this.expr = expr
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitConstStatement(this)
 	}
 }
@@ -473,17 +483,17 @@ export enum AstDoStatementType {
 export class AstDoStatement implements AstStatement {
 	locus: ILocus
 	statements: any[]
-	expr: any
+	expr: AstExpression | null
 	type: AstDoStatementType
 
-	constructor(locus: ILocus, statements: any[], expr: any, type: AstDoStatementType) {
+	constructor(locus: ILocus, statements: any[], expr: AstExpression | null, type: AstDoStatementType) {
 		this.locus = locus
 		this.statements = statements
 		this.expr = expr
 		this.type = type
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitDoStatement(this)
 	}
 }
@@ -497,7 +507,7 @@ export class AstExitStatement implements AstStatement {
 		this.what = what // "FOR" or "DO"
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitExitStatement(this)
 	}
 }
@@ -507,13 +517,13 @@ export class AstWhileLoop implements AstStatement {
 	expr: any
 	statements: any[]
 
-	constructor(locus: ILocus, expr: any, statements: any[]) {
+	constructor(locus: ILocus, expr: AstStatement, statements: any[]) {
 		this.locus = locus
 		this.expr = expr
 		this.statements = statements
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitWhileLoop(this)
 	}
 }
@@ -525,7 +535,13 @@ export class AstForLoop implements AstStatement {
 	endExpr: any
 	stepExpr: any
 
-	constructor(locus: ILocus, identifier: string, startExpr: any, endExpr: any, stepExpr: any) {
+	constructor(
+		locus: ILocus,
+		identifier: string,
+		startExpr: AstStatement,
+		endExpr: AstStatement,
+		stepExpr: AstStatement
+	) {
 		this.locus = locus
 		this.identifier = identifier
 		this.startExpr = startExpr
@@ -533,58 +549,63 @@ export class AstForLoop implements AstStatement {
 		this.stepExpr = stepExpr
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitForLoop(this)
 	}
 }
 
 export class AstIfStatement implements AstStatement {
 	locus: ILocus
-	expr: any
-	statements: any[]
-	elseStatements: any[]
+	expr: AstExpression
+	statements: AstStatement[]
+	elseStatements: AstStatement | AstStatement[] | null
 
-	constructor(locus, expr, statements, elseStatements) {
+	constructor(
+		locus: ILocus,
+		expr: AstExpression,
+		statements: AstStatement[],
+		elseStatements: AstStatement | AstStatement[] | null
+	) {
 		this.locus = locus
 		this.expr = expr
 		this.statements = statements
 		this.elseStatements = elseStatements
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitIfStatement(this)
 	}
 }
 
 export class AstSelectStatement implements AstStatement {
 	locus: ILocus
-	expr: any
-	cases: any[]
+	expr: AstExpression
+	cases: AstCaseStatement[]
 
-	constructor(locus, expr, cases) {
+	constructor(locus: ILocus, expr: AstExpression, cases: AstCaseStatement[]) {
 		this.locus = locus
 		this.expr = expr
 		this.cases = cases
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitSelectStatement(this)
 	}
 }
 
 export class AstCaseStatement implements AstStatement {
 	locus: ILocus
-	exprList: any[]
-	statements: any[]
+	exprList: AstExpression[]
+	statements: AstStatement[]
 
-	constructor(locus, exprList, statements) {
+	constructor(locus: ILocus, exprList: AstExpression[], statements: AstStatement[]) {
 		this.locus = locus
 		// if exprList is empty, this is case Else
 		this.exprList = exprList
 		this.statements = statements
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitCaseStatement(this)
 	}
 }
@@ -593,14 +614,15 @@ export class AstTypeMember implements AstStatement {
 	locus: ILocus
 	name: string
 	typeName: string
+	type: Type<any>
 
-	constructor(locus, name, typeName) {
+	constructor(locus: ILocus, name: string, typeName: string) {
 		this.locus = locus
 		this.name = name
 		this.typeName = typeName
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitTypeMember(this)
 	}
 }
@@ -616,7 +638,7 @@ export class AstUserType implements AstStatement {
 		this.members = members
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitUserType(this)
 	}
 }
@@ -630,7 +652,7 @@ export class AstGotoStatement implements AstStatement {
 		this.label = label
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitGotoStatement(this)
 	}
 }
@@ -644,7 +666,7 @@ export class AstGosubStatement implements AstStatement {
 		this.label = label
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitGosub(this)
 	}
 }
@@ -658,7 +680,7 @@ export class AstLabel implements AstStatement {
 		this.name = name
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitLabel(this)
 	}
 }
@@ -675,17 +697,17 @@ export class AstCallStatement implements AstStatement {
 		this.args = args
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitCallStatement(this)
 	}
 }
 
 export class AstOnEventStatement implements AstStatement {
 	locus: ILocus
-	path: any
+	path: AstExpression
 	handler: string
 
-	constructor(locus: ILocus, path: any, handler: string) {
+	constructor(locus: ILocus, path: AstExpression, handler: string) {
 		this.locus = locus
 		this.path = path
 		this.handler = handler
@@ -698,86 +720,86 @@ export class AstOnEventStatement implements AstStatement {
 
 export class AstAssignStatement implements AstStatement {
 	locus: ILocus
-	lhs: any // could be a referenceList
-	expr: any
+	lhs: AstExpression // could be a referenceList
+	expr: AstExpression
 
-	constructor(locus: ILocus, lhs: any, expr: any) {
+	constructor(locus: ILocus, lhs: AstExpression, expr: AstExpression) {
 		this.locus = locus
 		this.lhs = lhs // could be a referenceList
 		this.expr = expr
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitAssignStatement(this)
 	}
 }
 
 export class AstBinaryOp implements AstStatement {
 	locus: ILocus
-	lhs: any
-	op: any
-	rhs: any
+	lhs: AstExpression
+	op: string
+	rhs: AstExpression
 	wantRef: boolean
 	type: SomeType
 
-	constructor(locus: ILocus, lhs: any, op: any, rhs: any) {
+	constructor(locus: ILocus, lhs: AstExpression, op: string, rhs: AstExpression) {
 		this.locus = locus
 		this.lhs = lhs
 		this.op = op
 		this.rhs = rhs
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitBinaryOp(this)
 	}
 }
 
 export class AstUnaryOperator implements AstStatement {
 	locus: ILocus
-	op: any
-	expr: any
+	op: string
+	expr: AstExpression
 	wantRef: boolean
 	type: SomeType
 
-	constructor(locus: ILocus, op: any, expr: any) {
+	constructor(locus: ILocus, op: string, expr: AstExpression) {
 		this.locus = locus
 		this.op = op
 		this.expr = expr
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitUnaryOperator(this)
 	}
 }
 
 export class AstConstantExpr implements AstStatement {
 	locus: ILocus
-	value: any
+	value: number | string | null
 	wantRef: boolean
 	type: SomeType
 
-	constructor(locus: ILocus, value: any) {
+	constructor(locus: ILocus, value: number | string | null) {
 		this.locus = locus
 
 		// value is possibly null, eg. for first parameter of "COLOR , 7"
 		this.value = value
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitConstantExpr(this)
 	}
 }
 
 export class AstReturnStatement implements AstStatement {
 	locus: ILocus
-	value: any
+	value: AstStatement | null
 
-	constructor(locus: ILocus, value: any) {
+	constructor(locus: ILocus, value: AstStatement | null) {
 		this.locus = locus
 		this.value = value
 	}
 
-	public accept(visitor: IVisitor) {
+	public accept(visitor: IVisitor): void {
 		visitor.visitReturnStatement(this)
 	}
 }
@@ -787,12 +809,15 @@ export interface AstStatement {
 	accept(visitor: IVisitor): void
 }
 
+export interface AstExpression extends AstStatement {
+	type: SomeType
+	wantRef?: boolean
+}
+
 export interface ILocus {
 	line: number
 	position: number
 }
-
-export interface IError {}
 
 export interface IParser {
 	parse(code: string): AstProgram | null
@@ -1188,7 +1213,7 @@ export class QBasicProgram {
 				return new AstRestoreStatement(locus, args[1])
 			})
 			rules.addRule('istatement: RETURN', function (_args, locus) {
-				return new AstReturnStatement(locus, undefined)
+				return new AstReturnStatement(locus, null)
 			})
 			rules.addRule("istatement: DATA [DataConstant,',']", function (args, locus) {
 				return new AstDataStatement(locus, args[1])
@@ -1406,7 +1431,7 @@ export class QBasicProgram {
 		return symbols[1]
 	}
 
-	public getByteCodeAsString() {
+	public getByteCodeAsString(): string {
 		if (!this.instructions) {
 			return ''
 		}

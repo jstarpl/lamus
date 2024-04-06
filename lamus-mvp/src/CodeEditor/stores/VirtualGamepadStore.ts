@@ -1,7 +1,23 @@
-import { GamepadDPadState, GamepadJoystickState } from "@lamus/qbasic-vm";
+import { GamepadJoystickState } from "@lamus/qbasic-vm";
 import { makeAutoObservable, runInAction } from "mobx";
 
 const GAMEPAD_TIMEOUT = 2000;
+
+export enum GamepadDPadState {
+  NONE = 0,
+  UP = 1,
+  UP_RIGHT = 2,
+  RIGHT = 3,
+  DOWN_RIGHT = 4,
+  DOWN = 5,
+  DOWN_LEFT = 6,
+  LEFT = 7,
+  UP_LEFT = 8,
+  FIRE = 128,
+  FIRE2 = 64,
+  FIRE3 = 32,
+  FIRE4 = 16,
+}
 
 export class VirtualGamepadStoreClass {
   isVisible: boolean = false;

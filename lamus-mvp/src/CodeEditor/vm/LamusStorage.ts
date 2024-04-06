@@ -1,4 +1,4 @@
-import { FileAccessMode, IFileSystem } from "@lamus/qbasic-vm";
+import { IFileSystem } from "@lamus/qbasic-vm";
 import picomatch from "picomatch";
 import { assertNever } from "../../helpers/util";
 import {
@@ -15,6 +15,14 @@ const ARRAY_BUFFER_BLOCK_SIZE = 512;
 export const STRUCTURED_INPUT_MATCH = new RegExp(
   /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g
 );
+
+enum FileAccessMode {
+  INPUT = "I",
+  OUTPUT = "O",
+  APPEND = "A",
+  RANDOM = "R",
+  BINARY = "B",
+}
 
 enum KnownMimeTypes {
   BINARY = "application/octet-stream",

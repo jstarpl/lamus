@@ -10,7 +10,7 @@ import { observer } from "mobx-react-lite";
 import { autorun } from "mobx";
 import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
 import { EditorState, StateEffect } from "@codemirror/state";
-import { basicSetup } from "@codemirror/basic-setup";
+import { basicSetup } from "codemirror";
 import { indentWithTab } from "@codemirror/commands";
 import { AppStore } from "../stores/AppStore";
 import { EditorStore } from "./stores/EditorStore";
@@ -29,6 +29,7 @@ import {
 import { IError, VMRunState } from "./stores/VMStore";
 
 import "./CodeEditor.css";
+import { qbasic } from "./extensions/qbasic-lang";
 import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
 import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { useGlobalKeyboardHandler } from "../helpers/useKeyboardHandler";
@@ -49,6 +50,9 @@ import {
 } from "../stores/fileSystem/IFileSystemProvider";
 import { useFragmentRoute } from "../helpers/useFragmentRoute";
 import VirtualGamepad from "./vm/Gamepads/VirtualGamepad";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { tags as t } from "@lezer/highlight";
+import { syntaxTheme } from "./extensions/theme";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -271,22 +275,28 @@ const CodeEditor = observer(function CodeEditor() {
     [updateSyntaxErrorDecorations]
   );
 
+  const createEditorState = useCallback((document: string) => {
+    return EditorState.create({
+      doc: document ?? "",
+      extensions: [
+        basicSetup,
+        qbasic(),
+        syntaxTheme,
+        keymap.of([indentWithTab]),
+        scrollPastEnd(),
+        updateModel,
+        errorDecorations,
+      ],
+    });
+  }, []);
+
   useEffect(() => {
     if (!editorViewParent.current) return;
 
     console.log("Creating new state");
     const newEditorView = new EditorView({
       parent: editorViewParent.current,
-      state: EditorState.create({
-        doc: EditorStore.document ?? "",
-        extensions: [
-          basicSetup,
-          keymap.of([indentWithTab]),
-          scrollPastEnd(),
-          updateModel,
-          errorDecorations,
-        ],
-      }),
+      state: createEditorState(EditorStore.document ?? ""),
     });
     editorView.current = newEditorView;
     onInitialize();
@@ -296,7 +306,7 @@ const CodeEditor = observer(function CodeEditor() {
     return () => {
       newEditorView.destroy();
     };
-  }, [onInitialize, errorDecorations]);
+  }, [onInitialize, createEditorState, errorDecorations]);
 
   useLayoutEffect(() => {
     if (!consoleViewParent.current) return;
@@ -450,18 +460,7 @@ const CodeEditor = observer(function CodeEditor() {
         if (!isOk) return;
         EditorStore.vm?.reset();
         console.log("Setting new state");
-        editorView.current.setState(
-          EditorState.create({
-            doc: EditorStore.document ?? "",
-            extensions: [
-              basicSetup,
-              keymap.of([indentWithTab]),
-              scrollPastEnd(),
-              updateModel,
-              errorDecorations,
-            ],
-          })
-        );
+        editorView.current.setState(createEditorState(EditorStore.document));
       })
       .catch((e) => {
         AppStore.isBusy = false;
@@ -472,7 +471,7 @@ const CodeEditor = observer(function CodeEditor() {
   return (
     <div className="CodeEditor sdi-app">
       <div
-        className={`sdi-app-workspace bg-general ${displayFocusToClassName(
+        className={`sdi-app-workspace bg-code ${displayFocusToClassName(
           EditorStore.displayFocus
         )} ${orientationToClassName(
           EditorStore.vm?.outputOrientation ?? "portrait"

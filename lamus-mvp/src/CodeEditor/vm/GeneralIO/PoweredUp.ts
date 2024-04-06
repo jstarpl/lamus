@@ -1,12 +1,12 @@
 import type { GeneralIORouter } from "@lamus/qbasic-vm";
-import {
+import type {
   PoweredUP,
   BasicMotor,
   DuploTrainBaseSpeaker,
   Hub,
   HubLED,
-  isWebBluetooth,
 } from "node-poweredup";
+import "node-poweredup";
 
 export enum DeviceType {
   HUB_LED = 23,
@@ -17,8 +17,7 @@ export enum DeviceType {
 }
 
 export default function setup(generalIORouter: GeneralIORouter) {
-  void typeof isWebBluetooth;
-  const poweredUp = new PoweredUP();
+  const poweredUp = new window.PoweredUP.PoweredUP();
 
   poweredUp.on("discover", (hub: Hub) => {
     console.log("discover", poweredUp, hub);

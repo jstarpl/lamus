@@ -1,8 +1,10 @@
+import "./lib/platformPolyfill";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import "./index.css";
 import { App } from "./App";
+import pwaWorker from "./serviceWorker?worker&url";
 
 import * as Sentry from "@sentry/react";
 
@@ -37,7 +39,8 @@ console.log(
   "font-weight: normal"
 );
 
-navigator.serviceWorker.register(
-  new URL("./serviceWorker.ts", import.meta.url),
-  { type: "module", scope: `${window.location.origin}/` }
-);
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register(pwaWorker, {
+    type: "module",
+  });
+}

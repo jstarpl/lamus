@@ -1,5 +1,5 @@
 .TextEditor .ce-block--selected .ce-block__content {
-  background: var(--color-selection);
+  background-color: var(--color-selection);
 }
 
 .TextEditor .ce-toolbar__actions > .ce-toolbar__plus:hover,
@@ -7,7 +7,8 @@
   background: var(--color-tint-1);
 }
 
-.TextEditor .ce-popover .ce-popover__item .ce-popover__item-icon svg.bi path {
+.TextEditor .ce-popover .ce-popover-item .ce-popover-item__icon svg.bi path,
+.TextEditor .ce-popover .ce-popover-item .ce-popover-item__icon svg.bi {
   stroke: none;
   fill: var(--color-black);
 }

@@ -18,7 +18,7 @@
 */
 
 import { IGeneralIO } from './IGeneralIO'
-import RadixRouter = require('radix-router')
+import RadixRouter from 'radix-router'
 
 export type InOutRequest = {
 	method: 'in' | 'out'
