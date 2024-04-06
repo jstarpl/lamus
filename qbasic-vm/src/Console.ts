@@ -182,7 +182,7 @@ export class Console extends EventTarget implements IConsole {
 	private containerWidth: number | undefined
 	private containerHeight: number | undefined
 
-	constructor(parentElement: HTMLElement, className?: string, width?: number, height?: number, assetPath = 'assets/') {
+	constructor(parentElement: HTMLElement, charmapUrl: string, className?: string, width?: number, height?: number) {
 		super()
 
 		this.canvas = document.createElement('canvas')
@@ -240,7 +240,7 @@ export class Console extends EventTarget implements IConsole {
 		this.ctx.setTransform(1, 0, 0, 1, 0, 0)
 		this.ctx.imageSmoothingEnabled = false
 		this.charImg = document.createElement('img')
-		this.charImg.src = assetPath + 'charmap.png'
+		this.charImg.src = charmapUrl
 
 		this._width = width || this.canvas.width
 		this._height = height || this.canvas.height
