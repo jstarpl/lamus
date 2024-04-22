@@ -1,23 +1,20 @@
-import React, {
-  useRef,
-  useEffect,
+import { indentWithTab } from "@codemirror/commands";
+import { EditorState, StateEffect } from "@codemirror/state";
+import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
+import { autorun } from "mobx";
+import { observer } from "mobx-react-lite";
+import {
   useCallback,
+  useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
-  useContext,
+  useRef,
 } from "react";
-import { observer } from "mobx-react-lite";
-import { autorun } from "mobx";
-import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
-import { EditorState, StateEffect } from "@codemirror/state";
-import { basicSetup } from "codemirror";
-import { indentWithTab } from "@codemirror/commands";
-import { AppStore } from "../stores/AppStore";
-import { EditorStore } from "./stores/EditorStore";
-import { updateModel } from "./extensions/updateStore";
-import { CommandBar } from "../components/CommandBar";
 import { useNavigate } from "react-router-dom";
+import { CommandBar } from "src/components/CommandBar";
 import {
+  FIND_COMBO,
   OPEN_COMBO,
   PAUSE_COMBO,
   QUIT_COMBO,
@@ -25,34 +22,37 @@ import {
   SAVE_AS_COMBO,
   SAVE_COMBO,
   STOP_COMBO,
-} from "../lib/commonHotkeys";
+} from "src/lib/commonHotkeys";
+import { AppStore } from "src/stores/AppStore";
+import { updateModel } from "./extensions/updateStore";
+import { EditorStore } from "./stores/EditorStore";
 import { IError, VMRunState } from "./stores/VMStore";
 
-import "./CodeEditor.css";
-import { qbasic } from "./extensions/qbasic-lang";
-import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
-import { SoundEffectsContext } from "../helpers/SoundEffects";
-import { useGlobalKeyboardHandler } from "../helpers/useKeyboardHandler";
-import { isElementChildOf } from "../lib/lib";
 import { AnimatePresence } from "framer-motion";
-import { FileDialog, IAcceptEventProps } from "../FileManager/FileDialog";
+import { FileDialog, IAcceptEventProps } from "src/FileManager/FileDialog";
+import { SoundEffectsContext } from "src/helpers/SoundEffects";
+import { useFragmentRoute } from "src/helpers/useFragmentRoute";
+import { useGlobalKeyboardHandler } from "src/helpers/useKeyboardHandler";
 import {
   DialogButtonResult,
   DialogButtons,
   DialogTemplates,
   DialogType,
   useModalDialog,
-} from "../helpers/useModalDialog";
-import { assertNever } from "../helpers/util";
+} from "src/helpers/useModalDialog";
+import { assertNever } from "src/helpers/util";
+import { isElementChildOf } from "src/lib/lib";
 import {
   FILE_PATH_SEPARATOR,
   PROVIDER_SEPARATOR,
-} from "../stores/fileSystem/IFileSystemProvider";
-import { useFragmentRoute } from "../helpers/useFragmentRoute";
-import VirtualGamepad from "./vm/Gamepads/VirtualGamepad";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { tags as t } from "@lezer/highlight";
+} from "src/stores/fileSystem/IFileSystemProvider";
+import "./CodeEditor.css";
+import { basicSetup } from "./codeMirrorBasicSetup";
+import { FindReplaceDialog, IFindEventProps } from "./dialogs/FindReplaceDialog";
+import { qbasic } from "./extensions/qbasic-lang";
+import { syntaxErrorDecorations } from "./extensions/syntaxErrorDecorator";
 import { syntaxTheme } from "./extensions/theme";
+import VirtualGamepad from "./vm/Gamepads/VirtualGamepad";
 
 function displayFocusToClassName(displayFocus: "editor" | "output") {
   if (displayFocus === "editor") {
@@ -90,8 +90,10 @@ const CodeEditor = observer(function CodeEditor() {
 
   const isOpenFileDialogOpen = useFragmentRoute("#open");
   const isSaveFileDialogOpen = useFragmentRoute("#save");
+  const isFindDialogOpen = useFragmentRoute("#find");
 
-  const hasDialogOpen = isSaveFileDialogOpen || isOpenFileDialogOpen;
+  const hasDialogOpen =
+    isSaveFileDialogOpen || isOpenFileDialogOpen || isFindDialogOpen;
 
   const navigate = useNavigate();
 
@@ -383,6 +385,17 @@ const CodeEditor = observer(function CodeEditor() {
     navigate("#open");
   }, []);
 
+  const onFind = useCallback(() => {
+    const s = editorView.current?.state
+    let text: string | undefined
+    if (s && !s.selection.main.empty) {
+      text = s.sliceDoc(s.selection.main.from, s.selection.main.to)
+      navigate("#find?" + new URLSearchParams({ text }));
+    } else {
+      navigate("#find");
+    }
+  }, []);
+
   function onSaveDialogCancel() {
     resetFragment();
   }
@@ -437,6 +450,15 @@ const CodeEditor = observer(function CodeEditor() {
   }
 
   function onOpenDialogCancel() {
+    resetFragment();
+  }
+
+  function onFindDialogGo({ searchText }: IFindEventProps) {
+    console.log(searchText);
+    resetFragment();
+  }
+
+  function onFindDialogCancel() {
     resetFragment();
   }
 
@@ -558,6 +580,16 @@ const CodeEditor = observer(function CodeEditor() {
               Pause
             </CommandBar.Button>
           )}
+          {EditorStore.vm?.runState !== VMRunState.RUNNING && (
+            <CommandBar.Button
+              combo={FIND_COMBO}
+              position={7}
+              onClick={onFind}
+              showOnlyWhenModifiersActive
+            >
+              Find
+            </CommandBar.Button>
+          )}
           <CommandBar.Button combo={QUIT_COMBO} position={10} onClick={onQuit}>
             Quit
           </CommandBar.Button>
@@ -581,6 +613,11 @@ const CodeEditor = observer(function CodeEditor() {
         onCancel={onOpenDialogCancel}
         initialStorageProvider={EditorStore.file?.providerId}
         initialPath={EditorStore.file?.path}
+      />
+      <FindReplaceDialog
+        show={isFindDialogOpen}
+        onFind={onFindDialogGo}
+        onCancel={onFindDialogCancel}
       />
     </div>
   );

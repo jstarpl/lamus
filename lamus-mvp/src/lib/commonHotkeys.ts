@@ -6,6 +6,8 @@ export const RUN_COMBO = ["F5"];
 export const PAUSE_COMBO = ["F6"];
 export const STOP_COMBO = ["Shift", "F5"];
 
+export const FIND_COMBO = ["F7"];
+
 export const RENAME_COMBO = ["F2"];
 export const EDIT_COMBO = ["F4"];
 export const COPY_COMBO = ["F5"];

@@ -1,4 +1,3 @@
-import { TargetAndTransition } from "framer-motion";
 import { action, autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, {
@@ -21,11 +20,7 @@ import { FileListItem } from "./FileListItem";
 import { IFileEntryEx } from "./FileList";
 import { v4 as uuidv4 } from "uuid";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
-import {
-  FileName,
-  Path,
-  PROVIDER_SEPARATOR,
-} from "../stores/fileSystem/IFileSystemProvider";
+import { FileName, Path } from "../stores/fileSystem/IFileSystemProvider";
 import { ProviderId } from "../stores/FileSystemStore";
 import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
 import { SoundEffectsContext } from "../helpers/SoundEffects";

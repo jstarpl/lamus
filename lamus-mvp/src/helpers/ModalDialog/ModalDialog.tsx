@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Dialog } from "../../components/Dialog";
 import { COMBO_SHORTHAND, parseCombo } from "../combos";

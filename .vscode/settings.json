@@ -7,9 +7,22 @@
     "setup",
     "docs"
   ],
-  "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+  "editor.codeActionsOnSave": [
+    "source.fixAll.eslint",
+    "source.organizeImports"
+  ],
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
-  "editor.formatOnSave": true,
-  "liveServer.settings.root": "/lamus-mvp/build"
+  "editor.formatOnSave": false,
+  "liveServer.settings.root": "/lamus-mvp/build",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/yarn.lock": true,
+    ".yarn/**/*": true,
+  }
 }

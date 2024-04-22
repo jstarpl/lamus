@@ -1,14 +1,14 @@
 import { IFileSystem } from "@lamus/qbasic-vm";
 import picomatch from "picomatch";
-import { assertNever } from "../../helpers/util";
+import { assertNever } from "src/helpers/util";
 import {
   FileName,
   IAccessResult,
   Path,
   FILE_PATH_SEPARATOR,
-} from "../../stores/fileSystem/IFileSystemProvider";
-import { FileSystemStoreClass, ProviderId } from "../../stores/FileSystemStore";
-import { deserializePath, normalizePath } from "../../lib/fsUtils";
+} from "src/stores/fileSystem/IFileSystemProvider";
+import { FileSystemStoreClass, ProviderId } from "src/stores/FileSystemStore";
+import { deserializePath, normalizePath } from "src/lib/fsUtils";
 
 const ARRAY_BUFFER_BLOCK_SIZE = 512;
 

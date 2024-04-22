@@ -1739,7 +1739,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/autocomplete@npm:^6.0.0, @codemirror/autocomplete@npm:^6.15.0":
+"@codemirror/autocomplete@npm:^6.15.0":
   version: 6.15.0
   resolution: "@codemirror/autocomplete@npm:6.15.0"
   dependencies:
@@ -1756,7 +1756,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/commands@npm:6.3.3, @codemirror/commands@npm:^6.0.0":
+"@codemirror/commands@npm:6.3.3":
   version: 6.3.3
   resolution: "@codemirror/commands@npm:6.3.3"
   dependencies:
@@ -1782,18 +1782,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/lint@npm:^6.0.0":
-  version: 6.5.0
-  resolution: "@codemirror/lint@npm:6.5.0"
-  dependencies:
-    "@codemirror/state": "npm:^6.0.0"
-    "@codemirror/view": "npm:^6.0.0"
-    crelt: "npm:^1.0.5"
-  checksum: 10c0/5180cc4c56bf8da78d9e506c3f4d281108194103c050a9babd1304bc50a91085d99616cd19cc9fae3c0d55a3288ab5112c1cb4b4b52c4fd032d6396954b0abd8
-  languageName: node
-  linkType: hard
-
-"@codemirror/search@npm:^6.0.0":
+"@codemirror/search@npm:^6.5.6":
   version: 6.5.6
   resolution: "@codemirror/search@npm:6.5.6"
   dependencies:
@@ -3603,6 +3592,7 @@ __metadata:
     "@codemirror/autocomplete": "npm:^6.15.0"
     "@codemirror/commands": "npm:6.3.3"
     "@codemirror/language": "npm:^6.10.1"
+    "@codemirror/search": "npm:^6.5.6"
     "@codemirror/state": "npm:6.4.1"
     "@codemirror/view": "npm:6.26.1"
     "@editorjs/checklist": "npm:^1.3.0"
@@ -3642,7 +3632,6 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.2.1"
     bfj: "npm:^7.0.2"
     classnames: "npm:^2.3.1"
-    codemirror: "npm:^6.0.1"
     dotenv: "npm:^10.0.0"
     dotenv-expand: "npm:^5.1.0"
     dropbox: "npm:^10.29.0"
@@ -7497,21 +7486,6 @@ __metadata:
   version: 10.1.1
   resolution: "code-block-writer@npm:10.1.1"
   checksum: 10c0/8573816797ac20256b22d0c9c72743f6dcbcef2cb7e08e7761b3f7a3f2cdd3abe1c66ed9dda123f7c1e5e3746a5528fe3c09473758f1d1555fe4c69add334b28
-  languageName: node
-  linkType: hard
-
-"codemirror@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "codemirror@npm:6.0.1"
-  dependencies:
-    "@codemirror/autocomplete": "npm:^6.0.0"
-    "@codemirror/commands": "npm:^6.0.0"
-    "@codemirror/language": "npm:^6.0.0"
-    "@codemirror/lint": "npm:^6.0.0"
-    "@codemirror/search": "npm:^6.0.0"
-    "@codemirror/state": "npm:^6.0.0"
-    "@codemirror/view": "npm:^6.0.0"
-  checksum: 10c0/219b0f6ee91d373380fba2e0564a2665990a3cdada0b01861768005b09061187c58eeb3db96aef486777b02b77b50a50ee843635e3743c47d3725034913c4b60
   languageName: node
   linkType: hard
 
