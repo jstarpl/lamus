@@ -118,8 +118,10 @@ const SCREEN_BORDER_VARIABLE = '--qbasic-interpreter-screen-border-color'
 export class Console extends EventTarget implements IConsole {
 	private container: HTMLDivElement
 	private canvas: HTMLCanvasElement
-	private inputElement: HTMLInputElement
 	private ctx: CanvasRenderingContext2D
+	private bufferCanvas: HTMLCanvasElement
+	private bufferCtx: CanvasRenderingContext2D | undefined
+	private inputElement: HTMLInputElement
 	private charImg: HTMLImageElement
 	private interval: number | undefined = undefined
 	private images: Array<HTMLImageElement | undefined> = []
@@ -185,25 +187,25 @@ export class Console extends EventTarget implements IConsole {
 	constructor(parentElement: HTMLElement, charmapUrl: string, className?: string, width?: number, height?: number) {
 		super()
 
-		this.canvas = document.createElement('canvas')
 		this.container = document.createElement('div')
 		this.inputElement = document.createElement('input')
 		this.inputElement.type = 'text'
 		parentElement.append(this.container)
-		this.container.append(this.canvas)
 		this.container.append(this.inputElement)
 
 		this.rows = VIDEO_MODES[DEFAULT_VIDEO_MODE].rows
 		this.cols = VIDEO_MODES[DEFAULT_VIDEO_MODE].cols
-		this._height = VIDEO_MODES[DEFAULT_VIDEO_MODE].height
 		this._width = VIDEO_MODES[DEFAULT_VIDEO_MODE].width
+		this._height = VIDEO_MODES[DEFAULT_VIDEO_MODE].height
 		this._landscape = VIDEO_MODES[DEFAULT_VIDEO_MODE].landscape || false
-
-		this.canvas.width = VIDEO_MODES[DEFAULT_VIDEO_MODE].width
-		this.canvas.height = VIDEO_MODES[DEFAULT_VIDEO_MODE].height
 
 		this.containerWidth = width
 		this.containerHeight = height
+
+		this.canvas = this.createCanvas(className)
+		this.bufferCanvas = this.createCanvas(className)
+		this.container.append(this.canvas)
+		this.container.append(this.bufferCanvas)
 
 		const targetContainerWidth = this.containerWidth || this._width
 		const targetContainerHeight = this.containerHeight || this._height
@@ -214,13 +216,6 @@ export class Console extends EventTarget implements IConsole {
 		this.container.style.position = 'relative'
 		this.container.style.overflow = 'hidden'
 		this.container.style['contain'] = 'strict'
-		this.canvas.style.position = 'absolute'
-		this.canvas.style.top = '0'
-		this.canvas.style.left = '0'
-		this.canvas.style.right = '0'
-		this.canvas.style.bottom = '0'
-		this.canvas.style.width = '100%'
-		this.canvas.style.height = '100%'
 
 		this.inputElement.style.position = 'absolute'
 		this.inputElement.style.top = '0'
@@ -232,13 +227,8 @@ export class Console extends EventTarget implements IConsole {
 		this.inputElement.style.opacity = '0'
 		this.inputElement.style.visibility = 'hidden'
 
-		this.canvas.className = className || ''
 		this.container.tabIndex = 0
-		const context = this.canvas.getContext('2d')
-		if (context === null) throw new Error('Could not get 2D context for Console')
-		this.ctx = context
-		this.ctx.setTransform(1, 0, 0, 1, 0, 0)
-		this.ctx.imageSmoothingEnabled = false
+		this.ctx = this.getCanvasContext(this.canvas)
 		this.charImg = document.createElement('img')
 		this.charImg.src = charmapUrl
 
@@ -292,10 +282,62 @@ export class Console extends EventTarget implements IConsole {
 
 		this.cls()
 	}
+	private createCanvas(className: string | undefined): HTMLCanvasElement {
+		const canvas = document.createElement('canvas')
+
+		this.setCanvasProps(canvas, this._width, this._height)
+		
+		canvas.className = className || ''
+
+		return canvas
+	}
+	private setCanvasProps(canvas: HTMLCanvasElement, width: number, height: number): void {
+		canvas.style.position = 'absolute'
+		canvas.style.top = '0'
+		canvas.style.left = '0'
+		canvas.style.right = '0'
+		canvas.style.bottom = '0'
+		canvas.style.width = '100%'
+		canvas.style.height = '100%'
+
+		canvas.width = width
+		canvas.height = height
+	}
+	private getCanvasContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+		const context = canvas.getContext('2d')
+		if (context === null) throw new Error('Could not get 2D context for Console')
+		context.setTransform(1, 0, 0, 1, 0, 0)
+		context.imageSmoothingEnabled = false
+		return context
+	}
 	private unclip(): void {
 		while (this._clipDepth > 0) {
 			this._clipDepth--
 			this.ctx.restore()
+		}
+	}
+	flipBuffers(): void {
+		if (!this.bufferCtx) return
+		const oldCanvas = this.canvas
+		const oldCtx = this.ctx
+		const newCanvas = this.bufferCanvas
+		const newCtx = this.bufferCtx
+		oldCanvas.style.visibility = 'hidden'
+		newCanvas.style.visibility = 'visible'
+		this.canvas = newCanvas
+		this.ctx = newCtx
+		this.bufferCanvas = oldCanvas
+		this.bufferCtx = oldCtx
+	}
+	enableDblBuffering(enable: boolean): void {
+		if (enable) {
+			if (this.bufferCtx) return
+			this.bufferCtx = this.ctx
+			this.ctx = this.getCanvasContext(this.bufferCanvas)
+		} else {
+			if (!this.bufferCtx) return
+			this.ctx = this.bufferCtx
+			this.bufferCtx = undefined
 		}
 	}
 	clip(x1: number, y1: number, x2: number, y2: number): void
@@ -388,6 +430,7 @@ export class Console extends EventTarget implements IConsole {
 
 		this._window = null
 
+		this.enableDblBuffering(false)
 		this.unclip()
 		this.cls()
 		this.clearAllSprites()
@@ -435,6 +478,7 @@ export class Console extends EventTarget implements IConsole {
 	}
 
 	public screen(num: number): boolean {
+		this.enableDblBuffering(false)
 		const dimensions = VIDEO_MODES[num] as IVideoMode | undefined
 		if (dimensions === undefined) {
 			return false
@@ -471,18 +515,12 @@ export class Console extends EventTarget implements IConsole {
 		this.container.style.position = 'relative'
 		this.container.style.overflow = 'hidden'
 		this.container.style['contain'] = 'strict'
-		this.canvas.style.position = 'absolute'
-		this.canvas.style.top = '0'
-		this.canvas.style.left = '0'
-		this.canvas.style.right = '0'
-		this.canvas.style.bottom = '0'
-		this.canvas.style.width = '100%'
-		this.canvas.style.height = '100%'
 
-		this.canvas.width = dimensions.width
-		this.canvas.height = dimensions.height
+		this.setCanvasProps(this.canvas, dimensions.width, dimensions.height)
+		this.setCanvasProps(this.bufferCanvas, dimensions.width, dimensions.height)
 
 		this.ctx.imageSmoothingEnabled = false
+		if (this.bufferCtx) this.bufferCtx.imageSmoothingEnabled = false
 
 		this._window = null
 

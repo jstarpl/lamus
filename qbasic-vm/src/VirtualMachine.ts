@@ -23,33 +23,33 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./types/timeout.fix.d.ts" />
 
-import { sprintf, getDebugConsole as dbg } from './DebugConsole'
-import { Instruction } from './CodeGenerator'
-import {
-	DeriveTypeNameFromVariable,
-	ScalarVariable,
-	SomeScalarType,
-	ArrayVariable,
-	Dimension,
-	SomeType,
-	StringType,
-	JSONType,
-	IsNumericType,
-	IsStringType,
-	IntegerType,
-	CopyableVariable,
-} from './Types'
-import { IConsole, STRUCTURED_INPUT_MATCH } from './IConsole'
-import { IAudioDevice } from './IAudioDevice'
-import { INetworkAdapter } from './INetworkAdapter'
-import { IGeneralIO } from './IGeneralIO'
-import { ICryptography } from './ICryptography'
-import { QBasicProgram } from './QBasic'
-import { Locus } from './Tokenizer'
 import { EventEmitter } from 'eventemitter3'
 import * as jsonPath from 'jsonpath'
+import { Instruction } from './CodeGenerator'
+import { getDebugConsole as dbg, sprintf } from './DebugConsole'
+import { IAudioDevice } from './IAudioDevice'
+import { IConsole, STRUCTURED_INPUT_MATCH } from './IConsole'
+import { ICryptography } from './ICryptography'
 import { FileAccessMode, IFileSystem } from './IFileSystem'
 import { IGamepad } from './IGamepad'
+import { IGeneralIO } from './IGeneralIO'
+import { INetworkAdapter } from './INetworkAdapter'
+import { QBasicProgram } from './QBasic'
+import { Locus } from './Tokenizer'
+import {
+	ArrayVariable,
+	CopyableVariable,
+	DeriveTypeNameFromVariable,
+	Dimension,
+	IntegerType,
+	IsNumericType,
+	IsStringType,
+	JSONType,
+	ScalarVariable,
+	SomeScalarType,
+	SomeType,
+	StringType,
+} from './Types'
 
 export enum RuntimeErrorCodes {
 	DIVISION_BY_ZERO = 101,
@@ -3165,6 +3165,38 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			const spriteNum = getArgValue(vm.stack.pop())
 			vm.cons.clearSprite(spriteNum - 1)
 		},
+	},
+
+	/**
+	 * Enable screen double-buffering. In double-buffering mode, drawing happens on an off-screen buffer that then can be
+	 * flipped using `GBUFFLIP` onto output. This does not affect screen border or sprites.
+	 * 
+	 * If `ENABLE%` is `<> 0`, the mode is enabled. If it's `= 0`, the mode is disabled.
+	 *
+	 * ```
+	 * ENABLE%
+	 * ```
+	 *
+	 * @group graphics
+	 */
+	GBUFENABLE: {
+		args: ['INTEGER'],
+		action: function (vm) {
+			vm.cons.enableDblBuffering(vm.stack.pop() !== 0)
+		}
+	},
+
+	/**
+	 * Swap output and drawing buffers when double-buffering mode is enabled.
+	 *
+	 * @group graphics
+	 */
+	GBUFFLIP: {
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.cons.flipBuffers()
+		}
 	},
 
 	GSAVE: {

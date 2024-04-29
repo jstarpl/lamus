@@ -20,6 +20,8 @@
 export interface IConsole {
 	x: number
 	y: number
+	flipBuffers(): void
+	enableDblBuffering(enable: boolean): void
 	reset(testMode?: boolean): void
 	record(str: string): void
 	getRecorded(): string
