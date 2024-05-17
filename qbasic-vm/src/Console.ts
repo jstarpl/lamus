@@ -191,7 +191,6 @@ export class Console extends EventTarget implements IConsole {
 		this.inputElement = document.createElement('input')
 		this.inputElement.type = 'text'
 		parentElement.append(this.container)
-		this.container.append(this.inputElement)
 
 		this.rows = VIDEO_MODES[DEFAULT_VIDEO_MODE].rows
 		this.cols = VIDEO_MODES[DEFAULT_VIDEO_MODE].cols
@@ -206,6 +205,7 @@ export class Console extends EventTarget implements IConsole {
 		this.bufferCanvas = this.createCanvas(className)
 		this.container.append(this.canvas)
 		this.container.append(this.bufferCanvas)
+		this.container.append(this.inputElement)
 
 		const targetContainerWidth = this.containerWidth || this._width
 		const targetContainerHeight = this.containerHeight || this._height
