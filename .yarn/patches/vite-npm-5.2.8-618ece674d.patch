@@ -1,5 +1,5 @@
 diff --git a/dist/node/chunks/dep-whKeNLxG.js b/dist/node/chunks/dep-whKeNLxG.js
-index 26850d5506f6f580afe370f9d221abf31178fa47..716ec812e518d1d47abf06c562ec3fe1fd4a142f 100644
+index 26850d5506f6f580afe370f9d221abf31178fa47..de485cbfa85686d4f9a1de3c10b1daf8fee4fbcb 100644
 --- a/dist/node/chunks/dep-whKeNLxG.js	
 +++ b/dist/node/chunks/dep-whKeNLxG.js	
 @@ -30522,7 +30522,8 @@ function addToHTMLProxyTransformResult(hash, code) {
@@ -12,3 +12,21 @@ index 26850d5506f6f580afe370f9d221abf31178fa47..716ec812e518d1d47abf06c562ec3fe1
      video: ['src', 'poster'],
      source: ['src', 'srcset'],
      img: ['src', 'srcset'],
+@@ -30779,7 +30780,7 @@ function buildHtmlPlugin(config) {
+                         for (const p of node.attrs) {
+                             const attrKey = getAttrKey(p);
+                             if (p.value && assetAttrs.includes(attrKey)) {
+-                                if (attrKey === 'srcset') {
++                                if (attrKey === 'srcset' || attrKey === "imagesrcset") {
+                                     assetUrlsPromises.push((async () => {
+                                         const processedEncodedUrl = await processSrcSet(p.value, async ({ url }) => {
+                                             const decodedUrl = decodeURI(url);
+@@ -63910,7 +63911,7 @@ const wordCharRE = /\w/;
+ function isBareRelative(url) {
+     return wordCharRE.test(url[0]) && !url.includes(':');
+ }
+-const isSrcSet = (attr) => attr.name === 'srcset' && attr.prefix === undefined;
++const isSrcSet = (attr) => (attr.name === 'srcset' || attr.name === 'imagesrcset') && attr.prefix === undefined;
+ const processNodeUrl = (url, useSrcSetReplacer, config, htmlPath, originalUrl, server, isClassicScriptLink) => {
+     // prefix with base (dev only, base is never relative)
+     const replacer = (url) => {

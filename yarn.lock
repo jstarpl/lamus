@@ -20836,7 +20836,7 @@ __metadata:
 
 "vite@patch:vite@npm%3A5.2.8#~/.yarn/patches/vite-npm-5.2.8-618ece674d.patch":
   version: 5.2.8
-  resolution: "vite@patch:vite@npm%3A5.2.8#~/.yarn/patches/vite-npm-5.2.8-618ece674d.patch::version=5.2.8&hash=1bad7b"
+  resolution: "vite@patch:vite@npm%3A5.2.8#~/.yarn/patches/vite-npm-5.2.8-618ece674d.patch::version=5.2.8&hash=1e0809"
   dependencies:
     esbuild: "npm:^0.20.1"
     fsevents: "npm:~2.3.3"
@@ -20870,7 +20870,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/3ed1befcf70f1e1e9ffe1d386138bddf590ce4df7ffc5849e05785ac588201c1d7915ece25410b0f545b20fc7370997cff1e9ca182deb9abc007b0d23469b05a
+  checksum: 10c0/b37d3ed9a6d6b4e1cb8e428d74a3e1fa6020c060b419842627a4fbf251830fee3a9b5678ca924449920ae292d1d9defd8a3cea9487355a436842ccc24e3ef464
   languageName: node
   linkType: hard
 
