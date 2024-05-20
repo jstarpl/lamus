@@ -1,0 +1,14 @@
+diff --git a/dist/node/chunks/dep-whKeNLxG.js b/dist/node/chunks/dep-whKeNLxG.js
+index 26850d5506f6f580afe370f9d221abf31178fa47..716ec812e518d1d47abf06c562ec3fe1fd4a142f 100644
+--- a/dist/node/chunks/dep-whKeNLxG.js	
++++ b/dist/node/chunks/dep-whKeNLxG.js	
+@@ -30522,7 +30522,8 @@ function addToHTMLProxyTransformResult(hash, code) {
+ }
+ // this extends the config in @vue/compiler-sfc with <link href>
+ const assetAttrsConfig = {
+-    link: ['href'],
++    link: ['href', 'imagesrcset'],
++    audio: ['src'],
+     video: ['src', 'poster'],
+     source: ['src', 'srcset'],
+     img: ['src', 'srcset'],

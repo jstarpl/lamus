@@ -125,7 +125,7 @@
     "prettier": "^2.6.2",
     "rimraf": "^5.0.0",
     "typescript-plugin-css-modules": "^5.0.1",
-    "vite": "^5.2.8",
+    "vite": "patch:vite@npm%3A5.2.8#~/.yarn/patches/vite-npm-5.2.8-618ece674d.patch",
     "vite-tsconfig-paths": "^4.3.1"
   },
   "jest": {

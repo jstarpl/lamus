@@ -45,8 +45,7 @@
     "buffer": "^5.5.0",
     "commander": "^9.2.0",
     "crypto-browserify": "^3.12.0",
-    "stream-browserify": "^3.0.0",
-    "vite": "^5.0.12"
+    "stream-browserify": "^3.0.0"
   },
   "alias": {
     "tslog": "/lamus-mvp/src/lib/tslog.ts"
