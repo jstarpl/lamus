@@ -1,3 +1,4 @@
 node_modules
 .vercel
 .parcel-cache
+.yarn/install-state.gz

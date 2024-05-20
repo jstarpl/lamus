@@ -10,6 +10,7 @@ export default defineConfig(async () => ({
   build: {
     manifest: true,
     outDir: "../build/",
+    assetsDir: './',
     emptyOutDir: true,
   },
   server: {
