@@ -1,25 +1,29 @@
-import React, {
+import classNames from "classnames";
+import { motion } from "framer-motion";
+import {
   useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import { useCursorNavigation } from "../helpers/useCursorNavigation";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import "./Home.css";
-import logo from "./logo.svg";
-import { FocusIndicator } from "../helpers/FocusIndicator";
-import classNames from "classnames";
-import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
-import { SoundEffectsContext } from "../helpers/SoundEffects";
-import { AppStore } from "../stores/AppStore";
 import {
+  BsFileEarmarkCode,
   BsFileEarmarkText,
   BsFolder2Open,
-  BsFileEarmarkCode,
 } from "react-icons/bs";
+import { Link } from "react-router-dom";
+import { FocusIndicator } from "../helpers/FocusIndicator";
+import { SoundEffectsContext } from "../helpers/SoundEffects";
+import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
+import { useCursorNavigation } from "../helpers/useCursorNavigation";
+import { AppStore } from "../stores/AppStore";
+import "./Home.css";
+import bkgLegacy from "./img/bkg.png";
+import bkg1440 from "./img/bkg_1440.webp";
+import bkg480 from "./img/bkg_480.webp";
+import bkg720 from "./img/bkg_720.webp";
+import logo from "./logo.svg";
 
 // is this the first time we show the home screen. If so, fade in the logo nicely. Otherwise, just show it.
 let FIRST_SHOW = true;
@@ -95,25 +99,11 @@ const Home = function Home() {
     >
       <picture>
         <source
-          srcSet={`${
-            new URL("./img/bkg_480.webp", import.meta.url).href
-          } 853w, ${
-            new URL("./img/bkg_720.webp", import.meta.url).href
-          } 1280w, ${
-            new URL("./img/bkg_1440.webp", import.meta.url).href
-          } 2560w`}
+          srcSet={`${bkg480} 853w, ${bkg720} 1280w, ${bkg1440} 2560w`}
           type="image/webp"
         />
-        <source
-          srcSet={`${new URL("./img/bkg.png", import.meta.url).href}`}
-          type="image/png"
-        />
-        <img
-          className="bkg"
-          src={`${new URL("./img/bkg.png", import.meta.url).href}`}
-          alt=""
-          ref={bkgEl}
-        />
+        <source srcSet={bkgLegacy} type="image/png" />
+        <img className="bkg" src={bkgLegacy} alt="" ref={bkgEl} />
       </picture>
       <nav>
         <ul>

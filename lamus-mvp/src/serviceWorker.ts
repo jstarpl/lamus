@@ -25,7 +25,7 @@ async function install() {
 
   const cache = await caches.open(version);
   // make manifest entries absolute
-  await cache.addAll(unique(Object.entries(manifest).map(([_key, entry]) => `${self.origin}/${entry.file}`)));
+  await cache.addAll(unique(Object.values(manifest).map((entry: any) => `${self.origin}/${entry.file}`)));
 }
 self.addEventListener("install", (e: ExtendableEvent) =>
   e.waitUntil(install())

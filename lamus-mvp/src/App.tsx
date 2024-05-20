@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useLayoutEffect } from "react";
+import { AnimatePresence, MotionConfig } from "framer-motion";
+import { autorun } from "mobx";
+import { useCallback, useEffect, useLayoutEffect } from "react";
 import {
   Navigate,
   Route,
@@ -6,25 +8,23 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { AnimatePresence, MotionConfig } from "framer-motion";
+import { AdminCode } from "./AdminCode/AdminCode";
 import "./App.css";
+import CodeEditor from "./CodeEditor";
+import CodeIOOAuth2 from "./CodeEditor/vm/GeneralIO/OAuth2/code";
+import FileManager from "./FileManager";
+import Home from "./Home";
+import TextEditor from "./TextEditor";
+import { GlobalSpinner } from "./components/GlobalSpinner/GlobalSpinner";
+import { SoundEffectsContextProvider } from "./helpers/SoundEffects";
+import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
 import {
   KeyboardHandler,
   useGlobalKeyboardHandler,
 } from "./helpers/useKeyboardHandler";
-import { AppStore } from "./stores/AppStore";
-import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
-import { useHideMouseOnType } from "./helpers/useHideMouseOnType";
-import { SoundEffectsContextProvider } from "./helpers/SoundEffects";
 import { ModalDialogContextProvider } from "./helpers/useModalDialog";
-import { AdminCode } from "./AdminCode/AdminCode";
-import { autorun } from "mobx";
-import Home from "./Home";
-import FileManager from "./FileManager";
-import TextEditor from "./TextEditor";
-import CodeEditor from "./CodeEditor";
-import CodeIOOAuth2 from "./CodeEditor/vm/GeneralIO/OAuth2/code";
-import { GlobalSpinner } from "./components/GlobalSpinner/GlobalSpinner";
+import { useMouseWheelSink } from "./helpers/useMouseWheelSink";
+import { AppStore } from "./stores/AppStore";
 
 function removeSplashScreen() {
   const splashScreen = document.getElementById("splash");
@@ -43,6 +43,7 @@ function hideSplashScreen() {
   document.body.style.backgroundColor = "";
   splashScreen.style.animation =
     "1s splash-bkg-animate-out 0s 1 ease-in normal both";
+  splashScreen.style.pointerEvents = 'none';
   const animationFinished = new Promise<void>((resolve) => {
     splashScreen.addEventListener("animationend", () => {
       resolve();
