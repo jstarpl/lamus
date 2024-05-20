@@ -76,7 +76,7 @@
     "start": "run build:grammar && vite",
     "clean": "rimraf ./build",
     "build:grammar": "node ./scripts/build-grammar.mjs",
-    "build:app": "run build:grammar && vite build",
+    "build:app": "run build:grammar && vite build --mode production",
     "build": "yarn clean && yarn build:app && yarn run sentry:sourcemaps",
     "format": "prettier --write src/**/*.ts{,x}",
     "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",

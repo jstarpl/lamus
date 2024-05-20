@@ -42,7 +42,7 @@
     "build": "run build:clean && run build:types && run build:bundle",
     "build:clean": "rimraf ./dist",
     "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly",
-    "build:bundle": "esbuild src/index.ts --format=esm --bundle --outdir=dist/",
+    "build:bundle": "esbuild src/index.ts --define:process.env.NODE_DEBUG=false --define:process.platform=\\\"web\\\" --format=esm --bundle --outdir=dist/",
     "qbasic-docs": "node ./scripts/extract-subroutines.mjs ./src/VirtualMachine.ts ./dist/allCommands.json",
     "bundle": "run build && run qbasic-docs",
     "api-docs": "yarn api-docs:html && opn api-docs/index.html",

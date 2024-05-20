@@ -1,8 +1,9 @@
 import "./lib/platformPolyfill";
-import React from "react";
+
+import "./index.css";
+
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
-import "./index.css";
 import { App } from "./App";
 import pwaWorker from "./serviceWorker?worker&url";
 
@@ -40,7 +41,10 @@ console.log(
 );
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register(pwaWorker, {
-    type: "module",
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register(pwaWorker, {
+      type: "module",
+      scope: '/'
+    });
   });
 }

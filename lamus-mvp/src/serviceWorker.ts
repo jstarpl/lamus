@@ -1,17 +1,31 @@
 /// <reference lib="WebWorker" />
 
 // export empty type because of tsc --isolatedModules flag
-export type {};
+export type { };
 declare const self: ServiceWorkerGlobalScope;
 
 // import { manifest, version } from "@parcel/service-worker";
-const manifest: string[] = [];
 const version = "dummy";
 
 async function install() {
+  const manifestReq = await fetch(`${self.origin}/.vite/manifest.json`, {
+    cache: 'no-cache',
+  })
+  if (!manifestReq.ok) {
+    console.error('Could not get asset manifest')
+    return
+  }
+  let manifest = {}
+  try {
+    manifest = await manifestReq.json() as Record<string, any>
+  } catch {
+    console.error('Could not parse manifset')
+    return
+  }
+
   const cache = await caches.open(version);
   // make manifest entries absolute
-  await cache.addAll(unique(manifest.map((entry) => `${self.origin}${entry}`)));
+  await cache.addAll(unique(Object.entries(manifest).map(([_key, entry]) => `${self.origin}/${entry.file}`)));
 }
 self.addEventListener("install", (e: ExtendableEvent) =>
   e.waitUntil(install())
