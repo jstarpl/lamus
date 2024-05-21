@@ -1,10 +1,10 @@
 import { autorun, makeAutoObservable, runInAction } from "mobx";
+import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
 import { dontWait } from "../../helpers/util";
 import { AppStore } from "../../stores/AppStore";
-import { FileName, Path } from "../../stores/fileSystem/IFileSystemProvider";
 import { FileHandle, ProviderId } from "../../stores/FileSystemStore";
+import { FileName, Path } from "../../stores/fileSystem/IFileSystemProvider";
 import { VMRunState, VMStoreClass } from "./VMStore";
-import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
 
 const ACTIVE_DOCUMENT_KEY = "codeEditor:activeDocument";
 
@@ -63,6 +63,8 @@ class EditorStoreClass {
     const dispose = autorun(() => {
       if (this.vm?.runState === VMRunState.RUNNING) {
         this.setDisplayFocus("output");
+      } else if (this.vm?.runState === VMRunState.SUSPENDED) {
+        this.setDisplayFocus("editor");
       }
     });
 

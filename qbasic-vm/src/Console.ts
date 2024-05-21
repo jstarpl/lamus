@@ -314,6 +314,7 @@ export class Console extends EventTarget implements IConsole {
 		while (this._clipDepth > 0) {
 			this._clipDepth--
 			this.ctx.restore()
+			if (this.bufferCtx) this.bufferCtx.restore()
 		}
 	}
 	flipBuffers(): void {
@@ -346,11 +347,13 @@ export class Console extends EventTarget implements IConsole {
 		if (typeof x1 !== 'number' || typeof y1 !== 'number' || typeof x2 !== 'number' || typeof y2 !== 'number') {
 			this._clipDepth--
 			this.ctx.restore()
+			if (this.bufferCtx) this.bufferCtx.restore()
 			return
 		}
 
 		this._clipDepth++
 		this.ctx.save()
+		if (this.bufferCtx) this.bufferCtx.save()
 		const clipPath = new Path2D()
 		const x = Math.min(x1, x2)
 		const y = Math.min(y1, y2)
@@ -358,6 +361,7 @@ export class Console extends EventTarget implements IConsole {
 		const height = Math.abs(y2 - y1)
 		clipPath.rect(x, y, width, height)
 		this.ctx.clip(clipPath)
+		if (this.bufferCtx) this.bufferCtx.clip(clipPath)
 	}
 	window(x1: number, y1: number, x2: number, y2: number): void
 	window(): void
@@ -386,19 +390,19 @@ export class Console extends EventTarget implements IConsole {
 		window.requestAnimationFrame(this.animationFrame)
 	}
 
-	private startX(): number {
+	private get startX(): number {
 		return this._window?.x ?? 0
 	}
 
-	private startY(): number {
+	private get startY(): number {
 		return this._window?.y ?? 0
 	}
 
-	private endX(): number {
+	private get endX(): number {
 		return this._window ? this._window.x + this._window.width : this.cols
 	}
 
-	private endY(): number {
+	private get endY(): number {
 		return this._window ? this._window.y + this._window.height : this.rows
 	}
 
@@ -430,6 +434,7 @@ export class Console extends EventTarget implements IConsole {
 
 		this._window = null
 
+		this.screen(1)
 		this.enableDblBuffering(false)
 		this.unclip()
 		this.cls()
@@ -1046,13 +1051,13 @@ export class Console extends EventTarget implements IConsole {
 
 	public scroll(): void {
 		this.cursor(false)
-		const sx = this.startX() * this.charWidth
-		const sy = (this.startY() + 1) * this.charHeight
+		const sx = this.startX * this.charWidth
+		const sy = (this.startY + 1) * this.charHeight
 		const swidth = this._window ? this._window.width * this.charWidth : this._width
 		const sheight = this._window ? (this._window.height - 1) * this.charHeight : this._height - this.charHeight
 
-		const tx = this.startX() * this.charWidth
-		const ty = this.startY() * this.charHeight
+		const tx = this.startX * this.charWidth
+		const ty = this.startY * this.charHeight
 		const twidth = swidth
 		const theight = sheight
 		this.ctx.drawImage(this.canvas, sx, sy, swidth, sheight, tx, ty, twidth, theight)
@@ -1102,9 +1107,9 @@ export class Console extends EventTarget implements IConsole {
 	public backup(num: number): void {
 		this.cursor(false)
 
-		let virtualX = this.x - this.startX()
+		let virtualX = this.x - this.startX
 		virtualX -= num
-		const minY = this.startY()
+		const minY = this.startY
 		while (virtualX < 0) {
 			this.y -= 1
 			virtualX += this._window ? this._window.width : this.cols
@@ -1114,7 +1119,7 @@ export class Console extends EventTarget implements IConsole {
 			this.y = minY
 		}
 
-		this.x = virtualX + this.startX()
+		this.x = virtualX + this.startX
 	}
 
 	private keyRepeatThrottle = 0
@@ -1249,7 +1254,7 @@ export class Console extends EventTarget implements IConsole {
 		}
 
 		if (show) {
-			if (this.y === this.endY()) {
+			if (this.y === this.endY) {
 				this.scroll()
 			}
 
@@ -1264,7 +1269,7 @@ export class Console extends EventTarget implements IConsole {
 	}
 
 	public newline(): void {
-		this.x = this.startX()
+		this.x = this.startX
 		this.y += 1
 	}
 
@@ -1275,8 +1280,8 @@ export class Console extends EventTarget implements IConsole {
 
 		this.cursor(false)
 
-		const maxY = this.endY()
-		const maxX = this.endX()
+		const maxY = this.endY
+		const maxX = this.endX
 
 		for (let i = 0; i < str.length; i++) {
 			if (this.y === maxY) {

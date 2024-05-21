@@ -231,12 +231,16 @@ const CodeEditor = observer(function CodeEditor() {
           column: number;
         };
 
+        const ctx: { firstError: { from: number; to: number } | null } = {
+          firstError: null,
+        };
+
         function insertErrorIntoErrorMessages(
           error: IError,
           errorMessages: IErrorMessage[]
         ) {
           const line = editor.state.doc.line((error.line ?? 0) + 1);
-          if (firstErrorPos === null) firstErrorPos = line.from;
+          if (ctx.firstError === null) ctx.firstError = line;
           if (!error.message) return;
           errorMessages.push({
             message: error.message,
@@ -250,8 +254,6 @@ const CodeEditor = observer(function CodeEditor() {
 
         const editor = editorView.current;
 
-        let firstErrorPos: number | null = null;
-
         for (const error of parsingErrors) {
           insertErrorIntoErrorMessages(error, errorMessages);
         }
@@ -264,12 +266,20 @@ const CodeEditor = observer(function CodeEditor() {
           updateSyntaxErrorDecorations(errorMessages),
         ];
 
-        if (firstErrorPos !== null) {
-          console.log(`Scroll into view: ${firstErrorPos}`);
-          effects.push(EditorView.scrollIntoView(firstErrorPos));
+        if (ctx.firstError !== null) {
+          console.log(`Scroll into view: ${ctx.firstError.from}`);
+          effects.push(EditorView.scrollIntoView(ctx.firstError.from, {
+            yMargin: 20,
+            xMargin: 20,
+            x: 'nearest',
+            y: 'center',
+          }));
         }
 
         const transaction = editorView.current.state.update({
+          selection: ctx.firstError?.to !== undefined ? {
+            anchor: ctx.firstError.to,
+          } : undefined,
           effects,
         });
         editorView.current.dispatch(transaction);
