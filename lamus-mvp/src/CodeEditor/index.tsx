@@ -299,6 +299,9 @@ const CodeEditor = observer(function CodeEditor() {
         updateModel,
         errorDecorations,
       ],
+      selection: {
+        anchor: 0,
+      }
     });
   }, []);
 
@@ -493,6 +496,15 @@ const CodeEditor = observer(function CodeEditor() {
         EditorStore.vm?.reset();
         console.log("Setting new state");
         editorView.current.setState(createEditorState(EditorStore.document));
+        editorView.current.dispatch({
+          selection: {
+            anchor: 0,
+          },
+          scrollIntoView: true,
+        })
+        setTimeout(() => {
+          editorView.current?.focus()
+        })
       })
       .catch((e) => {
         AppStore.isBusy = false;

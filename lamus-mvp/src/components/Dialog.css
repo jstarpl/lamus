@@ -173,3 +173,9 @@ dialog .buttons > button.active > .DialogButtonHotkey {
   opacity: 0;
   transition: opacity 0.25s 0s;
 }
+
+@media screen and (max-width: 500px) and (orientation: portrait) {
+  dialog {
+    width: 100vw;
+  }
+}
