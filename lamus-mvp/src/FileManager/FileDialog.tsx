@@ -9,40 +9,41 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { CSSTransition } from "react-transition-group";
+import { v4 as uuidv4 } from "uuid";
 import { CommandBar } from "../components/CommandBar";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { ListView } from "../components/ListView";
-import { useCursorNavigation } from "../helpers/useCursorNavigation";
-import { AppStore } from "../stores/AppStore";
-import "./FileDialog.css";
-import { useFocusTrap } from "../helpers/useFocusTrap";
-import { FileListItem } from "./FileListItem";
-import { IFileEntryEx } from "./FileList";
-import { v4 as uuidv4 } from "uuid";
 import { ListViewChangeEvent } from "../components/ListView/ListViewList";
-import { FileName, Path } from "../stores/fileSystem/IFileSystemProvider";
-import { ProviderId } from "../stores/FileSystemStore";
-import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
-import { SoundEffectsContext } from "../helpers/SoundEffects";
 import { Spinner } from "../components/Spinner";
-import { CSSTransition } from "react-transition-group";
-import { SelectStorageDialog } from "./SelectStorageDialog";
-import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
-import {
-  CHANGE_STORAGE_PRIMARY,
-  RENAME_COMBO,
-  MK_DIR_COMBO,
-  CANCEL_COMBO,
-  CONFIRM_COMBO,
-  DELETE_COMBO,
-} from "../lib/commonHotkeys";
-import { LoadStatus } from "./LoadStatus";
-import { MkDirDialog } from "./MkDirDialog";
+import { SoundEffectsContext } from "../helpers/SoundEffects";
+import { useCursorNavigation } from "../helpers/useCursorNavigation";
+import { useFocusTrap } from "../helpers/useFocusTrap";
 import {
   DialogButtonResult,
   DialogTemplates,
   useModalDialog,
 } from "../helpers/useModalDialog";
+import { usePreventTabHijack } from "../helpers/usePreventTabHijack";
+import {
+  CANCEL_COMBO,
+  CHANGE_STORAGE_PRIMARY,
+  CONFIRM_COMBO,
+  DELETE_COMBO,
+  MK_DIR_COMBO,
+  RENAME_COMBO,
+} from "../lib/commonHotkeys";
+import { AppStore } from "../stores/AppStore";
+import { ProviderId } from "../stores/FileSystemStore";
+import { FileName, Path } from "../stores/fileSystem/IFileSystemProvider";
+import "./FileDialog.css";
+import { IFileEntryEx } from "./FileList";
+import { FileListItem } from "./FileListItem";
+import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
+import { LoadStatus } from "./LoadStatus";
+import { MkDirDialog } from "./MkDirDialog";
+import { SelectStorageDialog } from "./SelectStorageDialog";
+import { fileComparator } from "./sortFiles";
 
 export interface IAcceptEventProps {
   providerId: string;
@@ -199,7 +200,7 @@ export const FileDialog = observer(function FileDialog({
           ...file,
           guid: uuidv4(),
         }));
-        files = files.sort(fileComparator);
+        files = files.sort(fileComparator());
         if (isSelectingDirectory) {
           files.unshift(SELECT_THIS_DIR);
         }
@@ -420,7 +421,8 @@ export const FileDialog = observer(function FileDialog({
           setStatus(LoadStatus.LOADING);
 
           try {
-            await provider.unlink(currentPath, fileName);
+            const result = await provider.unlink(currentPath, fileName);
+            if (!result.ok) console.error(result)
             setStatus(LoadStatus.OK);
             refreshList();
           } catch (e) {
@@ -447,14 +449,15 @@ export const FileDialog = observer(function FileDialog({
     provider
       .mkdir(currentPath, newDirName)
       .then(
-        action(() => {
+        action((res) => {
+          if (!res.ok) console.error(res);
           setStatus(LoadStatus.OK);
           refreshList();
         })
       )
-      .catch(() => {
+      .catch((err) => {
         setStatus(LoadStatus.OK);
-        console.error;
+        console.error(err);
       });
   }
 
@@ -700,18 +703,3 @@ export const FileDialog = observer(function FileDialog({
 });
 FileDialog.displayName = "FileDialog";
 
-function fileComparator(a: IFileEntryEx, b: IFileEntryEx): number {
-  if (a.dir !== b.dir) {
-    if (a.dir) return -1;
-    return 1;
-  }
-  if (a.virtual !== b.virtual) {
-    if (a.virtual) return -1;
-    return 1;
-  }
-  return a.fileName.localeCompare(b.fileName, undefined, {
-    numeric: true,
-    caseFirst: "upper",
-    sensitivity: "base",
-  });
-}

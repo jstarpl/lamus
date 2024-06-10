@@ -31,9 +31,7 @@ export class OPFSProvider implements IFileSystemProvider {
 
     try {
       const parentDirectory = await this.resolvePath(path);
-      await parentDirectory.getFileHandle(name, {
-        create: false,
-      });
+      await this.getFileOrDirectoryHandle(parentDirectory, name);
 
       return {
         ok: true,
@@ -91,7 +89,7 @@ export class OPFSProvider implements IFileSystemProvider {
     try {
       const parentDirectory = await this.resolvePath(path);
 
-      parentDirectory.getDirectoryHandle(name, {
+      await parentDirectory.getDirectoryHandle(name, {
         create: true,
       });
 
@@ -105,19 +103,33 @@ export class OPFSProvider implements IFileSystemProvider {
       };
     }
   }
-  rename(
+  async rename(
     path: Path,
     oldFileName: string,
     newFileName: string
   ): Promise<IMkDirResult> {
-    throw new Error("Method not implemented.");
+    const directory = await this.resolvePath(path);
+
+    try {
+      const file = await this.getFileOrDirectoryHandle(directory, oldFileName);
+      file.move(newFileName);
+
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: String(e),
+      };
+    }
   }
   async unlink(path: Path, name: string): Promise<IDeleteResult> {
     const directory = await this.resolvePath(path);
 
     try {
-      const file = await directory.getFileHandle(name);
-      file.remove({
+      const file = await this.getFileOrDirectoryHandle(directory, name);
+      await file.remove({
         recursive: true,
       });
 
@@ -190,6 +202,13 @@ export class OPFSProvider implements IFileSystemProvider {
         await currentWorkingDirectory.getDirectoryHandle(directory);
     }
     return currentWorkingDirectory;
+  }
+  private async getFileOrDirectoryHandle(directory: FileSystemDirectoryHandle, fileOrDirectoryName: string) {
+    try {
+      return await directory.getFileHandle(fileOrDirectoryName)
+    } catch (e) {
+      return await directory.getDirectoryHandle(fileOrDirectoryName)
+    }
   }
   static isSupported(): boolean {
     if (

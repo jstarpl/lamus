@@ -1,17 +1,16 @@
 import { observer } from "mobx-react-lite";
-import { FileManagerPane as FileManagerPaneState } from "./stores/FileManagerStore";
-import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
-import { AppStore } from "../stores/AppStore";
+import { useCallback, useEffect, useRef } from "react";
 import { ListView } from "../components/ListView";
-import { LoadStatus } from "./LoadStatus";
+import { ListViewChangeEvent } from "../components/ListView/ListViewList";
 import { Spinner } from "../components/Spinner";
+import { AppStore } from "../stores/AppStore";
 import { FileListItem } from "./FileListItem";
 import * as classNames from "./FileManagerPane.module.css";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { FileName } from "../stores/fileSystem/IFileSystemProvider";
-import { ListViewChangeEvent } from "../components/ListView/ListViewList";
+import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
+import { LoadStatus } from "./LoadStatus";
 import { SelectStorageDialog } from "./SelectStorageDialog";
-import { autorun } from "mobx";
+import { fileComparator } from "./sortFiles";
+import { FileManagerPane as FileManagerPaneState } from "./stores/FileManagerStore";
 
 const FileManagerPane = observer(function FileManagerPane({
   pane,
@@ -31,37 +30,37 @@ const FileManagerPane = observer(function FileManagerPane({
   onGoToPath?: React.MouseEventHandler<HTMLButtonElement>;
 }) {
   const paneListEl = useRef<HTMLDivElement>(null);
-  const [selectedFiles, setSelectedFiles] = useState<undefined | FileName[]>(
-    undefined
-  );
 
   const onSelectionChange = useCallback((e: ListViewChangeEvent) => {
-    setSelectedFiles(e.detail.value);
+    pane.setSelectedFiles(e.detail.value);
   }, []);
 
   let foundFirstNotParentDir = false;
-  const listViewItems = pane.items.map((file) => {
-    let focusThisOneAfterLoad: boolean | undefined = undefined;
-    if (
-      (!file.parentDir && !foundFirstNotParentDir) ||
-      pane.items.length === 1
-    ) {
-      foundFirstNotParentDir = true;
-      focusThisOneAfterLoad = true;
-    }
-    return (
-      <ListView.Item
-        key={file.guid}
-        value={file.guid}
-        className={itemClassName}
-        data-guid={file.guid}
-        data-focus-initial={focusThisOneAfterLoad}
-        onDoubleClick={onFileEntryDoubleClick}
-      >
-        <FileListItem file={file} />
-      </ListView.Item>
-    );
-  });
+  const listViewItems = pane.items
+    .slice()
+    .sort(fileComparator())
+    .map((file) => {
+      let focusThisOneAfterLoad: boolean | undefined = undefined;
+      if (
+        (!file.parentDir && !foundFirstNotParentDir) ||
+        pane.items.length === 1
+      ) {
+        foundFirstNotParentDir = true;
+        focusThisOneAfterLoad = true;
+      }
+      return (
+        <ListView.Item
+          key={file.guid}
+          value={file.guid}
+          className={itemClassName}
+          data-guid={file.guid}
+          data-focus-initial={focusThisOneAfterLoad}
+          onDoubleClick={onFileEntryDoubleClick}
+        >
+          <FileListItem file={file} />
+        </ListView.Item>
+      );
+    });
 
   function onStorageProviderCrumbContextMenu(
     e: React.MouseEvent<HTMLButtonElement>
@@ -86,21 +85,22 @@ const FileManagerPane = observer(function FileManagerPane({
     });
   }
 
-  useEffect(
-    () =>
-      autorun(() => {
-        const status = pane.status;
-        if (status !== LoadStatus.OK) return;
+  useEffect(() => {
+    if (pane.status !== LoadStatus.OK) return;
 
-        window.setTimeout(() => {
-          const defaultLeftFocus = document.querySelector<HTMLElement>(
-            `.${className}[data-focus-initial]`
-          );
-          defaultLeftFocus?.focus();
-        }, 20);
-      }),
-    []
-  );
+    const timeout = window.setTimeout(() => {
+      let defaultLeftFocus =
+        paneListEl.current?.querySelector<HTMLElement>(`[data-focus-initial]`);
+      if (!defaultLeftFocus)
+        defaultLeftFocus = paneListEl.current?.querySelector<HTMLElement>("li");
+
+      defaultLeftFocus?.focus();
+    }, 20);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [pane.status]);
 
   return (
     <div className={className}>
@@ -123,7 +123,7 @@ const FileManagerPane = observer(function FileManagerPane({
         {pane.status === LoadStatus.OK && (
           <ListView.List
             multiple
-            value={selectedFiles}
+            value={Array.from(pane.selectedFiles.values())}
             onChange={onSelectionChange}
             onFocus={onFocus}
             onBlur={onBlur}

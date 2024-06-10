@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useMemo } from "react";
-import { when } from "mobx";
+import { action, when } from "mobx";
 import { observer } from "mobx-react-lite";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useModalDialog } from "../helpers/useModalDialog";
-import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
-import { AppStore } from "../stores/AppStore";
+import { EmojiPicker } from "src/components/EmojiPicker";
+import { copyDirectory, copyFile } from "src/stores/fileSystem/IFileSystemProvider";
 import { CommandBar } from "../components/CommandBar";
+import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
+import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
+import { DialogButtonResult, DialogTemplates, useModalDialog } from "../helpers/useModalDialog";
 import {
   CHANGE_STORAGE_PRIMARY,
   CHANGE_STORAGE_SECONDARY,
@@ -16,16 +18,16 @@ import {
   MOVE_COMBO,
   QUIT_COMBO,
 } from "../lib/commonHotkeys";
+import { sleep } from "../lib/lib";
+import { AppStore } from "../stores/AppStore";
+import * as classNames from "./FileManager.module.css";
+import FileManagerPane from "./FileManagerPane";
+import { FileManagerTabs } from "./FileManagerTabs";
+import { MkDirDialog } from "./MkDirDialog";
 import {
   FileManagerPane as FileManagerPaneStore,
   FileManagerStore,
 } from "./stores/FileManagerStore";
-import FileManagerPane from "./FileManagerPane";
-import * as classNames from "./FileManager.module.css";
-import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
-import { sleep } from "../lib/lib";
-import { FileManagerTabs } from "./FileManagerTabs";
-import { FileSystemLocation } from "../stores/FileSystemStore";
 
 const MENU_COMBO = ["F9"];
 const SWITCH_PANE_COMBO = "Tab";
@@ -36,13 +38,17 @@ const FILE_MANAGER_ITEM_RIGHT = "file-manager-item-right";
 
 const FileManager = observer(function FileManager() {
   const navigate = useNavigate();
-  const { showDialog } = useModalDialog();
+  const modalDialog = useModalDialog();
 
   const keyboardHandler = useKeyboardHandler();
 
   function resetFragment() {
     navigate(-1);
   }
+
+  const [isMkDirDialogOpen, setMkDirDialogOpen] = useState(false);
+
+  const exitSignal = useMemo(() => new AbortController(), []);
 
   useFocusSoundEffect("input,button,.list-view,.list-view-item");
 
@@ -91,7 +97,7 @@ const FileManager = observer(function FileManager() {
     navigate("/");
   }, [navigate]);
 
-  const hasDialogOpen = false;
+  const hasDialogOpen = isMkDirDialogOpen;
 
   useEffect(() => {
     if (!keyboardHandler) return;
@@ -153,14 +159,81 @@ const FileManager = observer(function FileManager() {
   const createNavigationHandler = (pane: FileManagerPaneStore) => {
     return (e: React.MouseEvent<HTMLButtonElement>) => {
       const pathStr = e.currentTarget.dataset["path"];
-      if (!pathStr) return;
-      const path = JSON.parse(pathStr);
-      pane.setLocation(path);
+      if (!pathStr || !pane.location) return;
+      let path = [];
+      try {
+        path = JSON.parse(pathStr) ?? [];
+      } catch (e) {
+        // noop
+      }
+      pane.setLocation({
+        providerId: pane.location.providerId,
+        path
+      });
     };
   };
 
+  useEffect(() => {
+    if (!keyboardHandler) return;
+
+    async function onGo(e: KeyboardEvent) {
+      if (e.repeat) return;
+      if (!(e.target instanceof HTMLElement)) return;
+
+      const pane = FileManagerStore.displayFocus === "left" ? FileManagerStore.leftPane : FileManagerStore.rightPane
+      const activeElement = document.activeElement
+      if (!(activeElement instanceof HTMLLIElement)) return
+
+      const guid = activeElement.dataset["guid"]
+      if (!guid) return
+
+      const focusedItem = pane.items.find((item) => item.guid === guid)
+      if (focusedItem?.dir) {
+        if (!pane.location) return
+        if (focusedItem.parentDir) {
+          const newPath = pane.location.path.slice()
+          newPath.pop()
+          return pane.setLocation({
+            providerId: pane.location.providerId,
+            path: newPath
+          })
+        } else {
+          return pane.setLocation({
+            providerId: pane.location.providerId,
+            path: [...pane.location.path, focusedItem.fileName]
+          })
+        }
+      }
+    }
+
+    keyboardHandler.bind(GO_COMBO, onGo, {
+      exclusive: true,
+      preventDefaultDown: false,
+      preventDefaultPartials: false,
+    });
+
+    return () => {
+      keyboardHandler.unbind(GO_COMBO, onGo);
+    };
+  }, [keyboardHandler]);
+
+  const createFileEntryHandler = (pane: FileManagerPaneStore) => {
+    return (e: React.MouseEvent<HTMLLIElement>) => {
+      const guid = e.currentTarget.dataset["guid"];
+      if (!guid) return;
+      const item = pane.items.find((item) => item.guid === guid)
+      if (!item) return;
+      console.log(item);
+    }
+  }
+
   const onNavigateLeft = createNavigationHandler(FileManagerStore.leftPane);
   const onNavigateRight = createNavigationHandler(FileManagerStore.rightPane);
+
+  const onFileEntryDoubleClickLeft = createFileEntryHandler(FileManagerStore.leftPane);
+  const onFileEntryDoubleClickRight = createFileEntryHandler(
+    FileManagerStore.leftPane
+  );
 
   const createFocusHadler = (focus: "left" | "right") => {
     return () => {
@@ -170,6 +243,174 @@ const FileManager = observer(function FileManager() {
 
   const onFocusLeft = createFocusHadler("left");
   const onFocusRight = createFocusHadler("right");
+
+  function onCreateNewDir(newDirName: string) {
+    setMkDirDialogOpen(false);
+
+    const pane =
+      FileManagerStore.displayFocus === "left"
+        ? FileManagerStore.leftPane
+        : FileManagerStore.rightPane;
+
+    if (!pane.location?.providerId) return;
+    const provider = AppStore.fileSystem.providers.get(
+      pane.location.providerId
+    );
+    if (!provider) return;
+    pane.makeBusy();
+    provider
+      .mkdir(pane.location.path, newDirName)
+      .then(
+        () => pane.refresh()
+      )
+      .catch(console.error);
+  }
+
+  function onMkDirBegin() {
+    setMkDirDialogOpen(true);
+  }
+
+  function onCloseMkDirDialog() {
+    setMkDirDialogOpen(false);
+  }
+
+  function onDeleteBegin() {
+    const pane =
+      FileManagerStore.displayFocus === "left"
+        ? FileManagerStore.leftPane
+        : FileManagerStore.rightPane;
+
+    if (!pane.location?.providerId) return;
+    const provider = AppStore.fileSystem.providers.get(
+      pane.location.providerId
+    );
+    if (!provider) return;
+
+    const selectedGuid = pane.selectedFiles.values().next().value;
+    if (!selectedGuid) return;
+
+    const currentPath = pane.location?.path
+    if (!currentPath) return;
+    
+    const item = pane.items.find((item) => item.guid === selectedGuid);
+    const fileName = item?.fileName;
+
+    if (!fileName) return;
+
+    modalDialog
+      .showDialog(
+        DialogTemplates.deleteObject(
+          fileName,
+          item.dir === true ? "directory" : "file"
+        ),
+        {
+          signal: exitSignal.signal,
+        }
+      )
+      .then(
+        action(async (dialogResult) => {
+          if (dialogResult.result === DialogButtonResult.NO) return;
+
+          pane.makeBusy()
+
+          try {
+            const res = await provider.unlink(currentPath, fileName);
+            if (!res.ok) console.error(res);
+            await pane.refresh();
+          } catch (e) {
+            console.error(e);
+            await pane.refresh();
+          }
+        })
+      );
+  }
+
+  async function onCopyBegin() {
+    const [sourcePane, targetPane] =
+      FileManagerStore.displayFocus === "left"
+        ? [FileManagerStore.leftPane, FileManagerStore.rightPane]
+        : [FileManagerStore.rightPane, FileManagerStore.leftPane];
+
+    if (!sourcePane.location?.providerId || !targetPane.location?.providerId) return;
+    const sourceProvider = AppStore.fileSystem.providers.get(
+      sourcePane.location.providerId
+    );
+    const targetProvider = AppStore.fileSystem.providers.get(
+      targetPane.location.providerId
+    );
+    if (!sourceProvider || !targetProvider) return;
+
+    AppStore.isBusy = true;
+
+    let lastCopiedName: string | null = null
+    for (const selectedGuid of sourcePane.selectedFiles) {
+      const selectedFile = sourcePane.items.find((item) => item.guid === selectedGuid)
+      if (!selectedFile || selectedFile.virtual) continue
+      if (selectedFile.dir) {
+        await copyDirectory(sourceProvider, sourcePane.location.path, selectedFile.fileName, targetProvider, targetPane.location.path)
+      } else {
+        await copyFile(sourceProvider, sourcePane.location.path, selectedFile.fileName, targetProvider, targetPane.location.path)
+      }
+      lastCopiedName = selectedFile.fileName
+    }
+
+    AppStore.isBusy = false;
+
+    await targetPane.refresh()
+
+    let el: HTMLElement | null = null
+
+    const copiedFile = targetPane.items.find((item) => item.fileName === lastCopiedName)
+
+    if (FileManagerStore.displayFocus === "left") {
+      FileManagerStore.setDisplayFocus("right");
+    } else {
+      FileManagerStore.setDisplayFocus("left");
+    }
+
+    await sleep(50);
+
+    if (!copiedFile) return
+    el = document.querySelector(`[data-guid="${copiedFile.guid}"]`);
+    if (!el || (!(el instanceof HTMLElement))) return
+    el.focus();
+  }
+
+  useEffect(() => {
+    return () => {
+      exitSignal.abort()
+    }
+  }, [exitSignal])
+
+  useEffect(() => {
+    const pane =
+      FileManagerStore.displayFocus === "left"
+        ? FileManagerStore.leftPane
+        : FileManagerStore.rightPane;
+
+    function onKeyDown(evt: KeyboardEvent) {
+      if (
+        evt.key === "r" &&
+        evt.ctrlKey === true &&
+        evt.altKey === false &&
+        evt.shiftKey === false &&
+        evt.metaKey === false
+      ) {
+        if (!evt.repeat) pane.refresh();
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown, {
+      capture: true,
+      passive: false,
+    });
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
+    };
+  }, [FileManagerStore.displayFocus]);
 
   return (
     <div className={`sdi-app`}>
@@ -184,7 +425,7 @@ const FileManager = observer(function FileManager() {
             }`}
             itemClassName={FILE_MANAGER_ITEM_LEFT}
             pane={FileManagerStore.leftPane}
-            onFileEntryDoubleClick={console.log}
+            onFileEntryDoubleClick={onFileEntryDoubleClickLeft}
             onGoToPath={onNavigateLeft}
             onFocus={onFocusLeft}
           />
@@ -196,12 +437,19 @@ const FileManager = observer(function FileManager() {
             }`}
             pane={FileManagerStore.rightPane}
             itemClassName={FILE_MANAGER_ITEM_RIGHT}
-            onFileEntryDoubleClick={console.log}
+            onFileEntryDoubleClick={onFileEntryDoubleClickRight}
             onGoToPath={onNavigateRight}
             onFocus={onFocusRight}
           />
         </div>
       </div>
+      <EmojiPicker />
+      <MkDirDialog
+        show={isMkDirDialogOpen}
+        label="Create a new Directory"
+        onDismiss={onCloseMkDirDialog}
+        onAccept={onCreateNewDir}
+      />
       {!hasDialogOpen && (
         <CommandBar.Nav key="command-bar">
           <CommandBar.Button
@@ -231,6 +479,7 @@ const FileManager = observer(function FileManager() {
             combo={COPY_COMBO}
             position={5}
             showOnlyWhenModifiersActive
+            onClick={onCopyBegin}
           >
             Copy
           </CommandBar.Button>
@@ -245,6 +494,7 @@ const FileManager = observer(function FileManager() {
             combo={MK_DIR_COMBO}
             position={7}
             showOnlyWhenModifiersActive
+            onClick={onMkDirBegin}
           >
             MkDir
           </CommandBar.Button>
@@ -252,6 +502,7 @@ const FileManager = observer(function FileManager() {
             combo={DELETE_COMBO}
             position={8}
             showOnlyWhenModifiersActive
+            onClick={onDeleteBegin}
           >
             Delete
           </CommandBar.Button>

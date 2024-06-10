@@ -27,17 +27,19 @@ async function install() {
   // make manifest entries absolute
   await cache.addAll(unique(Object.values(manifest).map((entry: any) => `${self.origin}/${entry.file}`)));
 }
-self.addEventListener("install", (e: ExtendableEvent) =>
+self.addEventListener("install", (e: ExtendableEvent) => {
+  if (isDev()) return
   e.waitUntil(install())
-);
+});
 
 async function activate() {
   const keys = await caches.keys();
   await Promise.all(keys.map((key) => key !== version && caches.delete(key)));
 }
-self.addEventListener("activate", (e: ExtendableEvent) =>
+self.addEventListener("activate", (e: ExtendableEvent) => {
+  if (isDev()) return
   e.waitUntil(activate())
-);
+});
 
 const REWRITES: Record<string, string> = {
   "/": "/index.html",
@@ -47,6 +49,7 @@ const REWRITES: Record<string, string> = {
 };
 
 self.addEventListener("fetch", (event: FetchEvent) => {
+  if (isDev()) return
   const request = event.request;
 
   // The request is for our origin and is not targeted towards the API
@@ -130,4 +133,8 @@ function unique<T>(list: T[]): T[] {
   var unique = list.filter(onlyUnique);
 
   return unique;
+}
+
+function isDev(): boolean {
+  return self.origin.startsWith("http://localhost")
 }

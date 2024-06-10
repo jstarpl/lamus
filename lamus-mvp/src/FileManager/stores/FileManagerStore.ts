@@ -1,20 +1,19 @@
 import {
-  IReactionDisposer,
   action,
   flow,
   makeAutoObservable,
-  observable,
-  reaction,
+  observable
 } from "mobx";
-import { FileSystemLocation } from "../../stores/FileSystemStore";
-import { LoadStatus } from "../LoadStatus";
-import { IFileEntryEx } from "../FileList";
-import { AppStore } from "../../stores/AppStore";
 import { v4 as uuidv4 } from "uuid";
+import { AppStore } from "../../stores/AppStore";
+import { FileSystemLocation } from "../../stores/FileSystemStore";
 import {
+  FileName,
   IFileEntry,
   IListResult,
 } from "../../stores/fileSystem/IFileSystemProvider";
+import { IFileEntryEx } from "../FileList";
+import { LoadStatus } from "../LoadStatus";
 
 class FileManagerStoreClass {
   leftPane = new FileManagerPane(this);
@@ -47,22 +46,16 @@ export class FileManagerPane {
   location: FileSystemLocation | null = null;
   status: LoadStatus = LoadStatus.LOADING;
   items = observable.array<IFileEntryEx>([]);
-  navigateHandler: IReactionDisposer;
+  selectedFiles = observable.set<FileName>([]);
   isChangingStorage: boolean = false;
 
   constructor(public store: FileManagerStoreClass) {
     makeAutoObservable(this, {
       store: false,
-      navigateHandler: false,
       loadContentsFrom: false,
       refresh: false,
       isChangingStorage: observable,
     });
-
-    this.navigateHandler = reaction(
-      () => this.location,
-      async (location) => this.loadContentsFrom(location)
-    );
   }
 
   loadContentsFrom = flow(function* (
@@ -71,6 +64,7 @@ export class FileManagerPane {
   ) {
     this.status = LoadStatus.LOADING;
     this.items.clear();
+    this.selectedFiles.clear();
     if (location === null) {
       this.status = LoadStatus.OK;
       return;
@@ -88,7 +82,7 @@ export class FileManagerPane {
     }
 
     const fileEntries: IFileEntry[] = yield listFilesRequest.files;
-    fileEntries.forEach((entry) => {
+    fileEntries.sort().forEach((entry) => {
       this.items.push({
         ...entry,
         guid: uuidv4(),
@@ -113,16 +107,25 @@ export class FileManagerPane {
   });
 
   dispose() {
-    this.navigateHandler();
+    
   }
 
-  setLocation = action((location: FileSystemLocation) => {
+  setLocation = flow(function* (this: FileManagerPane, location: FileSystemLocation) {
     this.location = location;
+    yield this.loadContentsFrom(location);
   });
 
   setChangingStorage = action((value: boolean) => {
     this.isChangingStorage = value;
   });
+
+  setSelectedFiles = action((selectedItems: FileName[]) => {
+    this.selectedFiles.replace(selectedItems)
+  })
+
+  makeBusy = action(() => {
+    this.status = LoadStatus.LOADING
+  })
 }
 
 export const FileManagerStore = new FileManagerStoreClass();
