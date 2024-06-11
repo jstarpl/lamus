@@ -8,6 +8,7 @@
 
 .PanePath {
   padding-bottom: 1em;
+  min-width: 0;
 }
 
 .PaneList > :global(.Spinner) {

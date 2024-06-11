@@ -10,7 +10,7 @@ import { FilePathBreadcrumbBar } from "./FilePathBreadcrumbBar";
 import { LoadStatus } from "./LoadStatus";
 import { SelectStorageDialog } from "./SelectStorageDialog";
 import { fileComparator } from "./sortFiles";
-import { FileManagerPane as FileManagerPaneState } from "./stores/FileManagerStore";
+import { FileManagerPaneStore as FileManagerPaneState } from "./stores/FileManagerPaneStore";
 
 const FileManagerPane = observer(function FileManagerPane({
   pane,

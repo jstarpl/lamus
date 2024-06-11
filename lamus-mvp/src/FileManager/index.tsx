@@ -3,11 +3,18 @@ import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EmojiPicker } from "src/components/EmojiPicker";
-import { copyDirectory, copyFile } from "src/stores/fileSystem/IFileSystemProvider";
+import {
+  copyDirectory,
+  copyFile,
+} from "src/stores/fileSystem/utils/operations";
 import { CommandBar } from "../components/CommandBar";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
-import { DialogButtonResult, DialogTemplates, useModalDialog } from "../helpers/useModalDialog";
+import {
+  DialogButtonResult,
+  DialogTemplates,
+  useModalDialog,
+} from "../helpers/useModalDialog";
 import {
   CHANGE_STORAGE_PRIMARY,
   CHANGE_STORAGE_SECONDARY,
@@ -24,10 +31,8 @@ import * as classNames from "./FileManager.module.css";
 import FileManagerPane from "./FileManagerPane";
 import { FileManagerTabs } from "./FileManagerTabs";
 import { MkDirDialog } from "./MkDirDialog";
-import {
-  FileManagerPane as FileManagerPaneStore,
-  FileManagerStore,
-} from "./stores/FileManagerStore";
+import { FileManagerPaneStore } from "./stores/FileManagerPaneStore";
+import { FileManagerStore } from "./stores/FileManagerStore";
 
 const MENU_COMBO = ["F9"];
 const SWITCH_PANE_COMBO = "Tab";
@@ -78,20 +83,26 @@ const FileManager = observer(function FileManager() {
       }
     );
 
-    if (FileManagerStore.leftPane.location !== null) {
-      FileManagerStore.leftPane.refresh().catch(console.error);
-    }
-
-    if (FileManagerStore.leftPane.location !== null) {
-      FileManagerStore.rightPane.refresh().catch(console.error);
-    }
-
     onInitialize();
 
     return () => {
       dispose();
     };
   }, [onInitialize]);
+
+  useEffect(
+    () =>
+      when(
+        () =>
+          FileManagerStore.leftPane.location !== null &&
+          FileManagerStore.rightPane.location !== null,
+        () => {
+          FileManagerStore.leftPane.refresh().catch(console.error);
+          FileManagerStore.rightPane.refresh().catch(console.error);
+        }
+      ),
+    []
+  );
 
   const onQuit = useCallback(() => {
     navigate("/");
@@ -168,7 +179,7 @@ const FileManager = observer(function FileManager() {
       }
       pane.setLocation({
         providerId: pane.location.providerId,
-        path
+        path,
       });
     };
   };
@@ -180,28 +191,31 @@ const FileManager = observer(function FileManager() {
       if (e.repeat) return;
       if (!(e.target instanceof HTMLElement)) return;
 
-      const pane = FileManagerStore.displayFocus === "left" ? FileManagerStore.leftPane : FileManagerStore.rightPane
-      const activeElement = document.activeElement
-      if (!(activeElement instanceof HTMLLIElement)) return
+      const pane =
+        FileManagerStore.displayFocus === "left"
+          ? FileManagerStore.leftPane
+          : FileManagerStore.rightPane;
+      const activeElement = document.activeElement;
+      if (!(activeElement instanceof HTMLLIElement)) return;
 
-      const guid = activeElement.dataset["guid"]
-      if (!guid) return
+      const guid = activeElement.dataset["guid"];
+      if (!guid) return;
 
-      const focusedItem = pane.items.find((item) => item.guid === guid)
+      const focusedItem = pane.items.find((item) => item.guid === guid);
       if (focusedItem?.dir) {
-        if (!pane.location) return
+        if (!pane.location) return;
         if (focusedItem.parentDir) {
-          const newPath = pane.location.path.slice()
-          newPath.pop()
+          const newPath = pane.location.path.slice();
+          newPath.pop();
           return pane.setLocation({
             providerId: pane.location.providerId,
-            path: newPath
-          })
+            path: newPath,
+          });
         } else {
           return pane.setLocation({
             providerId: pane.location.providerId,
-            path: [...pane.location.path, focusedItem.fileName]
-          })
+            path: [...pane.location.path, focusedItem.fileName],
+          });
         }
       }
     }
@@ -221,15 +235,15 @@ const FileManager = observer(function FileManager() {
     return (e: React.MouseEvent<HTMLLIElement>) => {
       const guid = e.currentTarget.dataset["guid"];
       if (!guid) return;
-      const item = pane.items.find((item) => item.guid === guid)
+      const item = pane.items.find((item) => item.guid === guid);
       if (!item) return;
       if (item.parentDir && pane.location) {
         const newPath = pane.location.path;
-        newPath.pop()
+        newPath.pop();
         pane.setLocation({
           providerId: pane.location.providerId,
           path: newPath,
-        })
+        });
       } else if (item.dir && pane.location) {
         const newPath = pane.location.path;
         newPath.push(item.fileName);
@@ -238,13 +252,15 @@ const FileManager = observer(function FileManager() {
           path: newPath,
         });
       }
-    }
-  }
+    };
+  };
 
   const onNavigateLeft = createNavigationHandler(FileManagerStore.leftPane);
   const onNavigateRight = createNavigationHandler(FileManagerStore.rightPane);
 
-  const onFileEntryDblClickLeft = createFileEntryDblClickHandler(FileManagerStore.leftPane);
+  const onFileEntryDblClickLeft = createFileEntryDblClickHandler(
+    FileManagerStore.leftPane
+  );
   const onFileEntryDblClickRight = createFileEntryDblClickHandler(
     FileManagerStore.rightPane
   );
@@ -274,9 +290,7 @@ const FileManager = observer(function FileManager() {
     pane.makeBusy();
     provider
       .mkdir(pane.location.path, newDirName)
-      .then(
-        () => pane.refresh()
-      )
+      .then(() => pane.refresh())
       .catch(console.error);
   }
 
@@ -303,9 +317,9 @@ const FileManager = observer(function FileManager() {
     const selectedGuid = pane.selectedFiles.values().next().value;
     if (!selectedGuid) return;
 
-    const currentPath = pane.location?.path
+    const currentPath = pane.location?.path;
     if (!currentPath) return;
-    
+
     const item = pane.items.find((item) => item.guid === selectedGuid);
     const fileName = item?.fileName;
 
@@ -325,7 +339,7 @@ const FileManager = observer(function FileManager() {
         action(async (dialogResult) => {
           if (dialogResult.result === DialogButtonResult.NO) return;
 
-          pane.makeBusy()
+          pane.makeBusy();
 
           try {
             const res = await provider.unlink(currentPath, fileName);
@@ -345,7 +359,8 @@ const FileManager = observer(function FileManager() {
         ? [FileManagerStore.leftPane, FileManagerStore.rightPane]
         : [FileManagerStore.rightPane, FileManagerStore.leftPane];
 
-    if (!sourcePane.location?.providerId || !targetPane.location?.providerId) return;
+    if (!sourcePane.location?.providerId || !targetPane.location?.providerId)
+      return;
     const sourceProvider = AppStore.fileSystem.providers.get(
       sourcePane.location.providerId
     );
@@ -356,25 +371,41 @@ const FileManager = observer(function FileManager() {
 
     AppStore.isBusy = true;
 
-    let lastCopiedName: string | null = null
+    let lastCopiedName: string | null = null;
     for (const selectedGuid of sourcePane.selectedFiles) {
-      const selectedFile = sourcePane.items.find((item) => item.guid === selectedGuid)
-      if (!selectedFile || selectedFile.virtual) continue
+      const selectedFile = sourcePane.items.find(
+        (item) => item.guid === selectedGuid
+      );
+      if (!selectedFile || selectedFile.virtual) continue;
       if (selectedFile.dir) {
-        await copyDirectory(sourceProvider, sourcePane.location.path, selectedFile.fileName, targetProvider, targetPane.location.path)
+        await copyDirectory(
+          sourceProvider,
+          sourcePane.location.path,
+          selectedFile.fileName,
+          targetProvider,
+          targetPane.location.path
+        );
       } else {
-        await copyFile(sourceProvider, sourcePane.location.path, selectedFile.fileName, targetProvider, targetPane.location.path)
+        await copyFile(
+          sourceProvider,
+          sourcePane.location.path,
+          selectedFile.fileName,
+          targetProvider,
+          targetPane.location.path
+        );
       }
-      lastCopiedName = selectedFile.fileName
+      lastCopiedName = selectedFile.fileName;
     }
 
     AppStore.isBusy = false;
 
-    await targetPane.refresh()
+    await targetPane.refresh();
 
-    let el: HTMLElement | null = null
+    let el: HTMLElement | null = null;
 
-    const copiedFile = targetPane.items.find((item) => item.fileName === lastCopiedName)
+    const copiedFile = targetPane.items.find(
+      (item) => item.fileName === lastCopiedName
+    );
 
     if (FileManagerStore.displayFocus === "left") {
       FileManagerStore.setDisplayFocus("right");
@@ -384,17 +415,17 @@ const FileManager = observer(function FileManager() {
 
     await sleep(50);
 
-    if (!copiedFile) return
+    if (!copiedFile) return;
     el = document.querySelector(`[data-guid="${copiedFile.guid}"]`);
-    if (!el || (!(el instanceof HTMLElement))) return
+    if (!el || !(el instanceof HTMLElement)) return;
     el.focus();
   }
 
   useEffect(() => {
     return () => {
-      exitSignal.abort()
-    }
-  }, [exitSignal])
+      exitSignal.abort();
+    };
+  }, [exitSignal]);
 
   useEffect(() => {
     const pane =

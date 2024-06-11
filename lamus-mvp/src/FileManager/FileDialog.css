@@ -35,4 +35,5 @@
 
 .FileDialog__layout > .FileDialog__path {
   padding-bottom: 1em;
+  min-width: 0;
 }
