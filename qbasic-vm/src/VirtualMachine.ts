@@ -1220,6 +1220,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 				vm.cons
 					.loadImage(urlOrData)
 					.then((idx) => {
+						vm.status = 0
 						vm.stack.push(idx)
 						vm.resume()
 					})
@@ -1241,6 +1242,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 					await fs.close(handle)
 					const idx = await vm.cons.loadImage(urlOrData)
 					vm.stack.push(idx)
+					vm.status = 0
 					vm.resume()
 				})
 				.catch(() => {
@@ -2632,10 +2634,15 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 			// TODO: out of data error.
 			for (i = 0; i < argCount; i++) {
 				vm.trace.printf('READ %s\n', vm.data[vm.dataPtr])
-				args[i].value = vm.data[vm.dataPtr++]
-				if (args[i].value === null) {
+				const dataValue = vm.data[vm.dataPtr++]
+				vm.status = 0
+				if (dataValue === null) {
 					// user specified ,, in a data statement
 					args[i].value = args[i].type.createInstance()
+				} else if (dataValue === undefined) {
+					vm.status = -2
+				} else {
+					args[i].value = dataValue
 				}
 			}
 		},
