@@ -246,7 +246,7 @@ const FileManager = observer(function FileManager() {
 
   const onFileEntryDblClickLeft = createFileEntryDblClickHandler(FileManagerStore.leftPane);
   const onFileEntryDblClickRight = createFileEntryDblClickHandler(
-    FileManagerStore.leftPane
+    FileManagerStore.rightPane
   );
 
   const createFocusHadler = (focus: "left" | "right") => {
