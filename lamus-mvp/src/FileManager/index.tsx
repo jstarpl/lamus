@@ -217,21 +217,35 @@ const FileManager = observer(function FileManager() {
     };
   }, [keyboardHandler]);
 
-  const createFileEntryHandler = (pane: FileManagerPaneStore) => {
+  const createFileEntryDblClickHandler = (pane: FileManagerPaneStore) => {
     return (e: React.MouseEvent<HTMLLIElement>) => {
       const guid = e.currentTarget.dataset["guid"];
       if (!guid) return;
       const item = pane.items.find((item) => item.guid === guid)
       if (!item) return;
-      console.log(item);
+      if (item.parentDir && pane.location) {
+        const newPath = pane.location.path;
+        newPath.pop()
+        pane.setLocation({
+          providerId: pane.location.providerId,
+          path: newPath,
+        })
+      } else if (item.dir && pane.location) {
+        const newPath = pane.location.path;
+        newPath.push(item.fileName);
+        pane.setLocation({
+          providerId: pane.location.providerId,
+          path: newPath,
+        });
+      }
     }
   }
 
   const onNavigateLeft = createNavigationHandler(FileManagerStore.leftPane);
   const onNavigateRight = createNavigationHandler(FileManagerStore.rightPane);
 
-  const onFileEntryDoubleClickLeft = createFileEntryHandler(FileManagerStore.leftPane);
-  const onFileEntryDoubleClickRight = createFileEntryHandler(
+  const onFileEntryDblClickLeft = createFileEntryDblClickHandler(FileManagerStore.leftPane);
+  const onFileEntryDblClickRight = createFileEntryDblClickHandler(
     FileManagerStore.leftPane
   );
 
@@ -425,7 +439,7 @@ const FileManager = observer(function FileManager() {
             }`}
             itemClassName={FILE_MANAGER_ITEM_LEFT}
             pane={FileManagerStore.leftPane}
-            onFileEntryDoubleClick={onFileEntryDoubleClickLeft}
+            onFileEntryDoubleClick={onFileEntryDblClickLeft}
             onGoToPath={onNavigateLeft}
             onFocus={onFocusLeft}
           />
@@ -437,7 +451,7 @@ const FileManager = observer(function FileManager() {
             }`}
             pane={FileManagerStore.rightPane}
             itemClassName={FILE_MANAGER_ITEM_RIGHT}
-            onFileEntryDoubleClick={onFileEntryDoubleClickRight}
+            onFileEntryDoubleClick={onFileEntryDblClickRight}
             onGoToPath={onNavigateRight}
             onFocus={onFocusRight}
           />
