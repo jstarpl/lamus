@@ -1,10 +1,8 @@
-import React from "react";
-import { FileManagerStore } from "./stores/FileManagerStore";
-import { PROVIDER_SEPARATOR } from "../stores/fileSystem/IFileSystemProvider";
-import { AppStore } from "../stores/AppStore";
-import { FileSystemLocation } from "../stores/FileSystemStore";
-import * as classNames from "./FileManagerTabs.module.css";
 import { observer } from "mobx-react-lite";
+import React from "react";
+import * as classNames from "./FileManagerTabs.module.css";
+import { FileManagerStore } from "./stores/FileManagerStore";
+import { getLocationLabel } from "./utils";
 
 export const FileManagerTabs = observer(function FileManagerTabs({
   className,
@@ -56,15 +54,3 @@ export const FileManagerTabs = observer(function FileManagerTabs({
   );
 });
 FileManagerTabs.displayName = "FileManagerTabs";
-
-function getLocationLabel(location: FileSystemLocation | null): string | null {
-  if (!location) return null;
-
-  if (location.path.length === 0) {
-    const provider = AppStore.fileSystem.providers.get(location.providerId);
-    if (!provider) return "(unknown)";
-    return `${provider.name}${PROVIDER_SEPARATOR}`;
-  }
-
-  return location.path[location.path.length - 1];
-}

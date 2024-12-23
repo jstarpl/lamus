@@ -46,7 +46,7 @@
       ]
     },
     {
-      "source": "/up_/src/serviceWorker.js",
+      "source": "/serviceWorker(.*).js",
       "headers": [
         {
           "key": "Service-Worker-Allowed",

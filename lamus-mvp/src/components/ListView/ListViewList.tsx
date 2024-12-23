@@ -1,4 +1,4 @@
-import { uniq, isEqual } from "lodash";
+import { isEqual, uniq } from "lodash";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { assertNever, isOrIsAncestorOf } from "../../helpers/util";
 import "./ListView.css";
@@ -50,6 +50,7 @@ export const ListViewList = function ListViewList({
   const shiftState = useRef(false);
   const inKeyboardEvent = useRef<false | number>(false);
   const inPointerEvent = useRef(false);
+  const allItemElements = useRef<NodeListOf<HTMLElement> | null>(null);
 
   useEffect(() => {
     function onKeyDownUp(e: KeyboardEvent) {
@@ -82,37 +83,36 @@ export const ListViewList = function ListViewList({
     : children !== undefined
     ? [children]
     : [];
-  const decoratedChildrenNodes =
-    children?.map((node, index, array) => {
-      const key = `${node.key}`;
-      const selected = testedValue?.includes(key) ?? false;
-      let selectedState = selected ? SelectedState.Middle : false;
+  const decoratedChildrenNodes = children?.map((node, index, array) => {
+    const key = `${node.key}`;
+    const selected = testedValue?.includes(key) ?? false;
+    let selectedState = selected ? SelectedState.Middle : false;
 
-      if (selected && !inSequence) {
-        inSequence = true;
-        selectedState = SelectedState.First;
+    if (selected && !inSequence) {
+      inSequence = true;
+      selectedState = SelectedState.First;
+    }
+
+    if (selected && !testedValue?.includes(`${array[index + 1]?.key}`)) {
+      if (selectedState === SelectedState.First) {
+        selectedState = SelectedState.Only;
+      } else {
+        selectedState = SelectedState.Last;
       }
+    }
 
-      if (selected && !testedValue?.includes(`${array[index + 1]?.key}`)) {
-        if (selectedState === SelectedState.First) {
-          selectedState = SelectedState.Only;
-        } else {
-          selectedState = SelectedState.Last;
-        }
-      }
+    if (!selected) {
+      inSequence = false;
+    }
 
-      if (!selected) {
-        inSequence = false;
-      }
-
-      return (
-        <React.Fragment key={key}>
-          <SelectedContext.Provider value={selectedState}>
-            {node}
-          </SelectedContext.Provider>
-        </React.Fragment>
-      );
-    }) ?? null;
+    return (
+      <React.Fragment key={key}>
+        <SelectedContext.Provider value={selectedState}>
+          {node}
+        </SelectedContext.Provider>
+      </React.Fragment>
+    );
+  });
 
   useLayoutEffect(() => {
     if (!listEl.current) return;
@@ -121,18 +121,17 @@ export const ListViewList = function ListViewList({
     function onKeyDown(e: KeyboardEvent) {
       ctrlState.current = e.ctrlKey;
       shiftState.current = e.shiftKey;
-      const allItems = elem.querySelectorAll(
-        ":scope > .list-view-item"
-      ) as NodeListOf<HTMLElement>;
-      const currentFocus = elem.querySelector(
-        ":scope > .list-view-item:focus"
-      ) as HTMLElement;
-      if (allItems.length === 0) return;
+      const allItems = allItemElements.current;
+      if (!allItems || allItems.length === 0) return;
 
       let currentFocusIndex = -1;
-      if (currentFocus) {
-        currentFocusIndex = Array.from(allItems).indexOf(currentFocus);
+      for (let i = 0; i < allItems.length; i++) {
+        if (allItems.item(i) === document.activeElement) {
+          currentFocusIndex = i;
+          break;
+        }
       }
+
       let direction = 0;
       let distance: SelectionDistance = SelectionDistance.Near;
       switch (e.key) {
@@ -237,15 +236,23 @@ export const ListViewList = function ListViewList({
 
       const itemValue = e.target.dataset["value"];
 
-      const allItems = elem.querySelectorAll(
-        ":scope > .list-view-item"
-      ) as NodeListOf<HTMLElement>;
+      const allItems = allItemElements.current;
+      if (!allItems || allItems.length === 0) return;
+
       const thisIndex = Array.from(allItems).indexOf(e.target);
 
       for (const item of allItems) {
         delete item.dataset["lastFocus"];
       }
       e.target.dataset["lastFocus"] = "";
+
+      if (
+        e.relatedTarget instanceof HTMLElement &&
+        !isOrIsAncestorOf(elem, e.relatedTarget)
+      ) {
+        // do not affect value if related target is not within this list
+        return;
+      }
 
       let newValue = testedValue;
       if (multiple && ctrlState.current) {
@@ -369,6 +376,15 @@ export const ListViewList = function ListViewList({
       elem.removeEventListener("focusout", onLocalBlur);
     };
   }, [onFocus, onBlur]);
+
+  useLayoutEffect(() => {
+    if (!listEl.current) return;
+    const elem = listEl.current;
+
+    allItemElements.current = elem.querySelectorAll<HTMLElement>(
+      ":scope > .list-view-item"
+    );
+  }, [children]);
 
   return (
     <ul

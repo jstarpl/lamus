@@ -1,19 +1,16 @@
-import { action, when } from "mobx";
+import { when } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EmojiPicker } from "src/components/EmojiPicker";
-import {
-  copyDirectory,
-  copyFile,
-} from "src/stores/fileSystem/utils/operations";
+import { IFileEntry } from "src/stores/fileSystem/IFileSystemProvider";
 import { CommandBar } from "../components/CommandBar";
 import { useFocusSoundEffect } from "../helpers/SoundEffects/useFocusSoundEffect";
 import { useKeyboardHandler } from "../helpers/useKeyboardHandler";
 import {
   DialogButtonResult,
   DialogTemplates,
-  useModalDialog,
+  useModalDialog
 } from "../helpers/useModalDialog";
 import {
   CHANGE_STORAGE_PRIMARY,
@@ -33,6 +30,7 @@ import { FileManagerTabs } from "./FileManagerTabs";
 import { MkDirDialog } from "./MkDirDialog";
 import { FileManagerPaneStore } from "./stores/FileManagerPaneStore";
 import { FileManagerStore } from "./stores/FileManagerStore";
+import { getLocationLabel } from "./utils";
 
 const MENU_COMBO = ["F9"];
 const SWITCH_PANE_COMBO = "Tab";
@@ -108,7 +106,8 @@ const FileManager = observer(function FileManager() {
     navigate("/");
   }, [navigate]);
 
-  const hasDialogOpen = isMkDirDialogOpen;
+  const hasDialogOpen =
+    isMkDirDialogOpen || FileManagerStore.leftPane.isChangingStorage || FileManagerStore.rightPane.isChangingStorage;
 
   useEffect(() => {
     if (!keyboardHandler) return;
@@ -274,7 +273,7 @@ const FileManager = observer(function FileManager() {
   const onFocusLeft = createFocusHadler("left");
   const onFocusRight = createFocusHadler("right");
 
-  function onCreateNewDir(newDirName: string) {
+  async function onCreateNewDir(newDirName: string) {
     setMkDirDialogOpen(false);
 
     const pane =
@@ -288,10 +287,22 @@ const FileManager = observer(function FileManager() {
     );
     if (!provider) return;
     pane.makeBusy();
+
+    await 
     provider
       .mkdir(pane.location.path, newDirName)
-      .then(() => pane.refresh())
-      .catch(console.error);
+    await pane.refresh()
+
+    const newDirObj = pane.items.find(
+      (item) => item.fileName === newDirName
+    );
+
+    await sleep(100);
+
+    if (!newDirObj) return;
+    const el = document.querySelector(`[data-guid="${newDirObj.guid}"]`);
+    if (!el || !(el instanceof HTMLElement)) return;
+    el.focus();
   }
 
   function onMkDirBegin() {
@@ -302,7 +313,7 @@ const FileManager = observer(function FileManager() {
     setMkDirDialogOpen(false);
   }
 
-  function onDeleteBegin() {
+  async function onDeleteBegin() {
     const pane =
       FileManagerStore.displayFocus === "left"
         ? FileManagerStore.leftPane
@@ -325,7 +336,7 @@ const FileManager = observer(function FileManager() {
 
     if (!fileName) return;
 
-    modalDialog
+    const dialogResult = await modalDialog
       .showDialog(
         DialogTemplates.deleteObject(
           fileName,
@@ -335,22 +346,19 @@ const FileManager = observer(function FileManager() {
           signal: exitSignal.signal,
         }
       )
-      .then(
-        action(async (dialogResult) => {
-          if (dialogResult.result === DialogButtonResult.NO) return;
 
-          pane.makeBusy();
+    if (dialogResult.result === DialogButtonResult.NO) return;
 
-          try {
-            const res = await provider.unlink(currentPath, fileName);
-            if (!res.ok) console.error(res);
-            await pane.refresh();
-          } catch (e) {
-            console.error(e);
-            await pane.refresh();
-          }
-        })
-      );
+    pane.makeBusy();
+
+    try {
+      const res = await provider.unlink(currentPath, fileName);
+      if (!res.ok) console.error(res);
+      await pane.refresh();
+    } catch (e) {
+      console.error(e);
+      await pane.refresh();
+    }
   }
 
   async function onCopyBegin() {
@@ -361,59 +369,51 @@ const FileManager = observer(function FileManager() {
 
     if (!sourcePane.location?.providerId || !targetPane.location?.providerId)
       return;
-    const sourceProvider = AppStore.fileSystem.providers.get(
-      sourcePane.location.providerId
-    );
-    const targetProvider = AppStore.fileSystem.providers.get(
-      targetPane.location.providerId
-    );
-    if (!sourceProvider || !targetProvider) return;
 
-    AppStore.isBusy = true;
+    const itemCount = sourcePane.selectedFiles.size;
 
-    let lastCopiedName: string | null = null;
+    const firstGuid = Array.from(sourcePane.selectedFiles.values())[0]
+
+    const item = sourcePane.items.find((item) => item.guid === firstGuid);
+    if (!item) return;
+
+    const objectName = item.fileName;
+
+    const dialogResult = await modalDialog.showDialog(
+      DialogTemplates.copyMultipleObjects(
+        objectName,
+        itemCount,
+        getLocationLabel(targetPane.location) ?? null
+      )
+    );
+
+    if (dialogResult.result === DialogButtonResult.NO) return
+
+    targetPane.makeBusy();
+
+    const initialEntries: IFileEntry[] = []
     for (const selectedGuid of sourcePane.selectedFiles) {
-      const selectedFile = sourcePane.items.find(
+      const selectedEntry = sourcePane.items.find(
         (item) => item.guid === selectedGuid
       );
-      if (!selectedFile || selectedFile.virtual) continue;
-      if (selectedFile.dir) {
-        await copyDirectory(
-          sourceProvider,
-          sourcePane.location.path,
-          selectedFile.fileName,
-          targetProvider,
-          targetPane.location.path
-        );
-      } else {
-        await copyFile(
-          sourceProvider,
-          sourcePane.location.path,
-          selectedFile.fileName,
-          targetProvider,
-          targetPane.location.path
-        );
-      }
-      lastCopiedName = selectedFile.fileName;
+      if (!selectedEntry || selectedEntry.virtual) continue;
+      initialEntries.push(selectedEntry)
     }
 
-    AppStore.isBusy = false;
+    const opSet = await FileManagerStore.createCopyOperationSet(sourcePane.location.providerId, sourcePane.location.path, initialEntries, targetPane.location.providerId, targetPane.location.path)
+    for (const operation of opSet) {
+      await FileManagerStore.executeOperation(operation)
+    }
 
     await targetPane.refresh();
 
     let el: HTMLElement | null = null;
 
     const copiedFile = targetPane.items.find(
-      (item) => item.fileName === lastCopiedName
+      (item) => item.fileName === initialEntries[0].fileName
     );
 
-    if (FileManagerStore.displayFocus === "left") {
-      FileManagerStore.setDisplayFocus("right");
-    } else {
-      FileManagerStore.setDisplayFocus("left");
-    }
-
-    await sleep(50);
+    await sleep(100);
 
     if (!copiedFile) return;
     el = document.querySelector(`[data-guid="${copiedFile.guid}"]`);

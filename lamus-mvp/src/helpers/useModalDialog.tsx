@@ -361,6 +361,66 @@ const DialogTemplatesImpl = {
     ],
     type: DialogType.WARNING,
   }),
+  copyMultipleObjects: (
+    firstObjectName: string,
+    objectCount: number,
+    targetName: string | null
+  ): IDialog<DialogButtonResult.NO | DialogButtonResult.YES> => ({
+    message:
+      objectCount === 1 ? (
+       (
+          <>
+            <p>
+              The item{" "}
+              <strong>“{firstObjectName}”</strong>
+              will be copied to{" "}
+              <>
+                {targetName ? (
+                  <strong>“{targetName}”</strong>
+                ) : (
+                  "an unknown location"
+                )}
+              </>
+              .
+            </p>
+            <p>Are you sure you want to copy it?</p>
+          </>
+        )
+      ) : (
+        <>
+          <p>
+            The item{" "}
+            <strong>“{firstObjectName}”</strong> and
+            <strong>{objectCount - 1}</strong> files and/or folders will be
+            copied to{" "}
+            <>
+              {targetName ? (
+                <strong>“{targetName}”</strong>
+              ) : (
+                "an unknown location"
+              )}
+            </>
+            .
+          </p>
+          <p>Are you sure you want to copy them?</p>
+        </>
+      ),
+    choices: [
+      {
+        label: "No",
+        value: DialogButtonResult.NO,
+        default: true,
+        role: DialogButtonRole.REJECT,
+        combo: ["N"],
+      },
+      {
+        label: "Yes",
+        value: DialogButtonResult.YES,
+        combo: ["Y"],
+      },
+    ],
+    type: DialogType.WARNING,
+  }),
   deleteObject: (
     objectName: string,
     objectType: "file" | "directory"
