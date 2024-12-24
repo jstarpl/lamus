@@ -378,13 +378,21 @@ export const ListViewList = function ListViewList({
   }, [onFocus, onBlur]);
 
   useLayoutEffect(() => {
-    if (!listEl.current) return;
-    const elem = listEl.current;
+    const t = setTimeout(() => {
+      if (!listEl.current) return;
+      const elem = listEl.current;
+  
+      allItemElements.current = elem.querySelectorAll<HTMLElement>(
+        ":scope > .list-view-item"
+      );
 
-    allItemElements.current = elem.querySelectorAll<HTMLElement>(
-      ":scope > .list-view-item"
-    );
-  }, [children]);
+      console.log("Refreshing list")
+    }, 100)
+
+    return () => {
+      clearTimeout(t)
+    }
+  }, [children.length]);
 
   return (
     <ul
