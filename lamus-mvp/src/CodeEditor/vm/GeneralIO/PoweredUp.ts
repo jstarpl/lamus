@@ -1,12 +1,12 @@
 import type { GeneralIORouter } from "@lamus/qbasic-vm";
+import "node-poweredup";
 import type {
-  PoweredUP,
   BasicMotor,
   DuploTrainBaseSpeaker,
   Hub,
   HubLED,
+  PoweredUP,
 } from "node-poweredup";
-import "node-poweredup";
 
 export enum DeviceType {
   HUB_LED = 23,
@@ -110,22 +110,24 @@ export default function setup(generalIORouter: GeneralIORouter) {
    */
   generalIORouter.insertRoute("/poweredUp/:uuid/playSound", async (req) => {
     if (req.method !== "out" || !req.params || !req.data) return;
-    const device = await getDeviceInHubByType<DuploTrainBaseSpeaker>(
+    const devices = await getDeviceInHubByType<DuploTrainBaseSpeaker>(
       poweredUp,
       req.params["uuid"],
       DeviceType.DUPLO_TRAIN_BASE_SPEAKER
     );
+    const device = devices[0]
     await device.playSound(Number(req.data));
     console.log(req.data, device);
     return;
   });
   generalIORouter.insertRoute("/poweredUp/:uuid/playTone", async (req) => {
     if (req.method !== "out" || !req.params || !req.data) return;
-    const device = await getDeviceInHubByType<DuploTrainBaseSpeaker>(
+    const devices = await getDeviceInHubByType<DuploTrainBaseSpeaker>(
       poweredUp,
       req.params["uuid"],
       DeviceType.DUPLO_TRAIN_BASE_SPEAKER
     );
+    const device = devices[0]
     device.playTone(Number(req.data));
     console.log(req.data, device);
     return;
@@ -147,11 +149,12 @@ export default function setup(generalIORouter: GeneralIORouter) {
    */
   generalIORouter.insertRoute("/poweredUp/:uuid/setLight", async (req) => {
     if (req.method !== "out" || !req.params || !req.data) return;
-    const device = await getDeviceInHubByType<HubLED>(
+    const devices = await getDeviceInHubByType<HubLED>(
       poweredUp,
       req.params["uuid"],
       DeviceType.HUB_LED
     );
+    const device = devices[0]
     console.log(req.data, device);
     await device.setColor(Number(req.data));
     return;
@@ -171,7 +174,7 @@ async function getDeviceInHubByPort<T = unknown>(
   port: string
 ): Promise<T> {
   const hub = poweredUp.getHubByUUID(uuid);
-  const device = await hub.waitForDeviceAtPort(port);
+  const device = hub.getDeviceAtPort(port);
   if (!device || typeof device !== "object")
     throw new Error("Device not found");
 
@@ -182,11 +185,11 @@ async function getDeviceInHubByType<T = unknown>(
   poweredUp: PoweredUP,
   uuid: string,
   type: number
-): Promise<T> {
+): Promise<T[]> {
   const hub = poweredUp.getHubByUUID(uuid);
-  const device = await hub.waitForDeviceByType(type);
-  if (!device || typeof device !== "object")
+  const devices = hub.getDevicesByType(type);
+  if (devices.length === 0)
     throw new Error("Device not found");
 
-  return device as T;
+  return devices as T[];
 }
