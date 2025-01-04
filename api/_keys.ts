@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { JWK } from "jose";
-import encryptedKeys from "./keys.enc.json" assert {
-  type: 'json',
+import encryptedKeys from "./keys.enc.json" with {
+  type: 'json'
 };
 
 export type KeyPair = {
@@ -16,8 +16,8 @@ const ENCRYPTION_IV = process.env.ENCRYPTION_IV as string;
 export const KEY_ALGORITHM = "PS256";
 
 function decrypt(data: string, keyStr: string, ivStr: string) {
-  const iv = Buffer.from(ivStr, "base64");
-  const key = Buffer.from(keyStr, "base64");
+  const iv: Uint8Array = Buffer.from(ivStr, "base64") as any as Uint8Array;
+  const key: Uint8Array = Buffer.from(keyStr, "base64") as any as Uint8Array;
 
   const cipher = crypto.createDecipheriv(MASTER_ALGORITHM, key, iv);
 
@@ -25,7 +25,7 @@ function decrypt(data: string, keyStr: string, ivStr: string) {
 
   return JSON.parse(
     Buffer.concat([
-      cipher.update(dataToDecrypt as any, "base64"),
+      cipher.update(dataToDecrypt as any, "base64") as any,
       cipher.final(),
     ]).toString("utf-8")
   );
