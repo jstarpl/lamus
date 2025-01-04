@@ -1,6 +1,6 @@
-import VMInfo from '@lamus/qbasic-vm/allCommands.json' assert { type: 'json' }
-import Handlebars from 'handlebars'
+import VMInfo from '@lamus/qbasic-vm/allCommands.json' with { type: 'json' }
 import fs from 'fs/promises'
+import Handlebars from 'handlebars'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
