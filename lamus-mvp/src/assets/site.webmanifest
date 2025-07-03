@@ -10,6 +10,16 @@
             "type": "image/x-icon"
         },
         {
+            "src": "./favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "./favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/x-icon"
+        },
+        {
             "src": "./android-chrome-192x192.png",
             "type": "image/png",
             "sizes": "192x192"
@@ -24,6 +34,7 @@
     "theme_color": "#000000",
     "background_color": "#000000",
     "display": "standalone",
+    "display_override": ["fullscreen", "window-controls-overlay", "minimal-ui"],
     "categories": ["kids", "utilities", "games"],
     "scope": "/",
     "shortcuts": [
