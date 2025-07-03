@@ -1,12 +1,12 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-import {themes as prismThemes} from 'prism-react-renderer'
+import { themes as prismThemes } from 'prism-react-renderer'
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
 	title: 'Lamus',
 	tagline: 'Web-based Toy computer OS with a BASIC interpreter',
-	url: 'https://about.lamus.cloud',
+	url: 'https://about.lamus.jsbg.pl',
 	baseUrl: '/',
 	onBrokenLinks: 'throw',
 	onBrokenMarkdownLinks: 'warn',

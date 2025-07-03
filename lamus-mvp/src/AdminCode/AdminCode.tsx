@@ -1,16 +1,16 @@
-import { AppStore } from "../stores/AppStore";
-import { QRCodeSVG } from "qrcode.react";
 import { observer } from "mobx-react-lite";
-import { Dialog } from "../components/Dialog";
-import * as classes from "./AdminCode.module.css";
+import { QRCodeSVG } from "qrcode.react";
 import { useContext, useEffect, useMemo } from "react";
-import { KeyboardHandler } from "../helpers/useKeyboardHandler";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Dialog } from "../components/Dialog";
+import { KeyboardHandler } from "../helpers/useKeyboardHandler";
+import { AppStore } from "../stores/AppStore";
+import * as classes from "./AdminCode.module.css";
 
 const KONAMI_CODE =
   "ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight KeyB KeyA";
 
-const ADMIN_URL_BASE = "https://setup.lamus.cloud/d";
+const ADMIN_URL_BASE = "https://setup.lamus.jsbg.pl/d";
 
 function generateAdminUrl(deviceId: string) {
   return `${ADMIN_URL_BASE}#${deviceId}`;

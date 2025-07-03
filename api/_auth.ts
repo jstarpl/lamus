@@ -7,8 +7,8 @@ import { sendStatus } from "./_utils.js";
 export const TOKEN_COOKIE_NAME = "token";
 
 const ISSUER = API_URI;
-const CLIENT_AUDIENCE = "urn:lamus.cloud:lamus-mvp";
-const NAMESPACE = "https://lamus.cloud";
+const CLIENT_AUDIENCE = "urn:lamus.jsbg.pl:lamus-mvp";
+const NAMESPACE = "https://lamus.jsbg.pl";
 export enum Scope {
   DropboxConnect = "dropbox.connect",
   DropboxAccessToken = "dropbox.access_token",
