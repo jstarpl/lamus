@@ -38,7 +38,7 @@ export function generateVerifierAndChallange() {
   };
 }
 
-function sha256(buffer: string | Buffer) {
+function sha256(buffer: string) {
   return crypto.createHash("sha256").update(buffer).digest();
 }
 
