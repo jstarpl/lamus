@@ -1,4 +1,3 @@
-import { makeAutoObservable, observable } from "mobx";
 import {
   AudioDevice,
   Console,
@@ -9,14 +8,16 @@ import {
   RuntimeError,
   VirtualMachine,
 } from "@lamus/qbasic-vm";
-import setupGeneralIO from "./../vm/GeneralIO";
-import { LamusStorage } from "../vm/LamusStorage";
+import { makeAutoObservable, observable } from "mobx";
+import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
 import { AppStore } from "../../stores/AppStore";
 import { ProviderId } from "../../stores/FileSystemStore";
-import { ShowModalDialogFunction } from "../../helpers/useModalDialog";
-import { VirtualGamepadStoreClass } from "./VirtualGamepadStore";
-import { Gamepads } from "../vm/Gamepads/Gamepads";
 import Charmap from "../img/charmap.png";
+import { Gamepads } from "../vm/Gamepads/Gamepads";
+import { LamusStorage } from "../vm/LamusStorage";
+import { Mouse } from "../vm/Mouse";
+import setupGeneralIO from "./../vm/GeneralIO";
+import { VirtualGamepadStoreClass } from "./VirtualGamepadStore";
 
 export enum VMRunState {
   IDLE = "idle",
@@ -103,15 +104,17 @@ export class VMStoreClass {
     const generalIORouter = new GeneralIORouter();
     const crypto = new Cryptography();
     const gamepads = new Gamepads(this.virtualGamepad);
-    const vm = new VirtualMachine(
-      cons,
-      audio,
-      network,
-      fileSystem,
-      generalIORouter,
-      crypto,
-      gamepads
-    );
+    const mousePointer = new Mouse(cons);
+    const vm = new VirtualMachine({
+      console: cons,
+      audio: audio,
+      networkAdapter: network,
+      fileSystem: fileSystem,
+      generalIo: generalIORouter,
+      cryptography: crypto,
+      gamepad: gamepads,
+      pointer: mousePointer,
+    });
 
     setTimeout(() => {
       cons.print("\nREADY.");
@@ -241,6 +244,10 @@ export class VMStoreClass {
     this._powerSaving = enabled ?? true;
   }
 
+  setMousePointer(_enabled: boolean) {
+    
+  }
+
   setCode(code: string) {
     this.code = code;
     this._program = null;
@@ -296,6 +303,7 @@ export class VMStoreClass {
     this.runState = VMRunState.STOPPED;
     this._powerSaving = true;
     this._powerSavingSuspend = false;
+    this.setMousePointer(true);
 
     setTimeout(() => {
       this._console.print("\nREADY.");

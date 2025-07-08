@@ -116,7 +116,7 @@ const VIDEO_MODES: { [key: number]: IVideoMode } = {
 const DEFAULT_VIDEO_MODE = 1
 const SCREEN_BORDER_VARIABLE = '--qbasic-interpreter-screen-border-color'
 export class Console extends EventTarget implements IConsole {
-	private container: HTMLDivElement
+	public container: HTMLDivElement
 	private canvas: HTMLCanvasElement
 	private ctx: CanvasRenderingContext2D
 	private bufferCanvas: HTMLCanvasElement
@@ -129,8 +129,6 @@ export class Console extends EventTarget implements IConsole {
 
 	private cursorEnabled = false
 	private cursorShown = false
-
-	private gamepadEnabled = false
 
 	private keyBuffer: number[] = []
 
@@ -442,7 +440,6 @@ export class Console extends EventTarget implements IConsole {
 		this.recording = testMode || false
 		this.recorded = ''
 		this.enableCursor(false)
-		this.enableGamepad(false)
 
 		document.body.style.setProperty(SCREEN_BORDER_VARIABLE, this.bocolor)
 	}
@@ -1423,23 +1420,5 @@ export class Console extends EventTarget implements IConsole {
 		if (sprite) {
 			sprite.setAnimate(startFrame, endFrame, speed, loop ?? true, pingPong ?? false, pingPongFlip ?? 0)
 		}
-	}
-
-	public enableGamepad(enable: boolean): void {
-		if (enable && this.gamepadEnabled === false) {
-			this.gamepadEnabled = true
-			// TODO: attach event listeners
-		} else if (!enable && this.gamepadEnabled === true) {
-			this.gamepadEnabled = false
-			// TODO: remove event listeners
-		}
-	}
-
-	public getPotValue(_potId: number, _padId: number): number {
-		return 0
-	}
-
-	public getJoystickValue(_padId: number): number {
-		return 0
 	}
 }

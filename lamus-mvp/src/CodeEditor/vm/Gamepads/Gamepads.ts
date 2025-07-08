@@ -196,4 +196,3 @@ export class Gamepads implements IGamepad {
   }
   reset(): void {}
 }
-7;

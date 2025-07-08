@@ -34,21 +34,22 @@ import { FileAccessMode, IFileSystem } from './IFileSystem'
 import { IGamepad } from './IGamepad'
 import { IGeneralIO } from './IGeneralIO'
 import { INetworkAdapter } from './INetworkAdapter'
+import { IPointer } from './IPointer'
 import { QBasicProgram } from './QBasic'
 import { Locus } from './Tokenizer'
 import {
-	ArrayVariable,
-	CopyableVariable,
-	DeriveTypeNameFromVariable,
-	Dimension,
-	IntegerType,
-	IsNumericType,
-	IsStringType,
-	JSONType,
-	ScalarVariable,
-	SomeScalarType,
-	SomeType,
-	StringType,
+  ArrayVariable,
+  CopyableVariable,
+  DeriveTypeNameFromVariable,
+  Dimension,
+  IntegerType,
+  IsNumericType,
+  IsStringType,
+  JSONType,
+  ScalarVariable,
+  SomeScalarType,
+  SomeType,
+  StringType,
 } from './Types'
 
 export enum RuntimeErrorCodes {
@@ -154,6 +155,9 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	// The gamepad adapter
 	gamepad: IGamepad | undefined
 
+	// The pointer (mouse) adapter
+	pointer: IPointer | undefined
+
 	// The bytecode (array of Instruction objects)
 	instructions: Instruction[] = []
 
@@ -206,15 +210,25 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 	/**
 	 * @param console A Console object that will be used as the screen.
 	 */
-	constructor(
-		console: IConsole,
-		audio?: IAudioDevice,
-		networkAdapter?: INetworkAdapter,
-		fileSystem?: IFileSystem,
-		generalIo?: IGeneralIO,
-		cryptography?: ICryptography,
+	constructor({
+		console,
+		audio,
+		networkAdapter,
+		fileSystem,
+		generalIo,
+		cryptography,
+		gamepad,
+		pointer,
+	}: {
+		console: IConsole
+		audio?: IAudioDevice
+		networkAdapter?: INetworkAdapter
+		fileSystem?: IFileSystem
+		generalIo?: IGeneralIO
+		cryptography?: ICryptography
 		gamepad?: IGamepad
-	) {
+		pointer?: IPointer
+	}) {
 		super()
 		this.cons = console
 		this.audio = audio
@@ -223,6 +237,7 @@ export class VirtualMachine extends EventEmitter<'error' | 'suspended' | 'runnin
 		this.generalIo = generalIo
 		this.cryptography = cryptography
 		this.gamepad = gamepad
+    this.pointer = pointer
 
 		if (!DEBUG) {
 			this.trace = {
@@ -493,6 +508,63 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		minArgs: 0,
 		action: function (vm) {
 			vm.stack.push(vm.status)
+		},
+	},
+
+	/**
+	 * Return the horizontal position of the mouse pointer
+	 *
+	 * If a pointer is not attached, returns -1
+	 *
+	 * @group mouse
+	 */
+	MX: {
+		type: 'INTEGER',
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.stack.push(vm.pointer?.mouseX ?? -1)
+		},
+	},
+
+	/**
+	 * Return the vertical position of the mouse pointer
+	 *
+	 * If a pointer is not attached, returns -1
+	 *
+	 * @group mouse
+	 */
+	MY: {
+		type: 'INTEGER',
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.stack.push(vm.pointer?.mouseY ?? -1)
+		},
+	},
+
+	/**
+	 * Return the button state of the mouse pointer
+	 *
+	 * `MB` returns the sum of the following values depending on the state of the buttons:
+
+   * | Value | Button |
+   * | ----- | ------ |
+   * | 0     | None   |
+   * | 1     | Left   |
+   * | 2     | Right  |
+   * | 4     | Third  |
+	 *
+	 * If a pointer is not attached, returns -1
+	 *
+	 * @group mouse
+	 */
+	MB: {
+		type: 'INTEGER',
+		args: [],
+		minArgs: 0,
+		action: function (vm) {
+			vm.stack.push(vm.pointer?.mouseButton ?? -1)
 		},
 	},
 
@@ -3177,7 +3249,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 	/**
 	 * Enable screen double-buffering. In double-buffering mode, drawing happens on an off-screen buffer that then can be
 	 * flipped using `GBUFFLIP` onto output. This does not affect screen border or sprites.
-	 * 
+	 *
 	 * If `ENABLE%` is `<> 0`, the mode is enabled. If it's `= 0`, the mode is disabled.
 	 *
 	 * ```
@@ -3190,7 +3262,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		args: ['INTEGER'],
 		action: function (vm) {
 			vm.cons.enableDblBuffering(vm.stack.pop() !== 0)
-		}
+		},
 	},
 
 	/**
@@ -3203,7 +3275,7 @@ export const SystemSubroutines: SystemSubroutinesDefinition = {
 		minArgs: 0,
 		action: function (vm) {
 			vm.cons.flipBuffers()
-		}
+		},
 	},
 
 	GSAVE: {

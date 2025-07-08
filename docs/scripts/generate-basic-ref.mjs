@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
-import { rimraf } from 'rimraf'
 import { fileURLToPath } from 'node:url'
 import copy from 'recursive-copy'
+import { rimraf } from 'rimraf'
 
 const groupProps = {
   'audio': {
@@ -19,6 +19,10 @@ const groupProps = {
   'graphics': {
     title: 'Graphics',
     description: 'Commands for printing text and drawing on the screen.',
+  },
+  'mouse': {
+    title: 'Mouse',
+    description: 'Commands to interface with a mouse pointer'
   },
   'math': {
     title: 'Math',
