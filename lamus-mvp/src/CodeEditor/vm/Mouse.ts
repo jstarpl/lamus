@@ -13,7 +13,6 @@ export class Mouse implements IPointer {
 		this.cns.container.addEventListener('pointermove', this.handlePointerEvent)
     this.cns.container.addEventListener('pointerdown', this.handlePointerEvent)
     this.cns.container.addEventListener('pointerup', this.handlePointerEvent)
-    this.cns.container.addEventListener('mouseup', this.handleMouseUpCapture, { capture: true })
     this.cns.container.addEventListener('contextmenu', this.handleContextMenu)
 
     this.handleResize()
@@ -33,13 +32,6 @@ export class Mouse implements IPointer {
     this.mouseX = Math.max(0, Math.floor(e.offsetX / this.consoleWidth * this.cns.width / this.zoom))
 		this.mouseY = Math.max(0, Math.floor(e.offsetY / this.consoleHeight * this.cns.height / this.zoom))
 		this.mouseButton = e.buttons
-    e.preventDefault()
-  }
-
-  private handleMouseUpCapture = (e: MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    e.stopImmediatePropagation()
   }
 
   private handleContextMenu = (e: Event) => {
