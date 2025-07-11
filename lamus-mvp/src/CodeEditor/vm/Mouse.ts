@@ -61,8 +61,7 @@ export class Mouse implements IPointer {
   private handleTouchStartEvent = (e: TouchEvent) => {
     if (this.touchInfo?.touchId !== undefined) return;
     if (!(e.target instanceof HTMLElement)) return;
-    const { x, y, width, height } = e.target.getBoundingClientRect();
-    console.log({x, y, width, height})
+    const { x, y } = e.target.getBoundingClientRect();
     this.touchInfo = {
       touchId: e.changedTouches[0].identifier,
       targetX: x,
