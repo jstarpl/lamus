@@ -17,8 +17,8 @@
 	along with qbasic-vm.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { IGeneralIO } from './IGeneralIO'
 import RadixRouter from 'radix-router'
+import { IGeneralIO } from './IGeneralIO'
 
 export type InOutRequest = {
 	method: 'in' | 'out'
@@ -39,34 +39,38 @@ export class GeneralIORouter implements IGeneralIO {
 	async output(path: string, data: string): Promise<void> {
 		const route = this.inOutRouter.lookup(path)
 
-		if (route) {
-			try {
-				await route.handler({
-					...route,
-					method: 'out',
-					data: data,
-				})
-			} catch (e) {
-				console.error(e)
-			}
+		if (!route) {
+			throw new Error(`Unknown GeneralIO path: "${path}"`)
+		}
+
+		try {
+			await route.handler({
+				...route,
+				method: 'out',
+				data: data,
+			})
+		} catch (e) {
+			console.error(e)
 		}
 	}
 	async input(path: string): Promise<string> {
 		const route = this.inOutRouter.lookup(path)
-		if (route) {
-			try {
-				return (
-					(await route.handler({
-						...route,
-						method: 'in',
-					})) || ''
-				)
-			} catch (e) {
-				console.error(e)
-				return ''
-			}
+
+		if (!route) {
+			throw new Error(`Unknown GeneralIO path: "${path}"`)
 		}
-		return ''
+
+		try {
+			return (
+				(await route.handler({
+					...route,
+					method: 'in',
+				})) || ''
+			)
+		} catch (e) {
+			console.error(e)
+			return ''
+		}
 	}
 	addEventListener(path: string, handler: (data: string) => void): void {
 		this.eventsRouter.remove(path)
