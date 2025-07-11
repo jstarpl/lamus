@@ -99,7 +99,6 @@ export class Mouse implements IPointer {
       ),
       this.cns.height
     );
-    e.preventDefault();
   };
 
   private handleContextMenu = (e: Event) => {
