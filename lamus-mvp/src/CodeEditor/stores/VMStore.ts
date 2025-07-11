@@ -58,6 +58,8 @@ export class VMStoreClass {
   _soundEffects: HTMLAudioElement[];
   _cwd: string = "";
   _powerSaving: boolean = true;
+  _wakeLock: boolean = false;
+  _wakeLockSentinel: WakeLockSentinel | null = null;
 
   constructor(
     viewParent: HTMLElement,
@@ -78,6 +80,7 @@ export class VMStoreClass {
         _generalIORouter: false,
         _soundEffects: false,
         _showModalDialog: false,
+        _enableScreenWakeLock: false,
       },
       {
         autoBind: true,
@@ -152,6 +155,10 @@ export class VMStoreClass {
     ) {
       console.log(`😴 Power Saving enabled, VM resuming`);
       this.resume();
+    }
+
+    if (document.visibilityState === "visible" && this._wakeLock) {
+      this._enableScreenWakeLock()
     }
   }
 
@@ -244,12 +251,46 @@ export class VMStoreClass {
     this._powerSaving = enabled ?? true;
   }
 
-  setMousePointer(_enabled: boolean) {
-    
+  setWakeLock(enabled: boolean) {
+    this._wakeLock = enabled ?? false;
+    if (this._wakeLock) {
+      this._enableScreenWakeLock();
+    } else {
+      this._disableScreenWakeLock();
+    }
   }
+
+  _disableScreenWakeLock() {
+    if (this._wakeLockSentinel) {
+      this._wakeLockSentinel.release().catch(() => {
+        console.error(`Error releasing Screen Wake Lock`);
+      })
+      this._wakeLockSentinel = null;
+    }
+  }
+
+  _enableScreenWakeLock() {
+    if ("wakeLock" in navigator) {
+      navigator.wakeLock
+        .request()
+        .then((sentinel) => {
+          this._wakeLockSentinel = sentinel;
+          console.log("😀 Screen Wake Lock enabled");
+        })
+        .catch((e) => {
+          console.error(`😿 Failed to acquire wakeLock:`, e);
+        });
+    }
+  }
+
+  setMousePointer(_enabled: boolean) {}
 
   setCode(code: string) {
     this.code = code;
+    this._wakeLock = false;
+    this._disableScreenWakeLock();
+    this._powerSaving = true;
+    this._powerSavingSuspend = false;
     this._program = null;
     this.runtimeErrors.replace([]);
     this.parsingErrors.replace([]);
@@ -301,6 +342,8 @@ export class VMStoreClass {
   reset() {
     this._vm.reset();
     this.runState = VMRunState.STOPPED;
+    this._wakeLock = false;
+    this._disableScreenWakeLock();
     this._powerSaving = true;
     this._powerSavingSuspend = false;
     this.setMousePointer(true);
@@ -315,6 +358,7 @@ export class VMStoreClass {
   }
 
   dispose() {
+    this._disableScreenWakeLock();
     this._vm.removeListener("error", this._onError);
     this._vm.removeListener("finished", this._onFinished);
     this._console.removeEventListener(
