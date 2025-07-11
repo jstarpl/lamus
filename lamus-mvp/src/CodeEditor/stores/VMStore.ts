@@ -183,6 +183,7 @@ export class VMStoreClass {
 
   _onFinished() {
     this.runState = VMRunState.STOPPED;
+    this._disableScreenWakeLock();
   }
 
   _onRunning() {
@@ -266,6 +267,7 @@ export class VMStoreClass {
         console.error(`Error releasing Screen Wake Lock`);
       })
       this._wakeLockSentinel = null;
+      console.log("😀 Screen Wake Lock released");
     }
   }
 

@@ -8,7 +8,7 @@ export default function setup(router: GeneralIORouter, vmStore: VMStoreClass) {
       screenWakeLockEnabled = true;
     if (req.data === "off" || req.data === "0") screenWakeLockEnabled = false;
 
-    vmStore.setPowerSaving(screenWakeLockEnabled);
+    vmStore.setWakeLock(screenWakeLockEnabled);
   }
 
   router.insertRoute("/screenWakeLock", async (req) => {

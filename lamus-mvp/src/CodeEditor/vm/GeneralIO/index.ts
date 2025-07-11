@@ -25,6 +25,11 @@ export default function setup(
       handleImport(() => powerSaving.default(generalIORouter, vmStore))
     )
     .catch(handleImportError);
+  import("./WakeLock")
+    .then((wakeLock) =>
+      handleImport(() => wakeLock.default(generalIORouter, vmStore))
+    )
+    .catch(handleImportError);
   import("./Mouse")
     .then((mouse) =>
       handleImport(() => mouse.default(generalIORouter, vmStore))
