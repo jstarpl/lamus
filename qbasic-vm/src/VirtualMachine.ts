@@ -648,6 +648,7 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		minArgs: 1,
 		action: function (vm) {
 			const variable = vm.stack.pop()
+			debugger
 			if (variable instanceof ArrayVariable) {
 				vm.stack.push(variable.values.length)
 				return
@@ -913,6 +914,16 @@ export const SystemFunctions: SystemFunctionsDefinition = {
 		},
 	},
 
+	/**
+	 * Convert a Number (`INTEGER`, `LONG`, `SINGLE`, `DOUBLE`) to a String, transcribed using decimal system.
+   * If `NUMBER_OF_DIGITS` is provided, the String will be left-padded with `0` characters.
+	 *
+	 * ```
+	 * NUMBER_TO_CONVERT [, NUMBER_OF_DIGITS]
+	 * ```
+	 *
+	 * @group strings
+	 */
 	STR$: {
 		type: 'STRING',
 		args: ['SINGLE', 'INTEGER'],
