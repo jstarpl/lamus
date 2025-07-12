@@ -35,6 +35,11 @@ export default function setup(
       handleImport(() => mouse.default(generalIORouter, vmStore))
     )
     .catch(handleImportError);
+  import("./Vibrate")
+    .then((vibrate) =>
+      handleImport(() => vibrate.default(generalIORouter, vmStore))
+    )
+    .catch(handleImportError);
   import("./ModalDialog")
     .then((modalDialog) =>
       handleImport(() =>
