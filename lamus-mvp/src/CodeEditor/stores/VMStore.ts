@@ -184,6 +184,7 @@ export class VMStoreClass {
   _onFinished() {
     this.runState = VMRunState.STOPPED;
     this._disableScreenWakeLock();
+    this.setMousePointer(true);
   }
 
   _onRunning() {
@@ -285,7 +286,13 @@ export class VMStoreClass {
     }
   }
 
-  setMousePointer(_enabled: boolean) {}
+  setMousePointer(enabled: boolean) {
+    if (enabled) {
+      this._viewParent.style.cursor = "";
+    } else {
+      this._viewParent.style.cursor = "none";
+    }
+  }
 
   setCode(code: string) {
     this.code = code;
